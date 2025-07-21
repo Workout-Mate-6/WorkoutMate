@@ -47,7 +47,6 @@ public class User extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt = null;
 
-    @NotBlank
     @Column(name = "is_deleted")
     @Builder.Default
     private boolean isDeleted = false;
@@ -58,5 +57,6 @@ public class User extends BaseEntity {
         this.name = name;
         this.gender = gender;
         this.role = role;
+        this.isDeleted = false;
     }
 }
