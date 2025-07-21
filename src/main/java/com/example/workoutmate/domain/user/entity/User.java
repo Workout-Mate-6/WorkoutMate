@@ -37,19 +37,18 @@ public class User extends BaseEntity {
     @NotBlank
     private String name;
 
-    @NotBlank
     @Enumerated(EnumType.STRING)
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
-    @NotBlank
+    @Builder.Default
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt = null;
 
-    @NotBlank
     @Column(name = "is_deleted")
+    @Builder.Default
     private boolean isDeleted = false;
 
     public User (String email, String password, String name, UserGender gender, UserRole role){
@@ -58,6 +57,7 @@ public class User extends BaseEntity {
         this.name = name;
         this.gender = gender;
         this.role = role;
+        this.isDeleted = false;
     }
 
     public void changeEmail(String email) {
