@@ -35,7 +35,7 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "is_deleted", nullable = false )
     private boolean isDeleted = false;
 
     @Column(name = "deleted_at")
