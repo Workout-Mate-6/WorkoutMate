@@ -35,10 +35,12 @@ public class BoardService {
 //    }
 
 
+
+    // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
     // 게시글 단건 조회 메서드
     @Transactional(readOnly = true)
     public Board getBoardById(Long boardId) {
-        return boardRepository.findById(boardId)
+        return boardRepository.findByIdAndIsDeletedFalse(boardId) // 삭제되지 않은 게시글(isDeleted = false)만 조회
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다. id=" + boardId)); // 추후 globalException으로 수정 예정
-    }
+    } // 사용법 예시) Board board = boardService.getBoardById(boardId);
 }
