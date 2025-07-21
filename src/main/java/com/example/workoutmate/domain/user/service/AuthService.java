@@ -1,6 +1,8 @@
 package com.example.workoutmate.domain.user.service;
 
 import com.example.workoutmate.domain.user.dto.AuthResponseDto;
+import com.example.workoutmate.domain.user.dto.LoginRequestDto;
+import com.example.workoutmate.domain.user.dto.LoginResponseDto;
 import com.example.workoutmate.domain.user.dto.SignupRequestDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
@@ -39,4 +41,17 @@ public class AuthService {
         return UserMapper.data(savedUser);
     }
 
+    public LoginResponseDto login(LoginRequestDto loginRequestDto){
+        // 존재하는 유저인지 확인
+        User user = userRepository.findByEmailAndIsDeletedFalse(loginRequestDto.getEmail()).orElseThrow(
+                () -> new CustomException(CustomErrorCode.NONEXISTENT_USER));
+
+        // 비밀번호 체크
+        if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
+            throw new CustomException(CustomErrorCode.PASSWORD_NOT_MATCHED);
+        }
+        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole());
+
+        return new LoginResponseDto(bearerToken);
+    }
 }
