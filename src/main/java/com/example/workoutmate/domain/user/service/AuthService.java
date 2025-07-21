@@ -48,7 +48,7 @@ public class AuthService {
 
         // 비밀번호 체크
         if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
-            throw new CustomException(CustomErrorCode.INVALID_PASSWORD);
+            throw new CustomException(CustomErrorCode.PASSWORD_NOT_MATCHED);
         }
         String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole());
 
