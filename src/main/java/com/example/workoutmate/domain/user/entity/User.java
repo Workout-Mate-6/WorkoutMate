@@ -37,12 +37,10 @@ public class User extends BaseEntity {
     @NotBlank
     private String name;
 
-    @NotBlank
     @Enumerated(EnumType.STRING)
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
-    @NotBlank
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
