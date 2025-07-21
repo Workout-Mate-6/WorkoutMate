@@ -41,6 +41,7 @@ public class User extends BaseEntity {
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
@@ -48,6 +49,7 @@ public class User extends BaseEntity {
 
     @NotBlank
     @Column(name = "is_deleted")
+    @Builder.Default
     private boolean isDeleted = false;
 
     public User (String email, String password, String name, UserGender gender, UserRole role){
