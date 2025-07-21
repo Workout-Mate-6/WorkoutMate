@@ -14,6 +14,7 @@ public class UserMapper {
                 .name(dto.getName())
                 .gender(dto.getGender())
                 .role(UserRole.GUEST)
+                .isDeleted(false)
                 .build();
     }
 

@@ -24,6 +24,5 @@ public class SignupRequestDto {
     @NotBlank
     private String name;
 
-    @NotBlank
     private UserGender gender;
 }

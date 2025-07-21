@@ -1,6 +1,6 @@
 package com.example.workoutmate.domain.user.service;
 
-import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
+//import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.repository.UserRepository;
