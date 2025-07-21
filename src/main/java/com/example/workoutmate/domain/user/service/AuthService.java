@@ -25,7 +25,7 @@ public class AuthService {
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto){
         // email 중복 확인
-        if(userRepository.existsByEmail(signupRequestDto.getEmail())){
+        if(userRepository.existsByEmailAndDeletedFalse(signupRequestDto.getEmail())){
             throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);}
 
         // 비밀번호 암호화
