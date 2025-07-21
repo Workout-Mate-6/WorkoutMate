@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.follow.controller;
 
 import com.example.workoutmate.domain.follow.service.FollowService;
-import com.example.workoutmate.domain.user.dto.AuthResponseDto;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
