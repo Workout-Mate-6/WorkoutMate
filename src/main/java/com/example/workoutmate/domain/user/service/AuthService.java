@@ -1,6 +1,8 @@
 package com.example.workoutmate.domain.user.service;
 
 import com.example.workoutmate.domain.user.dto.AuthResponseDto;
+import com.example.workoutmate.domain.user.dto.LoginRequestDto;
+import com.example.workoutmate.domain.user.dto.LoginResponseDto;
 import com.example.workoutmate.domain.user.dto.SignupRequestDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
@@ -25,7 +27,7 @@ public class AuthService {
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto){
         // email 중복 확인
-        if(userRepository.existsByEmailAndDeletedFalse(signupRequestDto.getEmail())){
+        if(userRepository.existsByEmailAndIsDeletedFalse(signupRequestDto.getEmail())){
             throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);}
 
         // 비밀번호 암호화
@@ -39,4 +41,17 @@ public class AuthService {
         return UserMapper.data(savedUser);
     }
 
+    public LoginResponseDto login(LoginRequestDto loginRequestDto){
+        // 존재하는 유저인지 확인
+        User user = userRepository.findByEmailAndIsDeletedFalse(loginRequestDto.getEmail()).orElseThrow(
+                () -> new CustomException(CustomErrorCode.NONEXISTENT_USER));
+
+        // 비밀번호 체크
+        if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
+            throw new CustomException(CustomErrorCode.INVALID_PASSWORD);
+        }
+        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole());
+
+        return new LoginResponseDto(bearerToken);
+    }
 }

@@ -1,6 +1,8 @@
 package com.example.workoutmate.domain.user.controller;
 
 import com.example.workoutmate.domain.user.dto.AuthResponseDto;
+import com.example.workoutmate.domain.user.dto.LoginRequestDto;
+import com.example.workoutmate.domain.user.dto.LoginResponseDto;
 import com.example.workoutmate.domain.user.dto.SignupRequestDto;
 import com.example.workoutmate.domain.user.service.AuthService;
 import com.example.workoutmate.global.dto.ApiResponse;
@@ -24,5 +26,10 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK, "회원가입이 성공했습니다.", signup);
     }
 
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
+        LoginResponseDto login = authService.login(loginRequestDto);
+        return ApiResponse.success(HttpStatus.OK, "로그인이 완료되었습니다.", login);
+    }
 
 }
