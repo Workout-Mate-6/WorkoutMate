@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.user.entity;
 
+import com.example.workoutmate.domain.follow.entity.Follow;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.entity.BaseEntity;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Entity
@@ -51,6 +53,13 @@ public class User extends BaseEntity {
     @NotBlank
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
+
+    //follow 쪽 에서 사용
+    @OneToMany(mappedBy = "follower")
+    private List<Follow> followers;
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followings;
+    //
 
     public User (String email, String password, String name, UserGender gender, UserRole role){
         this.email = email;
