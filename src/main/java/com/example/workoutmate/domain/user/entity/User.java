@@ -1,7 +1,15 @@
 package com.example.workoutmate.domain.user.entity;
 
+import com.example.workoutmate.domain.user.enums.UserGender;
+import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,35 +17,42 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
+@Table
 @NoArgsConstructor
-@Table(name = "users")
+@AllArgsConstructor
+@Builder
 public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Column(unique = true)
+    @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    @Column(nullable = false)
+    @NotBlank
     private String password;
 
-    @Column(nullable = false)
+    @NotBlank
     private String name;
 
-    @Column(nullable = false)
-    private String gender;
+    @NotBlank
+    @Enumerated(EnumType.STRING)
+    private UserGender gender;
 
-    @Column(nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @NotBlank
+    private UserRole role = UserRole.GUEST;
 
-    @Column(nullable = false)
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt = null;
+
+    @NotBlank
+    @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
-    private LocalDateTime deletedAt;
-
-    public User(String email, String password, String name, String gender, String role) {
+    public User (String email, String password, String name, UserGender gender, UserRole role){
         this.email = email;
         this.password = password;
         this.name = name;
