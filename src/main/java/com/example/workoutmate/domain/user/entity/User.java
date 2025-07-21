@@ -39,19 +39,18 @@ public class User extends BaseEntity {
     @NotBlank
     private String name;
 
-    @NotBlank
     @Enumerated(EnumType.STRING)
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
-    @NotBlank
+    @Builder.Default
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt = null;
 
-    @NotBlank
     @Column(name = "is_deleted")
+    @Builder.Default
     private boolean isDeleted = false;
 
     //follow 쪽 에서 사용
@@ -67,5 +66,6 @@ public class User extends BaseEntity {
         this.name = name;
         this.gender = gender;
         this.role = role;
+        this.isDeleted = false;
     }
 }
