@@ -1,6 +1,8 @@
 package com.example.workoutmate.domain.follow.controller;
 
 import com.example.workoutmate.domain.follow.service.FollowService;
+import com.example.workoutmate.domain.user.dto.AuthResponseDto;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,9 +22,10 @@ public class FollowController {
 
     @PostMapping("/follows/{userId}")
     public ResponseEntity<ApiResponse<Void>> followUser(
-            @PathVariable Long userId
-    ) {
-        followService.follow(userId, 1L);
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserPrincipal authUser
+            ) {
+        followService.follow(userId, authUser);
         return ApiResponse.success(HttpStatus.OK, "팔로우 하였습니다.", null);
     }
 }
