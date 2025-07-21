@@ -5,6 +5,7 @@ import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.repository.UserRepository;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,8 @@ public class UserService {
 
 
     @Transactional
-    public UserEditResponseDto editUserInfo(Long userId, UserEditRequestDto requestDto) {
-        User user = userRepository.findById(userId).orElseThrow(
+    public UserEditResponseDto editUserInfo(CustomUserPrincipal authUser, UserEditRequestDto requestDto) {
+        User user = userRepository.findById(authUser.getId()).orElseThrow(
                 () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
 
         if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
