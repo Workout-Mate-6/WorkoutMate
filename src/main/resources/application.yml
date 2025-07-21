@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: WorkoutMate
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/${DB_SCHEME}?rewriteBatchedStatements=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+
+# redis ?? ?? ? ?? ?? ? ??
+#  data:
+#    redis:
+#      host: ${REDIS_HOST}
+#      port: ${REDIS_PORT}
+
+  mvc:
+    servlet:
+      path: /api
+
+
+server:
+  error:
+    include-message: always
+
+jwt:
+  secret:
+    key: ${SECRET_KEY}
+
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
