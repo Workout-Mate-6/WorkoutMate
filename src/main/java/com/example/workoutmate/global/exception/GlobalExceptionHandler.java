@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
 
+    @ExceptionHandler(CustomException.class)
     public ResponseEntity<CustomErrorResponseDto> handleCustomException(CustomException e) {
         CustomErrorCode errorCode = e.getErrorCode();
 
