@@ -44,7 +44,7 @@ public class AuthService {
     public LoginResponseDto login(LoginRequestDto loginRequestDto){
         // 존재하는 유저인지 확인
         User user = userRepository.findByEmailAndIsDeletedFalse(loginRequestDto.getEmail()).orElseThrow(
-                () -> new CustomException(CustomErrorCode.NONEXISTENT_USER));
+                () -> new CustomException(CustomErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 체크
         if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
