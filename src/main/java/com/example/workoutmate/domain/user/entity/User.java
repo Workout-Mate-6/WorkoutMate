@@ -60,19 +60,29 @@ public class User extends BaseEntity {
         this.isDeleted = false;
     }
 
+    // 유저 이메일 변경
     public void changeEmail(String email) {
         this.email = email;
     }
 
+    // 유저 비밀번호 변경
     public void changePassword(String password) {
         this.password = password;
     }
 
+    // 유저 이름 변경
     public void changeName(String name) {
         this.name = name;
     }
 
+    // 유저 성별 변경
     public void changeGender(UserGender gender) {
         this.gender = gender;
+    }
+
+    // 유저 탈퇴
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 }
