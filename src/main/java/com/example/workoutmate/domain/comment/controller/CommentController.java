@@ -42,4 +42,16 @@ public class CommentController {
         return ApiResponse.success(HttpStatus.OK, "댓글 조회에 성공하였습니다.", responseDto);
     }
 
+    @PutMapping("/boards/{boardId}/comments/{commentId}")
+    public ResponseEntity<ApiResponse<CommentResponseDto>> updateComment(
+            @PathVariable Long boardId,
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentRequestDto requestDto,
+            @AuthenticationPrincipal CustomUserPrincipal authUser
+    ){
+        CommentResponseDto responseDto = commentService.updateComment(boardId, commentId, requestDto, authUser);
+
+        return ApiResponse.success(HttpStatus.OK, "댓글 수정이 완료되었습니다.", responseDto);
+    }
+
 }
