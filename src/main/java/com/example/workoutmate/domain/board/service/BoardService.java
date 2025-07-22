@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.board.service;
 import com.example.workoutmate.domain.board.controller.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
@@ -56,6 +57,13 @@ public class BoardService {
                 .map(BoardResponseDto::new); // Page<Board> → Page<BoardResponseDto>
     }
 
+    // 운동 종목 별 카테고리 조회
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> getBoardsByCategory(Pageable pageable, SportType sportType) {
+
+        return boardRepository.findAllByIsDeletedFalseAndSportType(pageable, sportType)
+                .map(BoardResponseDto::new);
+    }
 
     // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
     // 게시글 단건 조회 메서드
