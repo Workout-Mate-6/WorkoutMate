@@ -2,6 +2,8 @@ package com.example.workoutmate.domain.board.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.domain.user.entity.User;
+import com.example.workoutmate.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,25 +13,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final UserService userService;
 
-//    // 게시글 생성/저장
-//    @Transactional
-//    public BoardResponseDto createBoard(Long writerId, BoardRequestDto requestDto) {
-//
-//        // 유저 조회 -> userService에서 조회기능 사용 UserService에서 서비스 코드 요청하기
-//
-//
-//        Board board = Board.builder()
-//                .user(user)
-//                .title(requestDto.getTitle())
-//                .content(requestDto.getContent())
-//                .sportType(requestDto.getSportType())
-//                .build();
-//
-//        boardRepository.save(board);
-//
-//        return new BoardResponseDto(board);
-//    }
+    // 게시글 생성/저장
+    @Transactional
+    public BoardResponseDto createBoard(Long writerId, BoardRequestDto requestDto) {
+
+        // 유저 조회 -> userService에서 조회기능 사용 UserService에서 서비스 코드 요청하기
+        User user = userService.findById(writerId);
+
+        Board board = Board.builder()
+                .writer(user)
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .sportType(requestDto.getSportType())
+                .build();
+
+        boardRepository.save(board);
+
+        return new BoardResponseDto(board);
+    }
 
 
 
