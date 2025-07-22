@@ -62,7 +62,7 @@ public class CommentController {
     ){
         commentService.deleteComment(boardId, commentId, authUser);
 
-        return ApiResponse.success(HttpStatus.OK, "댓글 삭제과 완료되었습니다.", null);
+        return ApiResponse.success(HttpStatus.OK, "댓글 삭제가 완료되었습니다.", null);
     }
 
 }
