@@ -79,12 +79,14 @@ public class CommentService {
         Board board = boardService.getBoardById(boardId);
         Comment comment = findById(commentId);
 
+        // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
         if (!comment.getBoard().getId().equals(board.getId())){
             throw new CustomException(COMMENT_NOT_IN_BOARD);
         }
 
         User user = userService.findById(authUser.getId());
 
+        // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
         if (!comment.getWriter().getId().equals(user.getId())){
             throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
         }
