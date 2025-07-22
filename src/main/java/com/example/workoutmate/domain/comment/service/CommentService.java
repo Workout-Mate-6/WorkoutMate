@@ -75,6 +75,7 @@ public class CommentService {
         return CommentMapper.data(comment);
     }
 
+    @Transactional
     public void deleteComment(Long boardId, Long commentId, CustomUserPrincipal authUser) {
         Board board = boardService.getBoardById(boardId);
         Comment comment = findById(commentId);
