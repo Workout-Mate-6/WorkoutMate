@@ -15,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,6 +84,20 @@ public class BoardController {
         Page<BoardResponseDto> boardResponseDtoPage = boardService.getBoardsByCategory(pageable, sportType);
 
         return ApiResponse.success(HttpStatus.OK, "운동 카테고리 별 게시글 조회 성공", boardResponseDtoPage);
+    }
+
+    // 게시글 수정
+    @PutMapping("/{boardId}")
+    public ResponseEntity<ApiResponse<BoardResponseDto>> updateBoard(
+            @PathVariable Long boardId,
+            @Valid @RequestBody BoardRequestDto boardRequestDto,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
+    ) {
+        Long userId = customUserPrincipal.getId();
+
+        BoardResponseDto updatedBoard = boardService.updateBoard(boardId, userId, boardRequestDto);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 수정되었습니다." , updatedBoard);
     }
 
 }

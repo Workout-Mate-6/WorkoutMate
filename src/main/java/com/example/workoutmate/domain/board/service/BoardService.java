@@ -87,6 +87,23 @@ public class BoardService {
                 .map(BoardResponseDto::new);
     }
 
+    //게시글 수정
+    @Transactional
+    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto boardRequestDto) {
+
+        Board board = getBoardById(boardId);
+
+        // 작성자 권한 체크
+        if (!board.getWriter().getId().equals(userId)) {
+            throw new IllegalArgumentException("게시글 작성자만 수정할 수 있습니다.");
+        }
+
+        // Board엔티티 내부 update 메서드 호출
+        board.update(boardRequestDto.getTitle(), boardRequestDto.getContent(), boardRequestDto.getSportType());
+
+        return new BoardResponseDto(board);
+    }
+
     // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
     // 게시글 단건 조회 메서드
     @Transactional(readOnly = true)
