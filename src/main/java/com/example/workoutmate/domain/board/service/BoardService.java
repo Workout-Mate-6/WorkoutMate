@@ -114,6 +114,7 @@ public class BoardService {
             throw new IllegalArgumentException("게시글 작성자만 삭제할 수 있습니다.");
         }
 
+
         board.delete();
     }
 
