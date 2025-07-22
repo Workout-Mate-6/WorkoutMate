@@ -25,9 +25,9 @@ public class CommentService {
     private final BoardService boardService;
 
     @Transactional
-    public CommentResponseDto createComment(Long boardId, CommentRequestDto requestDto, CustomUserPrincipal CustomUser) {
+    public CommentResponseDto createComment(Long boardId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
         Board board = boardService.getBoardById(boardId);
-        User user = userService.findById(CustomUser.getId());
+        User user = userService.findById(authUser.getId());
 
         // Mapper클래스로 DTO를 엔티티로 변환
         Comment comment = CommentMapper.commentRequestToComment(requestDto, board, user);

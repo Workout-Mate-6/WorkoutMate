@@ -25,10 +25,10 @@ public class CommentController {
     public ResponseEntity<ApiResponse<CommentResponseDto>> createComment(
             @PathVariable Long boardId,
             @RequestBody @Valid CommentRequestDto requestDto,
-            @AuthenticationPrincipal CustomUserPrincipal CustomUser
+            @AuthenticationPrincipal CustomUserPrincipal authUser
             ){
 
-        CommentResponseDto responseDto = commentService.createComment(boardId, requestDto, CustomUser);
+        CommentResponseDto responseDto = commentService.createComment(boardId, requestDto, authUser);
 
         return ApiResponse.success(HttpStatus.CREATED, "댓글 생성 완료되었습니다.", responseDto);
     }
