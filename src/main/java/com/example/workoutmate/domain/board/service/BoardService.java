@@ -3,7 +3,6 @@ package com.example.workoutmate.domain.board.service;
 import com.example.workoutmate.domain.board.controller.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
