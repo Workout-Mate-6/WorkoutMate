@@ -33,5 +33,13 @@ public class CommentController {
         return ApiResponse.success(HttpStatus.CREATED, "댓글 생성 완료되었습니다.", responseDto);
     }
 
+    @GetMapping("/boards/{boardId}/comments")
+    public ResponseEntity<ApiResponse<List<CommentResponseDto>>> getComment(
+            @PathVariable Long boardId
+    ){
+        List<CommentResponseDto> responseDto = commentService.getComment(boardId);
+
+        return ApiResponse.success(HttpStatus.OK, "댓글 조회에 성공하였습니다.", responseDto);
+    }
 
 }
