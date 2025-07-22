@@ -74,7 +74,7 @@ public class BoardService {
             return Page.empty(); // 빈페이지 반환
         }
 
-        Page<Board> boardPage = boardRepository.findByWriter_IdIn(followingIds, pageable);
+        Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
 
         return boardPage.map(BoardResponseDto::new);
     }
@@ -103,6 +103,19 @@ public class BoardService {
 
         return new BoardResponseDto(board);
     }
+
+//    // 게시글 삭제
+//    @Transactional
+//    public void deleteBoard(Long boardId, Long userId) {
+//
+//        Board board = getBoardById(boardId);
+//
+//        if (!board.getWriter().getId().equals(userId)) {
+//            throw new IllegalArgumentException("게시글 작성자만 삭제할 수 있습니다.");
+//        }
+//
+//        board.delete();
+//    }
 
     // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
     // 게시글 단건 조회 메서드
