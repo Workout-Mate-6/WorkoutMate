@@ -10,11 +10,14 @@ import com.example.workoutmate.domain.comment.repository.CommentRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
+import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 
 @Service
@@ -46,5 +49,34 @@ public class CommentService {
                 .stream().map(CommentMapper::data).toList();
 
         return comments;
+    }
+
+    @Transactional
+    public CommentResponseDto updateComment(Long boardId, Long commentId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
+        Board board = boardService.getBoardById(boardId);
+        Comment comment = findById(commentId);
+
+        // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
+        if (!comment.getBoard().getId().equals(board.getId())){
+            throw new CustomException(COMMENT_NOT_IN_BOARD);
+        }
+
+        User user = userService.findById(authUser.getId());
+
+        // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
+        if (!comment.getWriter().getId().equals(user.getId())) {
+            throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
+        }
+
+        comment.updateComment(requestDto.getContent());
+
+        commentRepository.flush();
+
+        return CommentMapper.data(comment);
+    }
+
+    public Comment findById(Long commentId){
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 }
