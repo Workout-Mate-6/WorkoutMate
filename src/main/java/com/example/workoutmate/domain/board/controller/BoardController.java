@@ -10,10 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/boards")
@@ -35,4 +34,24 @@ public class BoardController {
         BoardResponseDto boardResponseDto = boardService.createBoard(userId, boardRequestDto);
         return ApiResponse.success(HttpStatus.CREATED, "게시글이 성공적으로 작성되었습니다.",boardResponseDto);
     }
+
+    // 게시글 단건 조회
+    @GetMapping("/{boardId}")
+    public ResponseEntity<ApiResponse<BoardResponseDto>> getBoard(@PathVariable Long boardId) {
+
+        BoardResponseDto BoardResponseDto = boardService.getBoard(boardId);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글 조회에 성공했습니다.", BoardResponseDto);
+    }
+
+    // 게시글 전체 조회
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<BoardResponseDto>>> getAllBoards() {
+
+        List<BoardResponseDto> boardResponseDtoList = boardService.getAllBoards();
+
+        return ApiResponse.success(HttpStatus.OK, "게시글 전체 조회가 완료되었습니다.", boardResponseDtoList);
+    }
+
+
 }

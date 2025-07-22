@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BoardService {
@@ -36,6 +38,23 @@ public class BoardService {
         return new BoardResponseDto(board);
     }
 
+    // 게시글 단건 조회
+    @Transactional
+    public BoardResponseDto getBoard(Long boardId) {
+        Board board = getBoardById(boardId); // 게시글 단건 조회 메서드
+
+        return new BoardResponseDto(board);
+    }
+
+    // 게시글 전체 조회
+    @Transactional(readOnly = true)
+    public List<BoardResponseDto> getAllBoards() {
+        List<Board> boards = boardRepository.findAllByIsDeletedFalse();
+
+        return boards.stream()
+                .map(BoardResponseDto::new) // BoardResponseDto 생성자 호출
+                .toList();
+    }
 
 
     // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
@@ -45,4 +64,5 @@ public class BoardService {
         return boardRepository.findByIdAndIsDeletedFalse(boardId) // 삭제되지 않은 게시글(isDeleted = false)만 조회
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다. id=" + boardId)); // 추후 globalException으로 수정 예정
     } // 사용법 예시) Board board = boardService.getBoardById(boardId);
+
 }
