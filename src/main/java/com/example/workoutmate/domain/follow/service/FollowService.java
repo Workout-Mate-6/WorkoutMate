@@ -11,6 +11,7 @@ import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -56,5 +57,23 @@ public class FollowService {
     // 게시글 쪽에서 사용하는 메서드
     public List<User> getAllFollowing(Long userId) {
         return followRepository.findAllByFollowerId(userId);
+    }
+
+    @Transactional
+    public void unfollow(Long userId, CustomUserPrincipal authUser) {
+
+        // 본인 언팔로우 못하게
+        if (userId.equals(authUser.getId())) {
+            throw new CustomException(CustomErrorCode.CANNOT_UNFOLLOW_SELF);
+        }
+
+        // 두번 언팔되는거 방지
+        boolean exists = followRepository.existsByFollowerIdAndFollowingId(authUser.getId(), userId);
+        if (!exists) {
+            throw new CustomException(CustomErrorCode.NOT_FOLLOWING);
+        }
+
+        // 언팔로우 하면 하드 딜리트
+        followRepository.deleteByfollowerIdAndFollowingId(authUser.getId(), userId);
     }
 }
