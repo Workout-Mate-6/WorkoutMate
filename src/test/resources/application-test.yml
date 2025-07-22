@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: WorkoutMate
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/${DB_SCHEME}?rewriteBatchedStatements=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+
+
+
+jwt:
+  secret:
+    key: ${SECRET_KEY}
