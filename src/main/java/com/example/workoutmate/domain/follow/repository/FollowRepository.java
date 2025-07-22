@@ -10,7 +10,10 @@ import java.util.List;
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
     boolean existsByFollowerAndFollowing(User follower, User following);
-    List<User> findAllByFollowerId(Long userId);
+
+    // 게시글 부분
+    List<Follow> findAllByFollowerId(Long followerId);
+
     void deleteByfollowerIdAndFollowingId(Long id, Long userId);
 
     boolean existsByFollowerIdAndFollowingId(Long id, Long userId);
