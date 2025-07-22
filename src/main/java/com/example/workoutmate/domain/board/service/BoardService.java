@@ -5,13 +5,21 @@ import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
+import com.example.workoutmate.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -21,6 +29,7 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserService userService;
+    private final FollowService followService;
 
     // 게시글 생성/저장
     @Transactional
@@ -55,6 +64,19 @@ public class BoardService {
 
         return boardRepository.findAllByIsDeletedFalse(pageable)
                 .map(BoardResponseDto::new); // Page<Board> → Page<BoardResponseDto>
+    }
+
+    // 팔로잉한 유저 게시글 전체 조회
+    public Page<BoardResponseDto> getBoardsFromFollowings(Long myUserId, Pageable pageable) {
+        List<Long> followingIds = followService.getFollowingUserIds(myUserId);
+
+        if (followingIds.isEmpty()) {
+            return Page.empty(); // 빈페이지 반환
+        }
+
+        Page<Board> boardPage = boardRepository.findByWriter_IdIn(followingIds, pageable);
+
+        return boardPage.map(BoardResponseDto::new);
     }
 
     // 운동 종목 별 카테고리 조회

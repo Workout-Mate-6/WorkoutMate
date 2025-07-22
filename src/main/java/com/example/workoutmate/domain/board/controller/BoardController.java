@@ -61,7 +61,16 @@ public class BoardController {
     }
 
     // 팔로잉 유저 게시글 전체 조회
+    @GetMapping("/following")
+    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getBoardsFromFollowings(
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Long userId = customUserPrincipal.getId();
+        Page<BoardResponseDto> boardResponseDtoPage = boardService.getBoardsFromFollowings(userId, pageable);
 
+        return ApiResponse.success(HttpStatus.OK, "팔로잉 유저 게시글 조회가 완료되었습니다.", boardResponseDtoPage);
+    }
 
 
     // 운동 종목 별 카테고리 조회
