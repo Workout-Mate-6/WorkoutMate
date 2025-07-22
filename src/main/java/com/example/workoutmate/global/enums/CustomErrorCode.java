@@ -22,6 +22,7 @@ public enum CustomErrorCode {
 
     // follow
     CANNOT_FOLLOW_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 팔로워 할 수 없습니다."),
+    CANNOT_UNFOLLOW_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 언팔로워 할 수 없습니다."),
     ALLREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로워 중입니다."),
     NOT_FOLLOWING(HttpStatus.BAD_REQUEST, "팔로우 중이지 않은 사용자입니다."),
 
