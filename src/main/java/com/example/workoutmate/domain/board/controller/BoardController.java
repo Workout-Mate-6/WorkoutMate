@@ -2,7 +2,7 @@ package com.example.workoutmate.domain.board.controller;
 
 import com.example.workoutmate.domain.board.controller.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
-import com.example.workoutmate.domain.board.controller.dto.SearchCategoryBoardRequestDto;
+import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
@@ -67,11 +67,11 @@ public class BoardController {
     // 운동 종목 별 카테고리 조회
     @GetMapping("/category")
     public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getBoardsByCategory(
-            @RequestBody SearchCategoryBoardRequestDto requestDto,
+            @RequestParam SportType sportType,
             @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
             ) {
 
-        Page<BoardResponseDto> boardResponseDtoPage = boardService.getBoardsByCategory(pageable, requestDto.getSportType());
+        Page<BoardResponseDto> boardResponseDtoPage = boardService.getBoardsByCategory(pageable, sportType);
 
         return ApiResponse.success(HttpStatus.OK, "운동 카테고리 별 게시글 조회 성공", boardResponseDtoPage);
     }
