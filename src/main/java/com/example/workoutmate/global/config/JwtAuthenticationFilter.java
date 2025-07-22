@@ -80,10 +80,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (UnsupportedJwtException e) {
             log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.", e);
             throw new CustomException(CustomErrorCode.SC_BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("Internal server error", e);
+            throw new CustomException(CustomErrorCode.SC_INTERNAL_SERVER_ERROR);
         }
-//        catch (Exception e) {
-//            log.error("Internal server error", e);
-//            throw new CustomException(CustomErrorCode.SC_INTERNAL_SERVER_ERROR);
-//        }
     }
 }
