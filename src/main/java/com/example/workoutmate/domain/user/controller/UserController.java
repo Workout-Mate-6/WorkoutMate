@@ -2,7 +2,6 @@ package com.example.workoutmate.domain.user.controller;
 
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
-import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
