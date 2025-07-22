@@ -34,4 +34,19 @@ public class QFollowsRepository {
                 .limit(size)
                 .fetch();
     }
+
+    public List<FollowsResponseDto> viewFollowing(Long userId, Integer size, Long cursor) {
+        BooleanExpression cursorPredicate = (cursor != null)
+                ? follow.id.lt(cursor)
+                : null;
+
+        return queryFactory.select(Projections.constructor(FollowsResponseDto.class,
+                follow.following.id,
+                follow.following.name
+        ))
+                .from(follow).where(follow.follower.id.eq(userId),cursorPredicate)
+                .orderBy(follow.id.desc())
+                .limit(size)
+                .fetch();
+    }
 }

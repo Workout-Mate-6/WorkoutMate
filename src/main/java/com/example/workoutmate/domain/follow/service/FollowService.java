@@ -48,4 +48,13 @@ public class FollowService {
     ) {
         return qFollowsRepository.viewFollower(userId, size, cursor);
     }
+
+    public List<FollowsResponseDto> viewFollowing(Long userId, Integer size, Long cursor) {
+        return qFollowsRepository.viewFollowing(userId, size, cursor);
+    }
+
+    // 게시글 쪽에서 사용하는 메서드
+    public List<User> getAllFollowing(Long userId) {
+        return followRepository.findAllByFollowerId(userId);
+    }
 }

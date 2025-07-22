@@ -36,4 +36,13 @@ public class FollowController {
     ) {
         return ApiResponse.success(HttpStatus.OK, "", followService.viewFollower(userId, size, cursor));
     }
+
+    @GetMapping("/follows/following/{userId}")
+    public ResponseEntity<ApiResponse<List<FollowsResponseDto>>> following(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) Long cursor
+    ) {
+        return ApiResponse.success(HttpStatus.OK, "", followService.viewFollowing(userId, size, cursor));
+    }
 }
