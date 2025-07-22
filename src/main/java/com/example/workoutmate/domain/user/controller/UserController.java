@@ -30,7 +30,7 @@ public class UserController {
      * 유저 정보 수정
      *
      * @param requestDto 수정할 유저 정보
-     * @param authUser 로그인한 유저 정보
+     * @param authUser   로그인한 유저 정보
      * @return 수정된 유저 정보
      */
     @PatchMapping("/users/me")
@@ -48,7 +48,7 @@ public class UserController {
      * 유저 탈퇴
      *
      * @param requestDto 비밀번호
-     * @param authUser 로그인한 유저 정보
+     * @param authUser   로그인한 유저 정보
      * @return HTTP 상태 코드
      */
     @PostMapping("/users/me/deletion")

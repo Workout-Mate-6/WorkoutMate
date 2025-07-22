@@ -4,6 +4,7 @@ import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -46,5 +47,15 @@ public class Board extends BaseEntity {
     // 삭제일
     @Column
     private LocalDateTime deletedAt;
+
+    @Builder
+    public Board(User writer, String title, String content, SportType sportType) {
+        this.writer = writer;
+        this.title = title;
+        this.content = content;
+        this.sportType = sportType;
+        this.isDeleted = false;
+        this.deletedAt = null;
+    }
 
 }
