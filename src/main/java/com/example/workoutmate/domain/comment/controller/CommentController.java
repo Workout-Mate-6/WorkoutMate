@@ -24,7 +24,7 @@ public class CommentController {
     @PostMapping("/boards/{boardId}/comments")
     public ResponseEntity<ApiResponse<CommentResponseDto>> createComment(
             @PathVariable Long boardId,
-            @RequestBody @Valid CommentRequestDto requestDto,
+            @Valid @RequestBody CommentRequestDto requestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
             ){
 
