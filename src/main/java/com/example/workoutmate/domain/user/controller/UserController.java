@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.user.controller;
 
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
+import com.example.workoutmate.domain.user.dto.UserInfoResponseDto;
 import com.example.workoutmate.domain.user.dto.WithdrawRequestDto;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -24,6 +25,22 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+
+    /**
+     * 유저 정보 조회 (마이페이지)
+     *
+     * @param authUser 로그인한 유저 정보
+     * @return 조회된 유저 정보
+     */
+    @GetMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserInfoResponseDto>> getMyInfo(
+            @AuthenticationPrincipal CustomUserPrincipal authUser) {
+
+        UserInfoResponseDto userInfoResponseDto = userService.getMyInfo(authUser);
+
+        return ApiResponse.success(HttpStatus.OK, "나의 정보 조회가 완료되었습니다.", userInfoResponseDto);
+    }
 
 
     /**
