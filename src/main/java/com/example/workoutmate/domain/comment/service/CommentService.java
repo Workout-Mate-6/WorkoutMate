@@ -10,7 +10,6 @@ import com.example.workoutmate.domain.comment.repository.CommentRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
-import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.example.workoutmate.global.enums.CustomErrorCode.COMMENT_NOT_IN_BOARD;
-import static com.example.workoutmate.global.enums.CustomErrorCode.UNAUTHORIZED_COMMENT_ACCESS;
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 
 @Service
@@ -60,7 +58,7 @@ public class CommentService {
 
         // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
         if (!comment.getBoard().getId().equals(board.getId())){
-            throw new CustomException(COMMENT_NOT_IN_BOARD, COMMENT_NOT_IN_BOARD.getMessage());
+            throw new CustomException(COMMENT_NOT_IN_BOARD);
         }
 
         User user = userService.findById(authUser.getId());
@@ -79,6 +77,6 @@ public class CommentService {
 
     public Comment findById(Long commentId){
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.COMMENT_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
 }
