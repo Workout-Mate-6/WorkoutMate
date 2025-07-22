@@ -75,6 +75,24 @@ public class CommentService {
         return CommentMapper.data(comment);
     }
 
+    public void deleteComment(Long boardId, Long commentId, CustomUserPrincipal authUser) {
+        Board board = boardService.getBoardById(boardId);
+        Comment comment = findById(commentId);
+
+        if (!comment.getBoard().getId().equals(board.getId())){
+            throw new CustomException(COMMENT_NOT_IN_BOARD);
+        }
+
+        User user = userService.findById(authUser.getId());
+
+        if (!comment.getWriter().getId().equals(user.getId())){
+            throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
+        }
+
+        commentRepository.delete(comment);
+    }
+
+
     public Comment findById(Long commentId){
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
