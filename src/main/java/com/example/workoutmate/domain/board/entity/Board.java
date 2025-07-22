@@ -64,4 +64,8 @@ public class Board extends BaseEntity {
         this.sportType = sportType;
     }
 
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }

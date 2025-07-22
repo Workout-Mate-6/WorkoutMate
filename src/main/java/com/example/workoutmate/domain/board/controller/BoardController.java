@@ -100,17 +100,17 @@ public class BoardController {
         return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 수정되었습니다." , updatedBoard);
     }
 
-//    // 게시글 삭제
-//    @DeleteMapping("/{boardId}")
-//    public ResponseEntity<ApiResponse<Void>> deleteBoard(
-//            @PathVariable Long boardId,
-//            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
-//    ) {
-//        Long userId = customUserPrincipal.getId();
-//
-//        boardService.deleteBoard(boardId, userId);
-//
-//        return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 삭제되었습니다.", null);
-//    }
+    // 게시글 삭제
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<ApiResponse<Void>> deleteBoard(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
+    ) {
+        Long userId = customUserPrincipal.getId();
+
+        boardService.deleteBoard(boardId, userId);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 삭제되었습니다.", null);
+    }
 
 }
