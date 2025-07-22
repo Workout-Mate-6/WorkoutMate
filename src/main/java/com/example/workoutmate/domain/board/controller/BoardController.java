@@ -7,6 +7,10 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,12 +50,17 @@ public class BoardController {
 
     // 게시글 전체 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BoardResponseDto>>> getAllBoards() {
+    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getAllBoards(
+            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
+            ) {
 
-        List<BoardResponseDto> boardResponseDtoList = boardService.getAllBoards();
+        Page<BoardResponseDto> boardResponseDtoPage = boardService.getAllBoards(pageable);
 
-        return ApiResponse.success(HttpStatus.OK, "게시글 전체 조회가 완료되었습니다.", boardResponseDtoList);
+        return ApiResponse.success(HttpStatus.OK, "게시글 전체 조회가 완료되었습니다.", boardResponseDtoPage);
     }
+
+    // 팔로잉 유저 게시글 전체 조회
+
 
 
 }

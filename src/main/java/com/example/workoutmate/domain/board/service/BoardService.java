@@ -7,6 +7,8 @@ import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,12 +50,10 @@ public class BoardService {
 
     // 게시글 전체 조회
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> getAllBoards() {
-        List<Board> boards = boardRepository.findAllByIsDeletedFalse();
+    public Page<BoardResponseDto> getAllBoards(Pageable pageable) {
 
-        return boards.stream()
-                .map(BoardResponseDto::new) // BoardResponseDto 생성자 호출
-                .toList();
+        return boardRepository.findAllByIsDeletedFalse(pageable)
+                .map(BoardResponseDto::new); // Page<Board> → Page<BoardResponseDto>
     }
 
 
