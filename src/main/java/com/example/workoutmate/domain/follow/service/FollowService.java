@@ -25,6 +25,7 @@ public class FollowService {
 
 
     public void follow(Long userId, CustomUserPrincipal authUser) {
+        userService.findById(userId);
         // 본인 팔로워 못하게
         if (userId.equals(authUser.getId())) {
             throw new CustomException(CustomErrorCode.CANNOT_FOLLOW_SELF);
@@ -47,10 +48,12 @@ public class FollowService {
     public List<FollowsResponseDto> viewFollower(
             Long userId, Integer size, Long cursor
     ) {
+        userService.findById(userId);
         return qFollowsRepository.viewFollower(userId, size, cursor);
     }
 
     public List<FollowsResponseDto> viewFollowing(Long userId, Integer size, Long cursor) {
+        userService.findById(userId);
         return qFollowsRepository.viewFollowing(userId, size, cursor);
     }
 
@@ -63,7 +66,7 @@ public class FollowService {
 
     @Transactional
     public void unfollow(Long userId, CustomUserPrincipal authUser) {
-
+        userService.findById(userId);
         // 본인 언팔로우 못하게
         if (userId.equals(authUser.getId())) {
             throw new CustomException(CustomErrorCode.CANNOT_UNFOLLOW_SELF);
