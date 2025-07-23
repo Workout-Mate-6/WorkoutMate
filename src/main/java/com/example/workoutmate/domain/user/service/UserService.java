@@ -1,7 +1,9 @@
 package com.example.workoutmate.domain.user.service;
 
+import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
+import com.example.workoutmate.domain.user.dto.UserInfoResponseDto;
 import com.example.workoutmate.domain.user.dto.WithdrawRequestDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.enums.UserGender;
@@ -27,6 +29,36 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BoardSearchService boardSearchService;
+
+
+    /**
+     * 유저 정보 조회 (마이페이지)
+     *
+     * @param authUser 로그인한 유저 정보
+     * @return 조회된 유저 정보
+     */
+    @Transactional(readOnly = true)
+    public UserInfoResponseDto getMyInfo(CustomUserPrincipal authUser) {
+        User user = userRepository.findById(authUser.getId()).orElseThrow(
+                () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
+
+        int followerCount = user.getFollowers() != null ? user.getFollowers().size() : 0;
+        int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
+        int myBoardCount = boardSearchService.countBoardsByWriter(user.getId());
+
+        return UserInfoResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .gender(user.getGender())
+                .followerCount(followerCount)
+                .followingCount(followingCount)
+                .myBoardCount(myBoardCount)
+                .createdAt(user.getCreatedAt())
+                .modifiedAt(user.getModifiedAt())
+                .build();
+    }
 
 
     /**
