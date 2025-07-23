@@ -119,6 +119,4 @@ public class BoardService {
 
         board.delete();
     }
-
-    // 공용으로 사용하는 서비스 메서드 이전
 }

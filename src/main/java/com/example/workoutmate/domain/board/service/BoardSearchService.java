@@ -21,9 +21,9 @@ public class BoardSearchService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
     } // 사용법 예시) Board board = boardSearchService.getBoardById(boardId);
 
-//    // 사용자의 게시글 총 갯수 조회 메서드(삭제되지 않은 게시글만)
-//    @Transactional(readOnly = true)
-//    public int countBoardsByWriter(Long writerId) {
-//        return boardRepository.countByWriter_IdAndIsDeletedFalse(writerId);
-//    }
+    // 사용자의 게시글 총 갯수 조회 메서드(삭제되지 않은 게시글만)
+    @Transactional(readOnly = true)
+    public int countBoardsByWriter(Long writerId) {
+        return boardRepository.countByWriter_IdAndIsDeletedFalse(writerId);
+    }
 }
