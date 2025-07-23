@@ -74,7 +74,7 @@ public class BoardService {
         List<Long> followingIds = followService.getFollowingUserIds(myUserId);
 
         if (followingIds.isEmpty()) {
-            throw new CustomException(CustomErrorCode.EMPTY_FOLLOWING_LIST);
+            return Page.empty(); // 빈페이지 반환
         }
 
         Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
