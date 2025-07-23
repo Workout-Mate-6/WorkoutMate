@@ -29,6 +29,11 @@ spring:
     servlet:
       path: /api
 
+# 시간 직렬화 위해
+  jackson:
+    serialization:
+      write-date-keys-as-timestamps: false
+
 
 server:
   error:
