@@ -43,6 +43,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public Page<CommentResponseDto> getComment(Long boardId, Pageable pageable) {
+        Board board = boardSearchService.getBoardById(boardId);
 
         // 레포지토리에서 게시글 ID로 댓글 목록 조회 후, DTO로 변환
         Page<Comment> comments = commentRepository.findAllByBoardId(boardId, pageable);
