@@ -1,7 +1,7 @@
 package com.example.workoutmate.domain.comment.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.board.service.BoardService;
+import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.comment.dto.CommentRequestDto;
 import com.example.workoutmate.domain.comment.dto.CommentResponseDto;
 import com.example.workoutmate.domain.comment.entity.Comment;
@@ -26,11 +26,11 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final UserService userService;
-    private final BoardService boardService;
+    private final BoardSearchService boardSearchService;
 
     @Transactional
     public CommentResponseDto createComment(Long boardId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
-        Board board = boardService.getBoardById(boardId);
+        Board board = boardSearchService.getBoardById(boardId);
         User user = userService.findById(authUser.getId());
 
         // Mapper클래스로 DTO를 엔티티로 변환
@@ -52,7 +52,7 @@ public class CommentService {
 
     @Transactional
     public CommentResponseDto updateComment(Long boardId, Long commentId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
-        Board board = boardService.getBoardById(boardId);
+        Board board = boardSearchService.getBoardById(boardId);
         Comment comment = findById(commentId);
 
         // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
@@ -76,7 +76,7 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long boardId, Long commentId, CustomUserPrincipal authUser) {
-        Board board = boardService.getBoardById(boardId);
+        Board board = boardSearchService.getBoardById(boardId);
         Comment comment = findById(commentId);
 
         // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
