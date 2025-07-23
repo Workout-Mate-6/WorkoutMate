@@ -40,8 +40,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public UserInfoResponseDto getMyInfo(CustomUserPrincipal authUser) {
-        User user = userRepository.findById(authUser.getId()).orElseThrow(
-                () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
+        User user = findById(authUser.getId());
 
         int followerCount = user.getFollowers() != null ? user.getFollowers().size() : 0;
         int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
