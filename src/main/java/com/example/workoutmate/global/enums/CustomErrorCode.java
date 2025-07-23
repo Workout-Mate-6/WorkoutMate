@@ -25,7 +25,6 @@ public enum CustomErrorCode {
     CANNOT_UNFOLLOW_SELF(HttpStatus.BAD_REQUEST, "자기 자신을 언팔로워 할 수 없습니다."),
     ALLREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로워 중입니다."),
     NOT_FOLLOWING(HttpStatus.BAD_REQUEST, "팔로우 중이지 않은 사용자입니다."),
-    EMPTY_FOLLOWING_LIST(HttpStatus.NOT_FOUND, "팔로잉한 사용자가 존재하지 않습니다."),
 
     // Board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게시글을 찾을 수 없습니다."),
