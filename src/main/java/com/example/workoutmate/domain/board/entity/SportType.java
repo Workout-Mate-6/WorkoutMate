@@ -7,7 +7,8 @@ public enum SportType {
     BASEBALL,
     RUNNING,
     TENNIS,
-    VOLLEYBALL
+    VOLLEYBALL,
+    ETC
     // 스포츠가 더 생기면 추가 예정...
 
 }
