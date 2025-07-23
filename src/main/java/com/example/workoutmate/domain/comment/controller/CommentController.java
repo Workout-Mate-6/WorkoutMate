@@ -7,6 +7,10 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,10 +38,12 @@ public class CommentController {
     }
 
     @GetMapping("/boards/{boardId}/comments")
-    public ResponseEntity<ApiResponse<List<CommentResponseDto>>> getComment(
-            @PathVariable Long boardId
-    ){
-        List<CommentResponseDto> responseDto = commentService.getComment(boardId);
+    public ResponseEntity<ApiResponse<Page<CommentResponseDto>>> getComment(
+            @PathVariable Long boardId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            ){
+
+        Page<CommentResponseDto> responseDto = commentService.getComment(boardId, pageable);
 
         return ApiResponse.success(HttpStatus.OK, "댓글 조회에 성공하였습니다.", responseDto);
     }
