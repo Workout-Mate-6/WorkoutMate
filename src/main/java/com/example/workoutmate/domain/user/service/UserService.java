@@ -69,8 +69,7 @@ public class UserService {
      */
     @Transactional
     public UserEditResponseDto editUserInfo(CustomUserPrincipal authUser, UserEditRequestDto requestDto) {
-        User user = userRepository.findById(authUser.getId()).orElseThrow(
-                () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
+        User user = findById(authUser.getId());
 
         if (requestDto.getPassword() != null && !requestDto.getPassword().isBlank()) {
             if(!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
@@ -104,8 +103,7 @@ public class UserService {
      */
     @Transactional
     public void deleteUser(CustomUserPrincipal authUser, WithdrawRequestDto requestDto) {
-        User user = userRepository.findById(authUser.getId()).orElseThrow(
-                () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
+        User user = findById(authUser.getId());
 
         if(!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new CustomException(PASSWORD_NOT_MATCHED, PASSWORD_NOT_MATCHED.getMessage());
