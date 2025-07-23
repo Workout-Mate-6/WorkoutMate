@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.user.service;
 
+import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
 import com.example.workoutmate.domain.user.dto.UserInfoResponseDto;
@@ -28,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BoardSearchService boardSearchService;
 
 
     /**
@@ -43,9 +45,7 @@ public class UserService {
 
         int followerCount = user.getFollowers() != null ? user.getFollowers().size() : 0;
         int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
-
-        // board에서 user 본인 게시글 수 조회하는 메서드 추가 (countByUser)
-        // int myBoardCount = boardService.countByUserId(user.getId());
+        int myBoardCount = boardSearchService.countBoardsByWriter(user.getId());
 
         return UserInfoResponseDto.builder()
                 .id(user.getId())
@@ -54,7 +54,7 @@ public class UserService {
                 .gender(user.getGender())
                 .followerCount(followerCount)
                 .followingCount(followingCount)
-                // .myBoardCount(myBoardCount)
+                .myBoardCount(myBoardCount)
                 .createdAt(user.getCreatedAt())
                 .modifiedAt(user.getModifiedAt())
                 .build();
