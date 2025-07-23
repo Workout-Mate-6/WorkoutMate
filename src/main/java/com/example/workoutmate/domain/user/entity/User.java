@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.user.entity;
 
+import com.example.workoutmate.domain.follow.entity.Follow;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.entity.BaseEntity;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Entity
@@ -24,7 +26,7 @@ import java.time.LocalDateTime;
 public class User extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @NotBlank
     @Column(unique = true)
@@ -40,16 +42,23 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserGender gender;
 
-    @Builder.Default
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt = null;
 
-    @Builder.Default
     @Column(name = "is_deleted")
+    @Builder.Default
     private boolean isDeleted = false;
+
+    //follow 쪽 에서 사용
+    @OneToMany(mappedBy = "follower")
+    private List<Follow> followers;
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followings;
+    //
 
     public User (String email, String password, String name, UserGender gender, UserRole role){
         this.email = email;
@@ -58,5 +67,31 @@ public class User extends BaseEntity {
         this.gender = gender;
         this.role = role;
         this.isDeleted = false;
+    }
+
+    // 유저 이메일 변경
+    public void changeEmail(String email) {
+        this.email = email;
+    }
+
+    // 유저 비밀번호 변경
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    // 유저 이름 변경
+    public void changeName(String name) {
+        this.name = name;
+    }
+
+    // 유저 성별 변경
+    public void changeGender(UserGender gender) {
+        this.gender = gender;
+    }
+
+    // 유저 탈퇴
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 }

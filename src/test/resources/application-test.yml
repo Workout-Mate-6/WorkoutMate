@@ -15,29 +15,9 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-
-  # redis ?? ?? ? ?? ?? ? ??
-#  data:
-#    redis:
-#      host: ${REDIS_HOST}
-#      port: ${REDIS_PORT}
-
-  mvc:
-    servlet:
-      path: /api
 
 
-server:
-  error:
-    include-message: always
 
 jwt:
   secret:
     key: ${SECRET_KEY}
-
-logging:
-  level:
-    org.springframework.jdbc.core: DEBUG

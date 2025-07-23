@@ -1,4 +1,20 @@
 package com.example.workoutmate.domain.follow.repository;
 
-public interface FollowRepository {
+import com.example.workoutmate.domain.follow.entity.Follow;
+import com.example.workoutmate.domain.user.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface FollowRepository extends JpaRepository<Follow, Long> {
+    boolean existsByFollowerAndFollowing(User follower, User following);
+
+    // 게시글 부분
+    List<Follow> findAllByFollowerId(Long followerId);
+
+    void deleteByfollowerIdAndFollowingId(Long id, Long userId);
+
+    boolean existsByFollowerIdAndFollowingId(Long id, Long userId);
 }

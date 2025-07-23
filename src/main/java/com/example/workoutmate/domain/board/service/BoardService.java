@@ -1,4 +1,116 @@
 package com.example.workoutmate.domain.board.service;
 
+import com.example.workoutmate.domain.board.controller.dto.BoardRequestDto;
+import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.domain.follow.service.FollowService;
+import com.example.workoutmate.domain.user.entity.User;
+import com.example.workoutmate.domain.user.service.UserService;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
 public class BoardService {
+
+    private final BoardRepository boardRepository;
+    private final BoardSearchService boardSearchService;
+    private final UserService userService;
+    private final FollowService followService;
+
+    // 게시글 생성/저장
+    @Transactional
+    public BoardResponseDto createBoard(Long writerId, BoardRequestDto requestDto) {
+
+        // 유저 조회 -> userService에서 조회기능 사용 UserService에서 서비스 코드 요청하기
+        User user = userService.findById(writerId);
+
+        Board board = Board.builder()
+                .writer(user)
+                .title(requestDto.getTitle())
+                .content(requestDto.getContent())
+                .sportType(requestDto.getSportType())
+                .build();
+
+        boardRepository.save(board);
+
+        return new BoardResponseDto(board);
+    }
+
+    // 게시글 단건 조회
+    @Transactional
+    public BoardResponseDto getBoard(Long boardId) {
+        Board board = boardSearchService.getBoardById(boardId); // 게시글 단건 조회 메서드
+
+        return new BoardResponseDto(board);
+    }
+
+    // 게시글 전체 조회
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> getAllBoards(Pageable pageable) {
+
+        return boardRepository.findAllByIsDeletedFalse(pageable)
+                .map(BoardResponseDto::new); // Page<Board> → Page<BoardResponseDto>
+    }
+
+    // 팔로잉한 유저 게시글 전체 조회
+    public Page<BoardResponseDto> getBoardsFromFollowings(Long myUserId, Pageable pageable) {
+        List<Long> followingIds = followService.getFollowingUserIds(myUserId);
+
+        if (followingIds.isEmpty()) {
+            return Page.empty(); // 빈페이지 반환
+        }
+
+        Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
+
+        return boardPage.map(BoardResponseDto::new);
+    }
+
+    // 운동 종목 별 카테고리 조회
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> getBoardsByCategory(Pageable pageable, SportType sportType) {
+
+        return boardRepository.findAllByIsDeletedFalseAndSportType(pageable, sportType)
+                .map(BoardResponseDto::new);
+    }
+
+    //게시글 수정
+    @Transactional
+    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
+
+        Board board = boardSearchService.getBoardById(boardId);
+
+        // 작성자 권한 체크
+        if (!board.getWriter().getId().equals(userId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
+        }
+
+        // Board엔티티 내부 update 메서드 호출
+        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
+
+        return new BoardResponseDto(board);
+    }
+
+    // 게시글 삭제
+    @Transactional
+    public void deleteBoard(Long boardId, Long userId) {
+
+        Board board = boardSearchService.getBoardById(boardId);
+
+        if (!board.getWriter().getId().equals(userId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
+        }
+
+        board.delete();
+    }
+
 }
