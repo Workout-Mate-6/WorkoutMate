@@ -10,6 +10,8 @@ import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardSearchService boardSearchService;
     private final UserService userService;
     private final FollowService followService;
 
@@ -53,7 +56,7 @@ public class BoardService {
     // 게시글 단건 조회
     @Transactional
     public BoardResponseDto getBoard(Long boardId) {
-        Board board = getBoardById(boardId); // 게시글 단건 조회 메서드
+        Board board = boardSearchService.getBoardById(boardId); // 게시글 단건 조회 메서드
 
         return new BoardResponseDto(board);
     }
@@ -71,7 +74,7 @@ public class BoardService {
         List<Long> followingIds = followService.getFollowingUserIds(myUserId);
 
         if (followingIds.isEmpty()) {
-            return Page.empty(); // 빈페이지 반환
+            throw new CustomException(CustomErrorCode.EMPTY_FOLLOWING_LIST);
         }
 
         Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
@@ -91,11 +94,11 @@ public class BoardService {
     @Transactional
     public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto boardRequestDto) {
 
-        Board board = getBoardById(boardId);
+        Board board = boardSearchService.getBoardById(boardId);
 
         // 작성자 권한 체크
         if (!board.getWriter().getId().equals(userId)) {
-            throw new IllegalArgumentException("게시글 작성자만 수정할 수 있습니다.");
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
 
         // Board엔티티 내부 update 메서드 호출
@@ -108,22 +111,14 @@ public class BoardService {
     @Transactional
     public void deleteBoard(Long boardId, Long userId) {
 
-        Board board = getBoardById(boardId);
+        Board board = boardSearchService.getBoardById(boardId);
 
         if (!board.getWriter().getId().equals(userId)) {
-            throw new IllegalArgumentException("게시글 작성자만 삭제할 수 있습니다.");
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
-
 
         board.delete();
     }
 
-    // 다른 서비스에서 게시글 단건 조회 시 사용 서비스
-    // 게시글 단건 조회 메서드
-    @Transactional(readOnly = true)
-    public Board getBoardById(Long boardId) {
-        return boardRepository.findByIdAndIsDeletedFalse(boardId) // 삭제되지 않은 게시글(isDeleted = false)만 조회
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다. id=" + boardId)); // 추후 globalException으로 수정 예정
-    } // 사용법 예시) Board board = boardService.getBoardById(boardId);
-
+    // 공용으로 사용하는 서비스 메서드 이전
 }
