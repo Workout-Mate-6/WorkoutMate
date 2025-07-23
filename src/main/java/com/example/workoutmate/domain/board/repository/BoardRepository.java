@@ -34,7 +34,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         """)
     Page<Board> findAllByWriterIdInWithWriterFetch(@Param("writerIds") List<Long> writerIds, Pageable pageable);
 
-
     // 운동 종목 카테고리 검색 조회
     Page<Board> findAllByIsDeletedFalseAndSportType(Pageable pageable, SportType sportType);
+
+    // 삭제되지 않은 게시글 중에서 작성자가 특정 userId인 게시글 수 반환
+    int countByWriter_IdAndIsDeletedFalse(Long writerId);
 }
