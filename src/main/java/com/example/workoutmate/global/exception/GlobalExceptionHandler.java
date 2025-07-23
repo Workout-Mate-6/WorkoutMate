@@ -44,24 +44,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
-        CustomErrorCode errorCode = DUPLICATE_RESOURCE;
 
         String dbMessage = e.getMessage();
-        String customMessage = DATA_INTEGRITY_VIOLATION.getMessage();
+
+        CustomErrorCode errorCode = DATA_INTEGRITY_VIOLATION;
 
         if (dbMessage != null && dbMessage.contains("Duplicate entry")) {
-            customMessage = DUPLICATE_RESOURCE.getMessage();
+            errorCode = DUPLICATE_RESOURCE;
         } else if (dbMessage != null && dbMessage.contains("foreign key constraint fails")) {
-            customMessage = FK_CONSTRAINT_VIOLATION.getMessage();
+            errorCode = FK_CONSTRAINT_VIOLATION;
         }
 
+        CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(), errorCode.getMessage());
 
-        Map<String, Object> errorResponse = Map.of(
-                "errorCode", errorCode.name(),
-                "message", customMessage,
-                "success", false
-        );
-
-        return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(CustomMapper.responseToMap(errorResponseDto, false));
     }
 }
