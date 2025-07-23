@@ -26,6 +26,10 @@ public enum CustomErrorCode {
     ALLREADY_FOLLOWING(HttpStatus.CONFLICT, "이미 팔로워 중입니다."),
     NOT_FOLLOWING(HttpStatus.BAD_REQUEST, "팔로우 중이지 않은 사용자입니다."),
 
+    // Board
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게시글을 찾을 수 없습니다."),
+    UNAUTHORIZED_BOARD_ACCESS(HttpStatus.FORBIDDEN, "본인의 게시글만 수정 또는 삭제가 가능합니다."),
+
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
     COMMENT_NOT_IN_BOARD(HttpStatus.BAD_REQUEST, "댓글이 해당 게시물에 속하지 않습니다."),

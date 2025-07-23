@@ -12,10 +12,10 @@ import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
@@ -42,13 +42,12 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getComment(Long boardId) {
+    public Page<CommentResponseDto> getComment(Long boardId, Pageable pageable) {
 
         // 레포지토리에서 게시글 ID로 댓글 목록 조회 후, DTO로 변환
-        List<CommentResponseDto> comments = commentRepository.findAllByBoardId(boardId)
-                .stream().map(CommentMapper::data).toList();
+        Page<Comment> comments = commentRepository.findAllByBoardId(boardId, pageable);
 
-        return comments;
+        return comments.map(CommentMapper::data);
     }
 
     @Transactional

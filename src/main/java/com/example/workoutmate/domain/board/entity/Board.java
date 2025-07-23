@@ -58,4 +58,14 @@ public class Board extends BaseEntity {
         this.deletedAt = null;
     }
 
+    public void update(String title, String content, SportType sportType) {
+        this.title = title;
+        this.content = content;
+        this.sportType = sportType;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
