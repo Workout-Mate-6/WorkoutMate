@@ -10,9 +10,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -37,5 +40,28 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(CustomMapper.responseToMap(errorResponseDto, false));
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
+        CustomErrorCode errorCode = DUPLICATE_RESOURCE;
+
+        String dbMessage = e.getMessage();
+        String customMessage = DATA_INTEGRITY_VIOLATION.getMessage();
+
+        if (dbMessage != null && dbMessage.contains("Duplicate entry")) {
+            customMessage = DUPLICATE_RESOURCE.getMessage();
+        } else if (dbMessage != null && dbMessage.contains("foreign key constraint fails")) {
+            customMessage = FK_CONSTRAINT_VIOLATION.getMessage();
+        }
+
+
+        Map<String, Object> errorResponse = Map.of(
+                "errorCode", errorCode.name(),
+                "message", customMessage,
+                "success", false
+        );
+
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
     }
 }

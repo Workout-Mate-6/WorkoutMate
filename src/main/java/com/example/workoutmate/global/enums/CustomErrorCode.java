@@ -8,6 +8,11 @@ public enum CustomErrorCode {
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 오류"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
+    // DB 조건 위반
+    DATA_INTEGRITY_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 무결성 위반입니다."),
+    DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "DB에 이미 존재하는 리소스입니다."),
+    FK_CONSTRAINT_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, "존재하지 않는 값을 FK로 참조하고 있습니다."),
+
     // 인증 인가
     SERVER_EXCEPTION_JWT(HttpStatus.INTERNAL_SERVER_ERROR, "Not Found Token"),
     SC_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "유효하지 않은 JWT 서명입니다."),
@@ -33,7 +38,9 @@ public enum CustomErrorCode {
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
     COMMENT_NOT_IN_BOARD(HttpStatus.BAD_REQUEST, "댓글이 해당 게시물에 속하지 않습니다."),
-    UNAUTHORIZED_COMMENT_ACCESS(HttpStatus.FORBIDDEN, "본인의 댓글만 수정 또는 삭제할 수 있습니다.");
+    UNAUTHORIZED_COMMENT_ACCESS(HttpStatus.FORBIDDEN, "본인의 댓글만 수정 또는 삭제할 수 있습니다."),
+
+    ;
 
     private final HttpStatus httpStatus;
     private final String message;
