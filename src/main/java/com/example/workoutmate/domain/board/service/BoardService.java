@@ -8,20 +8,13 @@ import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
-import com.example.workoutmate.global.config.CustomUserPrincipal;
-import com.example.workoutmate.global.dto.ApiResponse;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -92,7 +85,7 @@ public class BoardService {
 
     //게시글 수정
     @Transactional
-    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto boardRequestDto) {
+    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
 
         Board board = boardSearchService.getBoardById(boardId);
 
@@ -102,7 +95,7 @@ public class BoardService {
         }
 
         // Board엔티티 내부 update 메서드 호출
-        board.update(boardRequestDto.getTitle(), boardRequestDto.getContent(), boardRequestDto.getSportType());
+        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
 
         return new BoardResponseDto(board);
     }
@@ -119,4 +112,5 @@ public class BoardService {
 
         board.delete();
     }
+
 }
