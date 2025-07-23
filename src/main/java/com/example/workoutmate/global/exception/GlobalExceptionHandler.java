@@ -23,6 +23,7 @@ public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
 
+    // 커스텀 예외 관리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<CustomErrorResponseDto> handleCustomException(CustomException e) {
         CustomErrorCode errorCode = e.getErrorCode();
@@ -32,6 +33,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, errorCode.getHttpStatus());
     }
 
+    // Valid 관련 예외 관리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
         CustomErrorCode errorCode = CustomErrorCode.INVALID_REQUEST;
@@ -42,6 +44,7 @@ public class GlobalExceptionHandler {
                 .body(CustomMapper.responseToMap(errorResponseDto, false));
     }
 
+    // DB 무결성 관련 예외 관리
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
 
