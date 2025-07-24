@@ -2,6 +2,7 @@ package com.example.workoutmate.global.config;
 
 import com.example.workoutmate.global.exception.JwtAccessDeniedHandler;
 import com.example.workoutmate.global.exception.JwtAuthenticationEntryPoint;
+import com.example.workoutmate.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +38,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "/auth/login").permitAll()
+                        .requestMatchers("/auth/signup", "/auth/login", "/auth/signup/verify").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(configure -> configure
