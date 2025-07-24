@@ -4,8 +4,10 @@ import com.example.workoutmate.domain.board.entity.SportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class BoardRequestDto {
 
     @NotBlank(message = "제목은 필수입니다.")

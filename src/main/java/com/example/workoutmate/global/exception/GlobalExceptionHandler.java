@@ -10,9 +10,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class GlobalExceptionHandler {
 
     private final MessageSource messageSource;
 
+    // 커스텀 예외 관리
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<CustomErrorResponseDto> handleCustomException(CustomException e) {
         CustomErrorCode errorCode = e.getErrorCode();
@@ -29,11 +33,32 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, errorCode.getHttpStatus());
     }
 
+    // Valid 관련 예외 관리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
         CustomErrorCode errorCode = CustomErrorCode.INVALID_REQUEST;
         String message = messageSource.getMessage(Objects.requireNonNull(e.getFieldError()), Locale.KOREA);
         CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(), message);
+
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(CustomMapper.responseToMap(errorResponseDto, false));
+    }
+
+    // DB 무결성 관련 예외 관리
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
+
+        String dbMessage = e.getMessage();
+
+        CustomErrorCode errorCode = DATA_INTEGRITY_VIOLATION;
+
+        if (dbMessage != null && dbMessage.contains("Duplicate entry")) {
+            errorCode = DUPLICATE_RESOURCE;
+        } else if (dbMessage != null && dbMessage.contains("foreign key constraint fails")) {
+            errorCode = FK_CONSTRAINT_VIOLATION;
+        }
+
+        CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(), errorCode.getMessage());
 
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(CustomMapper.responseToMap(errorResponseDto, false));
