@@ -55,6 +55,17 @@ public class User extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "verification_code_expires_at")
+    private LocalDateTime verificationCodeExpiresAt;
+
+    @Column(name = "email_verified")
+    @Builder.Default
+    private boolean emailVerified = false;
+
+
     //follow 쪽 에서 사용
     @OneToMany(mappedBy = "follower")
     private List<Follow> followers;
@@ -96,4 +107,20 @@ public class User extends BaseEntity {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }
+
+    // 인증코드 발급 및 만료시간 세팅
+    public void issueVerificationCode(String code, LocalDateTime expiresAt) {
+        this.verificationCode = code;
+        this.verificationCodeExpiresAt = expiresAt;
+        this.emailVerified = false; // 새 코드 발급시 인증은 다시 false로
+    }
+
+    // 인증코드 성공적으로 검증(인증 완료)
+    public void completeEmailVerification() {
+        this.emailVerified = true;
+        this.verificationCode = null;
+        this.verificationCodeExpiresAt = null;
+    }
+
+
 }
