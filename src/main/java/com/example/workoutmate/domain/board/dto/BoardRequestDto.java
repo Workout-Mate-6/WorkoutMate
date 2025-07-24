@@ -1,4 +1,4 @@
-package com.example.workoutmate.domain.board.controller.dto;
+package com.example.workoutmate.domain.board.dto;
 
 import com.example.workoutmate.domain.board.entity.SportType;
 import jakarta.validation.constraints.NotBlank;

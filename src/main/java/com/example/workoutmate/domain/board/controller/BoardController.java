@@ -1,7 +1,7 @@
 package com.example.workoutmate.domain.board.controller;
 
-import com.example.workoutmate.domain.board.controller.dto.BoardRequestDto;
-import com.example.workoutmate.domain.board.controller.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.BoardRequestDto;
+import com.example.workoutmate.domain.board.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -15,10 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/boards")
