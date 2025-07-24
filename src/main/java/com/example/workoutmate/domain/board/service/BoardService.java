@@ -90,9 +90,7 @@ public class BoardService {
         Board board = boardSearchService.getBoardById(boardId);
 
         // 작성자 권한 체크
-        if (!board.getWriter().getId().equals(userId)) {
-            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
-        }
+        validateBoardWriter(userId, board);
 
         // Board엔티티 내부 update 메서드 호출
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
@@ -106,11 +104,15 @@ public class BoardService {
 
         Board board = boardSearchService.getBoardById(boardId);
 
+        validateBoardWriter(userId, board);
+
+        board.delete();
+    }
+
+    public static void validateBoardWriter(Long userId, Board board) {
         if (!board.getWriter().getId().equals(userId)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
-
-        board.delete();
     }
 
 }
