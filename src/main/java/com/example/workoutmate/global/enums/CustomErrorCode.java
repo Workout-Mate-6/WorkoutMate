@@ -40,6 +40,10 @@ public enum CustomErrorCode {
     COMMENT_NOT_IN_BOARD(HttpStatus.BAD_REQUEST, "댓글이 해당 게시물에 속하지 않습니다."),
     UNAUTHORIZED_COMMENT_ACCESS(HttpStatus.FORBIDDEN, "본인의 댓글만 수정 또는 삭제할 수 있습니다."),
 
+    // Zzim
+    ALREADY_ZZIM(HttpStatus.CONFLICT, "이미 찜한 게시글입니다."),
+    CANNOT_ZZIM_OWN_BOARD(HttpStatus.BAD_REQUEST, "본인이 작성한 게시글은 찜할 수 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;
