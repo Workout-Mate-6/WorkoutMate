@@ -1,20 +1,21 @@
 package com.example.workoutmate.domain.user.service;
 
-import com.example.workoutmate.domain.user.dto.AuthResponseDto;
-import com.example.workoutmate.domain.user.dto.LoginRequestDto;
-import com.example.workoutmate.domain.user.dto.LoginResponseDto;
-import com.example.workoutmate.domain.user.dto.SignupRequestDto;
+import com.example.workoutmate.domain.user.dto.*;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
 import com.example.workoutmate.domain.user.repository.UserRepository;
-import com.example.workoutmate.global.config.JwtUtil;
+import com.example.workoutmate.global.util.JwtUtil;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -22,23 +23,45 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
     private final JwtUtil jwtUtil;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto){
-        // email 중복 확인
-        if(userRepository.existsByEmailAndIsDeletedFalse(signupRequestDto.getEmail())){
-            throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);}
 
-        // 비밀번호 암호화
+        // 인증 완료된 사용자 email 중복 확인
+        if(userRepository.existsByEmailAndIsDeletedFalseAndEmailVerifiedTrue(signupRequestDto.getEmail())){
+            throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);
+        }
+
+        // 미인증 계정 → 안내만! (재발송 X, 재발송 API 추후 구현)
+        Optional<User> unverifiedUser = userRepository.findByEmailAndIsDeletedFalseAndEmailVerifiedFalse(signupRequestDto.getEmail());
+        if (unverifiedUser.isPresent()) {
+            throw new CustomException(CustomErrorCode.EMAIL_NOT_VERIFIED_FOR_SIGNUP);
+        }
+
+        // 신규 회원가입
         String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
-
-        // Dto -> Entity
         User user = UserMapper.signupRequestToUser(signupRequestDto, encodedPassword);
 
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
+        emailVerificationService.sendVerificationCode(user);
 
-        return UserMapper.data(savedUser);
+        return UserMapper.data(user);
+    }
+
+    @Transactional
+    public EmailVerificationResponseDto verifyEmail(EmailVerificationRequestDto requestDto) {
+
+        // 이메일로 미인증 된 사용자 찾기
+        User user = userRepository.findByEmailAndIsDeletedFalseAndEmailVerifiedFalse(requestDto.getEmail())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.USER_NOT_FOUND, "가입 대기 중인 사용자를 찾을 수 없습니다."));
+
+        // 인증코드 일치 + 만료 된 코드 확인
+        emailVerificationService.validateVerificationCode(user, requestDto.getCode());
+        emailVerificationService.completeVerification(user);
+
+        return UserMapper.toVerificationResponse(user);
     }
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto){
@@ -46,10 +69,16 @@ public class AuthService {
         User user = userRepository.findByEmailAndIsDeletedFalse(loginRequestDto.getEmail()).orElseThrow(
                 () -> new CustomException(CustomErrorCode.USER_NOT_FOUND));
 
+        // 이메일 인증 된 유저인지 확인
+        if (!user.isEmailVerified()){
+            throw new CustomException(CustomErrorCode.EMAIL_NOT_VERIFIED_FOR_LOGIN);
+        }
+
         // 비밀번호 체크
         if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
             throw new CustomException(CustomErrorCode.PASSWORD_NOT_MATCHED);
         }
+
         String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole());
 
         return new LoginResponseDto(bearerToken);
