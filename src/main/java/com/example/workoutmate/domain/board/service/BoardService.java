@@ -13,10 +13,12 @@ import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,11 +62,12 @@ public class BoardService {
     }
 
     // 팔로잉한 유저 게시글 전체 조회
+    @Transactional(readOnly = true)
     public Page<BoardResponseDto> getBoardsFromFollowings(Long myUserId, Pageable pageable) {
         List<Long> followingIds = followService.getFollowingUserIds(myUserId);
 
         if (followingIds.isEmpty()) {
-            return Page.empty(); // 빈페이지 반환
+            return new PageImpl<>(new ArrayList<>(), pageable, 0); // 빈페이지 반환
         }
 
         Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
