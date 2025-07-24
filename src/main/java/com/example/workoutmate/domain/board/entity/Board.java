@@ -44,6 +44,7 @@ public class Board extends BaseEntity {
 
     // 삭제 여부
     @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     // 삭제일

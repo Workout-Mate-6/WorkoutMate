@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.board.service;
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.entity.BoardMapper;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
@@ -31,15 +32,11 @@ public class BoardService {
     @Transactional
     public BoardResponseDto createBoard(Long writerId, BoardRequestDto requestDto) {
 
-        // 유저 조회 -> userService에서 조회기능 사용 UserService에서 서비스 코드 요청하기
+        // 유저 조회 -> userService에서 조회기능 사용
         User user = userService.findById(writerId);
 
-        Board board = Board.builder()
-                .writer(user)
-                .title(requestDto.getTitle())
-                .content(requestDto.getContent())
-                .sportType(requestDto.getSportType())
-                .build();
+        // dto -> entity
+        Board board = BoardMapper.boardRequestToBoard(requestDto, user);
 
         boardRepository.save(board);
 
@@ -83,22 +80,22 @@ public class BoardService {
                 .map(BoardResponseDto::new);
     }
 
-    //게시글 수정
-    @Transactional
-    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
-
-        Board board = boardSearchService.getBoardById(boardId);
-
-        // 작성자 권한 체크
-        if (!board.getWriter().getId().equals(userId)) {
-            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
-        }
-
-        // Board엔티티 내부 update 메서드 호출
-        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
-
-        return new BoardResponseDto(board);
-    }
+//    //게시글 수정
+//    @Transactional
+//    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
+//
+//        Board board = boardSearchService.getBoardById(boardId);
+//
+//        // 작성자 권한 체크
+//        if (!board.getWriter().getId().equals(userId)) {
+//            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
+//        }
+//
+//        // Board엔티티 내부 update 메서드 호출
+//        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
+//
+//        return new BoardResponseDto(board);
+//    }
 
     // 게시글 삭제
     @Transactional
