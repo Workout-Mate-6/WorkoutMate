@@ -49,6 +49,9 @@ dependencies {
     // 시간 직렬화
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    // sendGrid Api
+    implementation 'com.sendgrid:sendgrid-java:4.10.2'
+
 }
 
 tasks.named('test') {
