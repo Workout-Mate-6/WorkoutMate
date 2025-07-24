@@ -64,9 +64,7 @@ public class CommentService {
         User user = userService.findById(authUser.getId());
 
         // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
-        if (!comment.getWriter().getId().equals(user.getId())) {
-            throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
-        }
+        validateCommentWriter(comment, user);
 
         comment.updateComment(requestDto.getContent());
 
@@ -74,6 +72,8 @@ public class CommentService {
 
         return CommentMapper.data(comment);
     }
+
+
 
     @Transactional
     public void deleteComment(Long boardId, Long commentId, CustomUserPrincipal authUser) {
@@ -88,9 +88,7 @@ public class CommentService {
         User user = userService.findById(authUser.getId());
 
         // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
-        if (!comment.getWriter().getId().equals(user.getId())){
-            throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
-        }
+        validateCommentWriter(comment, user);
 
         commentRepository.delete(comment);
     }
@@ -99,5 +97,12 @@ public class CommentService {
     public Comment findById(Long commentId){
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
+    }
+
+    // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
+    public static void validateCommentWriter(Comment comment, User user) {
+        if (!comment.getWriter().getId().equals(user.getId())) {
+            throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
+        }
     }
 }
