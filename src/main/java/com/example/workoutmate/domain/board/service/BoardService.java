@@ -83,24 +83,24 @@ public class BoardService {
                 .map(BoardResponseDto::new);
     }
 
-//    //게시글 수정
-//    @Transactional
-//    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
-//
-//        Board board = boardSearchService.getBoardById(boardId);
-//
-//        // 작성자 권한 체크
-//        validateBoardWriter(userId,board)
-//
-// if (!board.getWriter().getId().equals(userId)) {
-//        //    throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
-//        //}
-//
-//        // Board엔티티 내부 update 메서드 호출
-//        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType());
-//
-//        return new BoardResponseDto(board);
-//    }
+    //게시글 수정
+    @Transactional
+    public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
+
+        Board board = boardSearchService.getBoardById(boardId);
+
+        // 작성자 권한 체크
+        validateBoardWriter(userId,board);
+
+        // 모집인원 수정시, 이미 모집된 인원보다 항상 커야함
+        if(requestDto.getTargetCount()<board.getCurrentCount())
+            throw new CustomException(CustomErrorCode.INVALID_TARGETCOUNT);
+
+        // Board엔티티 내부 update 메서드 호출
+        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getTargetCount());
+
+        return new BoardResponseDto(board);
+    }
 
     // 게시글 삭제
     @Transactional

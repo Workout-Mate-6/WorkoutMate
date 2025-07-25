@@ -83,19 +83,19 @@ public class BoardController {
         return ApiResponse.success(HttpStatus.OK, "운동 카테고리 별 게시글 조회 성공", boardResponseDtoPage);
     }
 
-//    // 게시글 수정
-//    @PutMapping("/{boardId}")
-//    public ResponseEntity<ApiResponse<BoardResponseDto>> updateBoard(
-//            @PathVariable Long boardId,
-//            @Valid @RequestBody BoardRequestDto boardRequestDto,
-//            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
-//    ) {
-//        Long userId = customUserPrincipal.getId();
-//
-//        BoardResponseDto updatedBoard = boardService.updateBoard(boardId, userId, boardRequestDto);
-//
-//        return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 수정되었습니다." , updatedBoard);
-//    }
+    // 게시글 수정
+    @PutMapping("/{boardId}")
+    public ResponseEntity<ApiResponse<BoardResponseDto>> updateBoard(
+            @PathVariable Long boardId,
+            @Valid @RequestBody BoardRequestDto boardRequestDto,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
+    ) {
+        Long userId = customUserPrincipal.getId();
+
+        BoardResponseDto updatedBoard = boardService.updateBoard(boardId, userId, boardRequestDto);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 수정되었습니다." , updatedBoard);
+    }
 
     // 게시글 삭제
     @DeleteMapping("/{boardId}")
