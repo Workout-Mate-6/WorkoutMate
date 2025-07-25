@@ -40,6 +40,9 @@ public enum CustomErrorCode {
     COMMENT_NOT_IN_BOARD(HttpStatus.BAD_REQUEST, "댓글이 해당 게시물에 속하지 않습니다."),
     UNAUTHORIZED_COMMENT_ACCESS(HttpStatus.FORBIDDEN, "본인의 댓글만 수정 또는 삭제할 수 있습니다."),
 
+    // Chatting
+    EQUALS_SENDER_RECEIVER(HttpStatus.BAD_REQUEST, "본인과는 채팅방을 생성할 수 없습니다."),
+
     ;
 
     private final HttpStatus httpStatus;
