@@ -29,6 +29,12 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK, "이메일 인증이 완료되었습니다.", verifyEmail);
     }
 
+    @PostMapping("/auth/signup/resend")
+    public ResponseEntity<ApiResponse<Void>> resendEmail(@Valid @RequestBody ResendEmailRequestDto resendEmailRequestDto){
+        authService.resendEmail(resendEmailRequestDto);
+        return ApiResponse.success(HttpStatus.OK, "이메일 인증 코드가 재발송되었습니다.", null);
+    }
+
     @PostMapping("/auth/login")
     public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
         LoginResponseDto login = authService.login(loginRequestDto);

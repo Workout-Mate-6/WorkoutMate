@@ -23,6 +23,7 @@ public enum CustomErrorCode {
     EMAIL_INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, "인증코드가 올바르지 않습니다."),
     VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증코드가 만료되었습니다. 재발송 요청 후 다시 시도해 주세요."),
     EMAIL_NOT_VERIFIED_FOR_LOGIN(HttpStatus.UNAUTHORIZED,  "이메일 인증이 완료되지 않았습니다"),
+    ALREADY_VERIFIED(HttpStatus.BAD_REQUEST, "이미 인증된 사용자 입니다."),
 
     // User
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),

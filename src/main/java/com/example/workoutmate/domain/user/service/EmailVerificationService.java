@@ -24,7 +24,7 @@ public class EmailVerificationService {
         String code = generateVerificationCode();
 
         // 인증코드와 만료시간 세팅 -> 테스트를 위해 1분으로 설정
-        user.issueVerificationCode(code, LocalDateTime.now().plusMinutes(1));
+        user.issueVerificationCode(code, LocalDateTime.now().plusMinutes(3));
 
         userRepository.save(user);
 

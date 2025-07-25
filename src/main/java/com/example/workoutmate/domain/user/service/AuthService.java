@@ -36,7 +36,7 @@ public class AuthService {
             throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);
         }
 
-        // 미인증 계정 → 안내만! (재발송 X, 재발송 API 추후 구현)
+        // 미인증 계정 → 안내만
         Optional<User> unverifiedUser = userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(signupRequestDto.getEmail());
         if (unverifiedUser.isPresent()) {
             throw new CustomException(CustomErrorCode.EMAIL_NOT_VERIFIED_FOR_SIGNUP);
@@ -64,6 +64,20 @@ public class AuthService {
         emailVerificationService.completeVerification(user);
 
         return UserMapper.toVerificationResponse(user);
+    }
+
+    @Transactional
+    public void resendEmail(ResendEmailRequestDto resendEmailRequestDto) {
+
+        User user = userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(resendEmailRequestDto.getEmail())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.USER_NOT_FOUND));
+
+        if (user.isEmailVerified()){
+            throw new CustomException(CustomErrorCode.ALREADY_VERIFIED);
+        }
+
+        emailVerificationService.sendVerificationCode(user);
+
     }
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto){
@@ -94,5 +108,4 @@ public class AuthService {
             userRepository.deleteAll(unverifiedUsers);
         }
     }
-
 }
