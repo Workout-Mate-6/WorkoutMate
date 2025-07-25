@@ -28,24 +28,23 @@ public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    @NotBlank
+    @Column(nullable = false)
     private String password;
 
-    @NotBlank
+    @Column(nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
+    @Column(nullable = false)
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    @NotNull
+    @Column(nullable = false)
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
@@ -61,9 +60,9 @@ public class User extends BaseEntity {
     @Column(name = "verification_code_expires_at")
     private LocalDateTime verificationCodeExpiresAt;
 
-    @Column(name = "email_verified")
+    @Column(name = "is_email_verified")
     @Builder.Default
-    private boolean emailVerified = false;
+    private boolean isEmailVerified = false;
 
 
     //follow 쪽 에서 사용
@@ -112,15 +111,13 @@ public class User extends BaseEntity {
     public void issueVerificationCode(String code, LocalDateTime expiresAt) {
         this.verificationCode = code;
         this.verificationCodeExpiresAt = expiresAt;
-        this.emailVerified = false; // 새 코드 발급시 인증은 다시 false로
+        this.isEmailVerified = false; // 새 코드 발급시 인증은 다시 false로
     }
 
     // 인증코드 성공적으로 검증(인증 완료)
     public void completeEmailVerification() {
-        this.emailVerified = true;
+        this.isEmailVerified = true;
         this.verificationCode = null;
         this.verificationCodeExpiresAt = null;
     }
-
-
 }
