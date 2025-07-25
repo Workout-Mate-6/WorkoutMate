@@ -109,9 +109,6 @@ public class BoardService {
         Board board = boardSearchService.getBoardById(boardId);
 
         validateBoardWriter(userId, board);
-//        if (!board.getWriter().getId().equals(userId)) {
-//            throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
-//        }
 
         board.delete();
     }
