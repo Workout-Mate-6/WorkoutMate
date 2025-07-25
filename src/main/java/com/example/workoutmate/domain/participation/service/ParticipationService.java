@@ -86,6 +86,7 @@ public class ParticipationService {
         participation.updateState(participationRequestDto);
     }
 
+    // 신청자 조회
     public Page<ParticipationByBoardResponseDto> viewApproval(
             int page,
             int size,
@@ -101,8 +102,32 @@ public class ParticipationService {
         return result;
     }
 
+    // 파티 조회
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId, CustomUserPrincipal authUser) {
         boardSearchService.getBoardById(boardId);
         return qParticipationRepository.viewAttends(boardId);
+    }
+
+    // 참여자(대기) 매서드
+    @Transactional
+    public void create(Board board, User user, Comment comment) {
+        // 작성자 제외!
+        if (user.getId().equals(board.getWriter().getId())) {
+            return;
+        }
+        // 이미 테이블에 있으면 제외
+        boolean alreadyExists = participationRepository.existsByBoardIdAndApplicantId(board.getId(), user.getId());
+        if (alreadyExists) {
+            return;
+        }
+
+        Participation participation = Participation.builder()
+                .board(board)
+                .applicant(user)
+                .comment(comment)
+                .state(ParticipationState.NONE)
+                .build();
+
+        participationRepository.save(participation);
     }
 }

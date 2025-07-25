@@ -7,6 +7,8 @@ import com.example.workoutmate.domain.comment.dto.CommentResponseDto;
 import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.entity.CommentMapper;
 import com.example.workoutmate.domain.comment.repository.CommentRepository;
+import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
+import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -27,6 +29,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final BoardSearchService boardSearchService;
+    private final ParticipationCreateService participationCreateService;
 
     @Transactional
     public CommentResponseDto createComment(Long boardId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
@@ -35,8 +38,10 @@ public class CommentService {
 
         // Mapper클래스로 DTO를 엔티티로 변환
         Comment comment = CommentMapper.commentRequestToComment(requestDto, board, user);
-
         Comment savedComment = commentRepository.save(comment);
+
+        // participation 구현중에 로직 추가했습니다.!
+        participationCreateService.participationInjector(board, user, comment);
 
         return CommentMapper.data(savedComment);
     }
@@ -57,7 +62,7 @@ public class CommentService {
         Comment comment = findById(commentId);
 
         // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
-        if (!comment.getBoard().getId().equals(board.getId())){
+        if (!comment.getBoard().getId().equals(board.getId())) {
             throw new CustomException(COMMENT_NOT_IN_BOARD);
         }
 
@@ -74,14 +79,13 @@ public class CommentService {
     }
 
 
-
     @Transactional
     public void deleteComment(Long boardId, Long commentId, CustomUserPrincipal authUser) {
         Board board = boardSearchService.getBoardById(boardId);
         Comment comment = findById(commentId);
 
         // 해당 댓글이 요청받은 board에 속한 댓글인지 검증
-        if (!comment.getBoard().getId().equals(board.getId())){
+        if (!comment.getBoard().getId().equals(board.getId())) {
             throw new CustomException(COMMENT_NOT_IN_BOARD);
         }
 
@@ -94,7 +98,7 @@ public class CommentService {
     }
 
 
-    public Comment findById(Long commentId){
+    public Comment findById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(COMMENT_NOT_FOUND));
     }
