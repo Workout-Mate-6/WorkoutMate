@@ -89,4 +89,9 @@ public class Board extends BaseEntity {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
     }
+
+    // 반응이 '수락'일 경우, board id 입력받아 모집된 인원 수 +1
+    public void setCurrentCount(Long boardId){
+        this.currentCount ++;
+    }
 }
