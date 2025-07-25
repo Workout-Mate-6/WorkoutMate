@@ -109,6 +109,7 @@ public class BoardService {
         board.delete();
     }
 
+    // 작성자 권한 체크
     public static void validateBoardWriter(Long userId, Board board) {
         if (!board.getWriter().getId().equals(userId)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
