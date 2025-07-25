@@ -1,18 +1,18 @@
 package com.example.workoutmate.global.exception;
 
-import com.example.workoutmate.global.dto.CustomErrorResponseDto;
+import com.example.workoutmate.global.dto.ApiResponse;
 import com.example.workoutmate.global.enums.CustomErrorCode;
-import com.example.workoutmate.global.util.CustomMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import static com.example.workoutmate.global.enums.CustomErrorCode.*;
@@ -25,42 +25,37 @@ public class GlobalExceptionHandler {
 
     // 커스텀 예외 관리
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<CustomErrorResponseDto> handleCustomException(CustomException e) {
+    public ResponseEntity<ApiResponse<Object>> handleCustomException(CustomException e) {
         CustomErrorCode errorCode = e.getErrorCode();
-
-        CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(),e.getMessage());
-
-        return new ResponseEntity<>(errorResponseDto, errorCode.getHttpStatus());
+        String message = e.getMessage();
+        return ApiResponse.failure(errorCode.getHttpStatus(),message);
     }
 
     // Valid 관련 예외 관리
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
-        CustomErrorCode errorCode = CustomErrorCode.INVALID_REQUEST;
+    public ResponseEntity<ApiResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = messageSource.getMessage(Objects.requireNonNull(e.getFieldError()), Locale.KOREA);
-        CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(), message);
-
-        return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(CustomMapper.responseToMap(errorResponseDto, false));
+        return ApiResponse.failure(CustomErrorCode.INVALID_REQUEST.getHttpStatus(),message);
     }
 
     // DB 무결성 관련 예외 관리
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
-
+    public ResponseEntity<ApiResponse<Object>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException e) {
         String dbMessage = e.getMessage();
 
         CustomErrorCode errorCode = DATA_INTEGRITY_VIOLATION;
-
         if (dbMessage != null && dbMessage.contains("Duplicate entry")) {
             errorCode = DUPLICATE_RESOURCE;
         } else if (dbMessage != null && dbMessage.contains("foreign key constraint fails")) {
             errorCode = FK_CONSTRAINT_VIOLATION;
         }
 
-        CustomErrorResponseDto errorResponseDto = new CustomErrorResponseDto(errorCode.name(), errorCode.getMessage());
+        return ApiResponse.failure(errorCode.getHttpStatus(), errorCode.getMessage());
+    }
 
-        return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(CustomMapper.responseToMap(errorResponseDto, false));
+    // HTTP 메시지 읽기(파싱) 예외처리
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return ApiResponse.failure(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다");
     }
 }
