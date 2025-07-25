@@ -34,7 +34,7 @@ public class BoardService {
     @Transactional
     public BoardResponseDto createBoard(Long writerId, BoardRequestDto requestDto) {
 
-        // 유저 조회 -> userService에서 조회기능 사용
+        // 유저 조회 -> userService 에서 조회기능 사용
         User user = userService.findById(writerId);
 
         // dto -> entity
@@ -42,23 +42,28 @@ public class BoardService {
 
         boardRepository.save(board);
 
-        return new BoardResponseDto(board);
+        // entity -> dto
+        return BoardMapper.boardToBoardResponse(board);
     }
 
     // 게시글 단건 조회
     @Transactional(readOnly = true)
     public BoardResponseDto getBoard(Long boardId) {
-        Board board = boardSearchService.getBoardById(boardId); // 게시글 단건 조회 메서드
 
-        return new BoardResponseDto(board);
+        Board board = boardSearchService.getBoardById(boardId);
+
+        // entity -> dto
+        return BoardMapper.boardToBoardResponse(board);
     }
 
     // 게시글 전체 조회
     @Transactional(readOnly = true)
     public Page<BoardResponseDto> getAllBoards(Pageable pageable) {
 
-        return boardRepository.findAllByIsDeletedFalse(pageable)
-                .map(BoardResponseDto::new); // Page<Board> → Page<BoardResponseDto>
+        Page<Board> boardPage = boardRepository.findAllByIsDeletedFalse(pageable);
+
+        // Page<Board> → Page<BoardResponseDto>
+        return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
     // 팔로잉한 유저 게시글 전체 조회
@@ -72,15 +77,18 @@ public class BoardService {
 
         Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
 
-        return boardPage.map(BoardResponseDto::new);
+        // Page<Board> → Page<BoardResponseDto>
+        return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
     // 운동 종목 별 카테고리 조회
     @Transactional(readOnly = true)
-    public Page<BoardResponseDto> getBoardsByCategory(Pageable pageable, SportType sportType) {
+    public Page<BoardResponseDto> getBoardsByCategory(SportType sportType, Pageable pageable) {
 
-        return boardRepository.findAllByIsDeletedFalseAndSportType(pageable, sportType)
-                .map(BoardResponseDto::new);
+        Page<Board> boardPage = boardRepository.findAllByIsDeletedFalseAndSportType(pageable, sportType);
+
+        // Page<Board> → Page<BoardResponseDto>
+        return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
     //게시글 수정
@@ -96,10 +104,10 @@ public class BoardService {
         if(requestDto.getTargetCount()<board.getCurrentCount())
             throw new CustomException(CustomErrorCode.INVALID_TARGETCOUNT);
 
-        // Board엔티티 내부 update 메서드 호출
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getTargetCount());
 
-        return new BoardResponseDto(board);
+        // entity -> dto
+        return BoardMapper.boardToBoardResponse(board);
     }
 
     // 게시글 삭제
