@@ -38,7 +38,13 @@ public class Participation extends BaseEntity {
     @JoinColumn(name = "applicant_id", nullable = false)
     private User applicant;
 
-    public void updateState(ParticipationRequestDto participationState) {
-        this.state = ParticipationState.of(participationState.getState());
+    // 요청쪽에서 사용
+    public void updateState(ParticipationState state) {
+        this.state = state;
+    }
+
+    // 수락/거절쪽에서 사용
+    public void updateState(ParticipationRequestDto participationRequestDto) {
+        this.state = ParticipationState.of(participationRequestDto.getState());
     }
 }

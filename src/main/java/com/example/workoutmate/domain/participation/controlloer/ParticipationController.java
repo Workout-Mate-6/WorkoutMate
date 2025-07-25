@@ -28,7 +28,7 @@ public class ParticipationController {
 
 
     // 요청 보내기
-    @PostMapping("/boards/{boardId}/comments/{commentId}/participations")
+    @PatchMapping("/boards/{boardId}/comments/{commentId}/participations")
     public ResponseEntity<ApiResponse<Void>> requestApproval(
             @PathVariable Long boardId,
             @PathVariable Long commentId,

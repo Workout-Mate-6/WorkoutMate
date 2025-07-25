@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
+
 @Service
 @RequiredArgsConstructor
 public class ParticipationService {
@@ -55,19 +57,17 @@ public class ParticipationService {
             throw new CustomException(CustomErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
 
-        // 중복 신청 방지
-        if (participationRepository.existsByApplicantId(user.getId())) {
+        // 테이블에서 상태 가져와서 확인
+        Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
+
+        // 중복 신청 제외!
+        if (participation.getState() == ParticipationState.REQUESTED) {
             throw new CustomException(CustomErrorCode.DUPLICATE_APPLICATION);
         }
 
-        Participation participation = Participation
-                .builder()
-                .board(comment.getBoard())
-                .comment(comment)
-                .applicant(user)
-                .state(ParticipationState.REQUESTED)
-                .build();
-        participationRepository.save(participation);
+        // state값 변경!
+        participation.updateState(ParticipationState.REQUESTED);
     }
 
     // 수락/거절

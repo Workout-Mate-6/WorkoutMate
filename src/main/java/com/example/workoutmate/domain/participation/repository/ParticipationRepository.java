@@ -1,9 +1,10 @@
 package com.example.workoutmate.domain.participation.repository;
 
 import com.example.workoutmate.domain.participation.entity.Participation;
-import com.example.workoutmate.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface ParticipationRepository extends JpaRepository<Participation,Long> {
@@ -11,4 +12,5 @@ public interface ParticipationRepository extends JpaRepository<Participation,Lon
 
     boolean existsByBoardIdAndApplicantId(Long boardId, Long userId);
 
+    Optional<Participation> findByBoardIdAndApplicantId(Long boardId, Long applicantId);
 }
