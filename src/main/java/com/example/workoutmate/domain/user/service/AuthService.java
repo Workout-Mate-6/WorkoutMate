@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -30,12 +32,12 @@ public class AuthService {
     public AuthResponseDto signup(SignupRequestDto signupRequestDto){
 
         // 인증 완료된 사용자 email 중복 확인
-        if(userRepository.existsByEmailAndIsDeletedFalseAndEmailVerifiedTrue(signupRequestDto.getEmail())){
+        if(userRepository.existsByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(signupRequestDto.getEmail())){
             throw new CustomException(CustomErrorCode.DUPLICATE_EMAIL);
         }
 
         // 미인증 계정 → 안내만! (재발송 X, 재발송 API 추후 구현)
-        Optional<User> unverifiedUser = userRepository.findByEmailAndIsDeletedFalseAndEmailVerifiedFalse(signupRequestDto.getEmail());
+        Optional<User> unverifiedUser = userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(signupRequestDto.getEmail());
         if (unverifiedUser.isPresent()) {
             throw new CustomException(CustomErrorCode.EMAIL_NOT_VERIFIED_FOR_SIGNUP);
         }
@@ -54,7 +56,7 @@ public class AuthService {
     public EmailVerificationResponseDto verifyEmail(EmailVerificationRequestDto requestDto) {
 
         // 이메일로 미인증 된 사용자 찾기
-        User user = userRepository.findByEmailAndIsDeletedFalseAndEmailVerifiedFalse(requestDto.getEmail())
+        User user = userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(requestDto.getEmail())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.USER_NOT_FOUND, "가입 대기 중인 사용자를 찾을 수 없습니다."));
 
         // 인증코드 일치 + 만료 된 코드 확인
@@ -83,4 +85,14 @@ public class AuthService {
 
         return new LoginResponseDto(bearerToken);
     }
+
+    @Transactional // 미인증 유저 삭제
+    public void findUnverifiedUsersAndDelete(LocalDateTime time){
+        List<User> unverifiedUsers = userRepository.findUnverifiedUsers(time);
+
+        if (!unverifiedUsers.isEmpty()){
+            userRepository.deleteAll(unverifiedUsers);
+        }
+    }
+
 }
