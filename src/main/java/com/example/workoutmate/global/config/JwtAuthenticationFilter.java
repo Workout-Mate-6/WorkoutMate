@@ -40,16 +40,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String bearerJwt = httpRequest.getHeader("Authorization");
 
-        if(bearerJwt == null){
+        if (bearerJwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = jwtUtil.substringToken(bearerJwt);
 
-        try{
+        try {
             Claims claims = jwtUtil.extractClaims(token);
-            if(claims == null){
+            if (claims == null) {
                 httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "잘못된 JWT 토큰입니다.");
                 return;
             }
@@ -70,20 +70,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            filterChain.doFilter(request,response);
-        }catch (SecurityException | MalformedJwtException e) {
+            filterChain.doFilter(request, response);
+        } catch (SecurityException | MalformedJwtException e) {
             log.error("Invalid JWT signature, 유효하지 않은 JWT 서명입니다.", e);
-            throw new CustomException(CustomErrorCode.SC_UNAUTHORIZED);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 JWT 서명입니다.");
+            return;
         } catch (ExpiredJwtException e) {
             log.error("Expired JWT token, 만료된 JWT token 입니다.", e);
-            throw new CustomException(CustomErrorCode.SC_UNAUTHORIZED);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 JWT token 입니다.");
+            return;
         } catch (UnsupportedJwtException e) {
             log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.", e);
-            throw new CustomException(CustomErrorCode.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰 입니다.");
+            return;
+        } catch (Exception e) {
+            log.error("Internal server error", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
-//        catch (Exception e) {
-//            log.error("Internal server error", e);
-//            throw new CustomException(CustomErrorCode.SC_INTERNAL_SERVER_ERROR);
-//        }
     }
 }
