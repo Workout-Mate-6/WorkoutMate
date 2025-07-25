@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.participation.entity;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.comment.entity.Comment;
+import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.global.entity.BaseEntity;
@@ -36,4 +37,8 @@ public class Participation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id", nullable = false)
     private User applicant;
+
+    public void updateState(ParticipationRequestDto participationState) {
+        this.state = ParticipationState.of(participationState.getState());
+    }
 }
