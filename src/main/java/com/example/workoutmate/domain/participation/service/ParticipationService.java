@@ -5,6 +5,7 @@ import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.service.CommentService;
+import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.entity.Participation;
@@ -24,6 +25,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ParticipationService {
@@ -36,6 +39,7 @@ public class ParticipationService {
     private final UserService userService;
 
 
+    // 요청
     @Transactional
     public void requestApporval(Long boardId, Long commentId, CustomUserPrincipal authUser) {
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재유무 검증
@@ -66,6 +70,7 @@ public class ParticipationService {
         participationRepository.save(participation);
     }
 
+    // 수락/거절
     @Transactional
     public void decideApproval(
             Long boardId,
@@ -94,5 +99,10 @@ public class ParticipationService {
             throw new CustomException(CustomErrorCode.USER_RECEIVED_REQUEST_NOT_FOUND);
         }
         return result;
+    }
+
+    public List<ParticipationAttendResponseDto> viewAttends(Long boardId, CustomUserPrincipal authUser) {
+        boardSearchService.getBoardById(boardId);
+        return qParticipationRepository.viewAttends(boardId);
     }
 }

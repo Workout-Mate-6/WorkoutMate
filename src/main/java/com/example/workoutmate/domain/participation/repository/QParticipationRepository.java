@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.participation.repository;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.QBoard;
 import com.example.workoutmate.domain.comment.entity.QComment;
+import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationResponseDto;
@@ -12,6 +13,7 @@ import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.user.entity.QUser;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
+import static com.example.workoutmate.domain.user.entity.QUser.user;
 
 @Repository
 @RequiredArgsConstructor
@@ -103,5 +108,20 @@ public class QParticipationRepository {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, countQuery.fetchOne());
+    }
+
+    public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
+        return queryFactory.select(Projections.constructor(
+                        ParticipationAttendResponseDto.class,
+                        participation.applicant.name,
+                        participation.state.stringValue()
+                ))
+                .from(participation)
+                .join(participation.applicant, user)
+                .where(
+                        participation.board.id.eq(boardId),
+                        participation.state.eq(ParticipationState.ACCEPTED)
+                )
+                .fetch();
     }
 }
