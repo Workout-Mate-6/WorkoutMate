@@ -108,26 +108,43 @@ public class ParticipationService {
         return qParticipationRepository.viewAttends(boardId);
     }
 
-    // 참여자(대기) 매서드
+    // 참여 or 불참 선택
     @Transactional
-    public void create(Board board, User user, Comment comment) {
-        // 작성자 제외!
-        if (user.getId().equals(board.getWriter().getId())) {
-            return;
-        }
-        // 이미 테이블에 있으면 제외
-        boolean alreadyExists = participationRepository.existsByBoardIdAndApplicantId(board.getId(), user.getId());
-        if (alreadyExists) {
-            return;
+    public void chooseParticipation(
+            Long commentId,
+            ParticipationRequestDto participationRequestDto,
+            CustomUserPrincipal authUser
+    ) {
+        User user = userService.findById(authUser.getId());
+
+        // 어떤 댓글로 참여신청 했는지 파악
+        Participation participation = participationRepository.findByCommentIdAndApplicantId(commentId, user.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
+
+        // body로 온 값 enum으로 파싱
+        ParticipationState requestedState = ParticipationState.of(participationRequestDto.getState());
+
+        // 현재 state 값 가져오기
+        ParticipationState currentState = participation.getState();
+
+        // state 값 변경하는거 유효성 검사
+        validateParticipationTransition(currentState, requestedState);
+
+        participation.updateState(requestedState);
+    }
+
+    // state 값 변경하는거 유효성 검사
+    private static void validateParticipationTransition(ParticipationState currentState, ParticipationState requestedState) {
+        if (currentState == ParticipationState.DECLINED) {
+            throw new CustomException(CustomErrorCode.ALLREADY_DECLINED);
         }
 
-        Participation participation = Participation.builder()
-                .board(board)
-                .applicant(user)
-                .comment(comment)
-                .state(ParticipationState.NONE)
-                .build();
+        if (currentState == ParticipationState.PARTICIPATION && requestedState == ParticipationState.PARTICIPATION) {
+            throw new CustomException(CustomErrorCode.ALLREADY_PARTICIPATION);
+        }
 
-        participationRepository.save(participation);
+        if (requestedState != ParticipationState.PARTICIPATION && requestedState != ParticipationState.DECLINED) {
+            throw new CustomException(CustomErrorCode.INVALID_PARTICIPATION_STATE);
+        }
     }
 }

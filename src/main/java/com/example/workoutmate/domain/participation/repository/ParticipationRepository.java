@@ -8,9 +8,11 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipationRepository extends JpaRepository<Participation,Long> {
-    boolean existsByApplicantId(Long id);
 
     boolean existsByBoardIdAndApplicantId(Long boardId, Long userId);
 
     Optional<Participation> findByBoardIdAndApplicantId(Long boardId, Long applicantId);
+
+    Optional<Participation> findByCommentIdAndApplicantId(Long commentId, Long applicantId);
+
 }

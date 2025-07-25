@@ -27,6 +27,7 @@ public class ParticipationController {
     private final ParticipationService participationService;
 
 
+    // 댓글 작성자용
     // 요청 보내기
     @PatchMapping("/boards/{boardId}/comments/{commentId}/participations")
     public ResponseEntity<ApiResponse<Void>> requestApproval(
@@ -38,6 +39,7 @@ public class ParticipationController {
         return ApiResponse.success(HttpStatus.OK, "요청을 보냈습니다.", null);
     }
 
+    // 게시글 작성자용
     // 요청 받은거 (수락/거절하기)
     @PatchMapping("/boards/{boardId}/approvalstatus/participations/{participationId}")
     public ResponseEntity<ApiResponse<Void>> decideApproval(
@@ -55,7 +57,7 @@ public class ParticipationController {
     public ResponseEntity<ApiResponse<Page<ParticipationByBoardResponseDto>>> viewApproval(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestBody(required = false) ParticipationRequestDto state,
+            @Valid @RequestParam(required = false) ParticipationRequestDto state,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
         Page<ParticipationByBoardResponseDto> response =
@@ -64,6 +66,7 @@ public class ParticipationController {
         return ApiResponse.success(HttpStatus.OK, "조회 되었습니다.", response);
     }
 
+    // 운동파티 조회(게시글)
     @GetMapping("/boards/{boardId}/participations/attends")
     public ResponseEntity<ApiResponse<List<ParticipationAttendResponseDto>>> viewAttends(
             @PathVariable Long boardId, @AuthenticationPrincipal CustomUserPrincipal authUser
@@ -76,4 +79,14 @@ public class ParticipationController {
         );
     }
 
+    // 참여/불참 선택
+    @PatchMapping("/comments/{commentId}/participations")
+    public ResponseEntity<ApiResponse<Void>> chooseParticipation(
+            @PathVariable Long commentId,
+            @Valid @RequestBody ParticipationRequestDto participationRequestDto,
+            @AuthenticationPrincipal CustomUserPrincipal authUser
+    ) {
+        participationService.chooseParticipation(commentId, participationRequestDto, authUser);
+        return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
+    }
 }
