@@ -27,6 +27,6 @@ public class ChattingController {
 
         ChatroomCreateResponseDto chatroomCreateResponseDto = chattingService.createChatRoom(userId, authUser);
 
-        return ApiResponse.success(HttpStatus.CREATED, "채팅방 생성 또는 조회가 완료되었습니다.", chatroomCreateResponseDto);
+        return ApiResponse.success(HttpStatus.OK, "채팅방 생성 또는 조회가 완료되었습니다.", chatroomCreateResponseDto);
     }
 }
