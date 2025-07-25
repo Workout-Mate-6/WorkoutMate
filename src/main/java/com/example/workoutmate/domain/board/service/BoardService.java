@@ -46,7 +46,7 @@ public class BoardService {
     }
 
     // 게시글 단건 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public BoardResponseDto getBoard(Long boardId) {
         Board board = boardSearchService.getBoardById(boardId); // 게시글 단건 조회 메서드
 
