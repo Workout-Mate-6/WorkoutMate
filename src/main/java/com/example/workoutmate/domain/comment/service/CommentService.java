@@ -104,7 +104,7 @@ public class CommentService {
     }
 
     // 댓글 작성자와 현재 로그인한 사용자가 일치하는지 검증
-    public static void validateCommentWriter(Comment comment, User user) {
+    public void validateCommentWriter(Comment comment, User user) {
         if (!comment.getWriter().getId().equals(user.getId())) {
             throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
         }

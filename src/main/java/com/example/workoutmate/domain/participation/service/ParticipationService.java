@@ -12,6 +12,7 @@ import com.example.workoutmate.domain.participation.entity.Participation;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.repository.ParticipationRepository;
 import com.example.workoutmate.domain.participation.repository.QParticipationRepository;
+import com.example.workoutmate.domain.participation.validation.ParticipationValidator;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +39,18 @@ public class ParticipationService {
     private final BoardSearchService boardSearchService;
     private final BoardService boardService;
     private final UserService userService;
+    private final ParticipationValidator participationValidator;
 
 
     // 요청
     @Transactional
-    public void requestApporval(Long boardId, Long commentId, CustomUserPrincipal authUser) {
+    public void requestApporval(
+            Long boardId,
+            Long commentId,
+            ParticipationRequestDto participationRequestDto,
+            CustomUserPrincipal authUser
+    ) {
+
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재유무 검증
         Comment comment = commentService.findById(commentId);
         User user = userService.findById(authUser.getId());
@@ -52,8 +59,8 @@ public class ParticipationService {
 
         // 본인이 작성한 게시글(댓글)로는 신청 못하게 하는로직
         boolean isBoardWriter = board.getWriter().getId().equals(user.getId());
-        boolean isCommnetWriter = comment.getWriter().getId().equals(user.getId());
-        if (isBoardWriter && isCommnetWriter) {
+        boolean isCommentWriter = comment.getWriter().getId().equals(user.getId());
+        if (isBoardWriter && isCommentWriter) {
             throw new CustomException(CustomErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
 
@@ -61,10 +68,9 @@ public class ParticipationService {
         Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
 
-        // 중복 신청 제외!
-        if (participation.getState() == ParticipationState.REQUESTED) {
-            throw new CustomException(CustomErrorCode.DUPLICATE_APPLICATION);
-        }
+        
+        // 현재 state 값 가져오기
+        validateStateChange(participationRequestDto, participation);
 
         // state값 변경!
         participation.updateState(ParticipationState.REQUESTED);
@@ -81,8 +87,30 @@ public class ParticipationService {
         Participation participation = participationRepository
                 .findById(participationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND)); // 참여 내역 검증
+        
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재 검증
         boardService.validateBoardWriter(authUser.getId(), board); // 권한 검증
+
+        validateStateChange(participationRequestDto, participation); // 메서드
+
+        participation.updateState(participationRequestDto);
+    }
+
+    // 참여 or 불참 선택
+    @Transactional
+    public void chooseParticipation(
+            Long commentId,
+            ParticipationRequestDto participationRequestDto,
+            CustomUserPrincipal authUser
+    ) {
+        User user = userService.findById(authUser.getId());
+
+        // 어떤 댓글로 참여신청 했는지 파악
+        Participation participation = participationRepository.findByCommentIdAndApplicantId(commentId, user.getId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
+
+        validateStateChange(participationRequestDto, participation); // 메서드
+
         participation.updateState(participationRequestDto);
     }
 
@@ -103,48 +131,20 @@ public class ParticipationService {
     }
 
     // 파티 조회
-    public List<ParticipationAttendResponseDto> viewAttends(Long boardId, CustomUserPrincipal authUser) {
+    public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
         boardSearchService.getBoardById(boardId);
         return qParticipationRepository.viewAttends(boardId);
     }
 
-    // 참여 or 불참 선택
-    @Transactional
-    public void chooseParticipation(
-            Long commentId,
-            ParticipationRequestDto participationRequestDto,
-            CustomUserPrincipal authUser
-    ) {
-        User user = userService.findById(authUser.getId());
 
-        // 어떤 댓글로 참여신청 했는지 파악
-        Participation participation = participationRepository.findByCommentIdAndApplicantId(commentId, user.getId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
-
+    // 상태 변경 요청에 대한 검증 메서드
+    private void validateStateChange(ParticipationRequestDto participationRequestDto, Participation participation) {
+        // 현재 state 값 가져오기
+        ParticipationState currentState = participation.getState();
         // body로 온 값 enum으로 파싱
         ParticipationState requestedState = ParticipationState.of(participationRequestDto.getState());
 
-        // 현재 state 값 가져오기
-        ParticipationState currentState = participation.getState();
-
-        // state 값 변경하는거 유효성 검사
-        validateParticipationTransition(currentState, requestedState);
-
-        participation.updateState(requestedState);
-    }
-
-    // state 값 변경하는거 유효성 검사
-    private static void validateParticipationTransition(ParticipationState currentState, ParticipationState requestedState) {
-        if (currentState == ParticipationState.DECLINED) {
-            throw new CustomException(CustomErrorCode.ALLREADY_DECLINED);
-        }
-
-        if (currentState == ParticipationState.PARTICIPATION && requestedState == ParticipationState.PARTICIPATION) {
-            throw new CustomException(CustomErrorCode.ALLREADY_PARTICIPATION);
-        }
-
-        if (requestedState != ParticipationState.PARTICIPATION && requestedState != ParticipationState.DECLINED) {
-            throw new CustomException(CustomErrorCode.INVALID_PARTICIPATION_STATE);
-        }
+        participationValidator.validateAlreadyHandled(currentState, requestedState); // 같은 요청 두번 방지
+        participationValidator.validateParticipationTransition(currentState, requestedState); // 잘못된 상태 변경 방지
     }
 }

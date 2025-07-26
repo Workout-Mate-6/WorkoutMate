@@ -46,9 +46,8 @@ public enum CustomErrorCode {
     PARTICIPATION_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 요청을 찾을수 없습니다."),
     USER_RECEIVED_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "회원님께 온 요청이 없습니다."),
     SELF_PARTICIPATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "게시글 작성자는 신청할 수 없습니다."),
-    ALLREADY_DECLINED(HttpStatus.BAD_REQUEST, "이미 불참으로 신청되었습니다."),
-    ALLREADY_PARTICIPATION(HttpStatus.BAD_REQUEST,"이미 참여하고 있습니다."),
-    INVALID_PARTICIPATION_STATE(HttpStatus.BAD_REQUEST, "허용되지 않은 값이 들어왔습니다.");
+    ALREADY_STATE(HttpStatus.BAD_REQUEST,"이미 처리된 요청입니다."), // 이거 하나로 한번만 누르면 되는걸로 하자
+    INVALID_STATE_TRANSITION(HttpStatus.BAD_REQUEST, "변경할 수 없는 상태입니다.?");
 
     private final HttpStatus httpStatus;
     private final String message;
