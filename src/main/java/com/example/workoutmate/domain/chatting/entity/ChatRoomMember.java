@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "chatroom_member")
+@Table(name = "chat_room_member")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatroomMember {
+public class ChatRoomMember {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

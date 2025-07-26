@@ -1,14 +1,14 @@
 package com.example.workoutmate.domain.chatting.entity;
 
-import com.example.workoutmate.domain.chatting.dto.ChatroomCreateResponseDto;
+import com.example.workoutmate.domain.chatting.dto.ChatRoomCreateResponseDto;
 
 public class ChattingMapper {
 
     // Dto ->
 
     // Entity -> Dto (ChatroomCreateResponseDto)
-    public static ChatroomCreateResponseDto toCreateDto(Chatroom chatroom) {
-        return ChatroomCreateResponseDto.builder()
+    public static ChatRoomCreateResponseDto toCreateDto(ChatRoom chatroom) {
+        return ChatRoomCreateResponseDto.builder()
                 .id(chatroom.getId())
                 .senderId(chatroom.getSenderId())
                 .receiverId(chatroom.getReceiverId())

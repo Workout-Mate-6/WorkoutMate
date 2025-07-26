@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ChatroomCreateResponseDto {
+public class ChatRoomCreateResponseDto {
 
     private Long id;
     private Long senderId;

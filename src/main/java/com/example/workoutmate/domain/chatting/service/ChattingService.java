@@ -1,12 +1,12 @@
 package com.example.workoutmate.domain.chatting.service;
 
-import com.example.workoutmate.domain.chatting.dto.ChatroomCreateResponseDto;
-import com.example.workoutmate.domain.chatting.dto.ChatroomResponseDto;
-import com.example.workoutmate.domain.chatting.entity.Chatroom;
-import com.example.workoutmate.domain.chatting.entity.ChatroomMember;
+import com.example.workoutmate.domain.chatting.dto.ChatRoomCreateResponseDto;
+import com.example.workoutmate.domain.chatting.dto.ChatRoomResponseDto;
+import com.example.workoutmate.domain.chatting.entity.ChatRoom;
+import com.example.workoutmate.domain.chatting.entity.ChatRoomMember;
 import com.example.workoutmate.domain.chatting.entity.ChattingMapper;
-import com.example.workoutmate.domain.chatting.repository.ChatroomMemberRepository;
-import com.example.workoutmate.domain.chatting.repository.ChatroomRepository;
+import com.example.workoutmate.domain.chatting.repository.ChatRoomMemberRepository;
+import com.example.workoutmate.domain.chatting.repository.ChatRoomRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.domain.user.service.UserService;
@@ -27,13 +27,13 @@ import static com.example.workoutmate.global.enums.CustomErrorCode.EQUALS_SENDER
 @RequiredArgsConstructor
 public class ChattingService {
 
-    private final ChatroomRepository chatroomRepository;
-    private final ChatroomMemberRepository chatroomMemberRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final UserService userService;
     private final UserRepository userRepository;
 
     @Transactional
-    public ChatroomCreateResponseDto createChatRoom(Long receiverId, CustomUserPrincipal authUser) {
+    public ChatRoomCreateResponseDto createChatRoom(Long receiverId, CustomUserPrincipal authUser) {
         User sender = userService.findById(authUser.getId());
         User receiver = userService.findById(receiverId);
 
@@ -42,39 +42,39 @@ public class ChattingService {
         }
 
         // 삭제되지않은 채팅방이 있는 경우
-        Optional<Chatroom> existingRoom = chatroomRepository
+        Optional<ChatRoom> existingRoom = chatRoomRepository
                 .findByUsersAndNotDeleted(sender.getId(), receiver.getId());
 
         // 기존 채팅방 반환
         if (existingRoom.isPresent()) {
-            Chatroom chatroom = existingRoom.get();
-            return new ChatroomCreateResponseDto(
-                    chatroom.getId(), sender.getId(), receiver.getId(), chatroom.getCreatedAt());
+            ChatRoom chatRoom = existingRoom.get();
+            return new ChatRoomCreateResponseDto(
+                    chatRoom.getId(), sender.getId(), receiver.getId(), chatRoom.getCreatedAt());
         }
 
         // 채팅방 (Chatroom) 생성
-        Chatroom chatroom = Chatroom.builder()
+        ChatRoom chatRoom = ChatRoom.builder()
                 .senderId(sender.getId())
                 .receiverId(receiver.getId())
                 .build();
-        chatroomRepository.save(chatroom);
+        chatRoomRepository.save(chatRoom);
 
         // Chatroom_member에 저장
-        ChatroomMember chatroomMember = ChatroomMember.builder()
+        ChatRoomMember chatRoomMember = ChatRoomMember.builder()
                 .userId(sender.getId())
-                .chatroomId(chatroom.getId())
-                .joinedAt(chatroom.getCreatedAt())
+                .chatroomId(chatRoom.getId())
+                .joinedAt(chatRoom.getCreatedAt())
                 .build();
-        chatroomMemberRepository.save(chatroomMember);
+        chatRoomMemberRepository.save(chatRoomMember);
 
-        return ChattingMapper.toCreateDto(chatroom);
+        return ChattingMapper.toCreateDto(chatRoom);
     }
 
 
     @Transactional(readOnly = true)
-    public List<ChatroomResponseDto> getMyChatrooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
+    public List<ChatRoomResponseDto> getMyChatrooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
         User user = userService.findById(authUser.getId());
 
-        return chatroomMemberRepository.findMyChatrooms(user.getId(), cursor, size);
+        return chatRoomMemberRepository.findMyChatRooms(user.getId(), cursor, size);
     }
 }

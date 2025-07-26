@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class ChatroomResponseDto {
+public class ChatRoomResponseDto {
 
     private Long id;
     private String opponentName;
@@ -16,7 +16,7 @@ public class ChatroomResponseDto {
     private LocalDateTime lastMessageTime;
 
     @QueryProjection
-    public ChatroomResponseDto(Long id, String opponentName, String lastMessage, LocalDateTime lastMessageTime) {
+    public ChatRoomResponseDto(Long id, String opponentName, String lastMessage, LocalDateTime lastMessageTime) {
         this.id = id;
         this.opponentName = opponentName;
         this.lastMessage = lastMessage;

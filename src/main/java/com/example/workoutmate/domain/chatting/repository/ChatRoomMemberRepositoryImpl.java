@@ -1,9 +1,9 @@
 package com.example.workoutmate.domain.chatting.repository;
 
-import com.example.workoutmate.domain.chatting.dto.ChatroomResponseDto;
-import com.example.workoutmate.domain.chatting.dto.QChatroomResponseDto;
-import com.example.workoutmate.domain.chatting.entity.QChatroom;
-import com.example.workoutmate.domain.chatting.entity.QChatroomMember;
+import com.example.workoutmate.domain.chatting.dto.ChatRoomResponseDto;
+import com.example.workoutmate.domain.chatting.dto.QChatRoomResponseDto;
+import com.example.workoutmate.domain.chatting.entity.QChatRoom;
+import com.example.workoutmate.domain.chatting.entity.QChatRoomMember;
 import com.example.workoutmate.domain.user.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class ChatroomMemberRepositoryImpl implements ChatroomMemberRepositoryCustom {
+public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
 
     @Override
-    public List<ChatroomResponseDto> findMyChatrooms(Long myId, LocalDateTime cursor, int size) {
-        QChatroomMember cm = QChatroomMember.chatroomMember;
-        QChatroom c = QChatroom.chatroom;
+    public List<ChatRoomResponseDto> findMyChatRooms(Long myId, LocalDateTime cursor, int size) {
+        QChatRoomMember cm = QChatRoomMember.chatRoomMember;
+        QChatRoom c = QChatRoom.chatRoom;
         QUser sender = new QUser("sender");
         QUser receiver = new QUser("receiver");
 
@@ -36,7 +36,7 @@ public class ChatroomMemberRepositoryImpl implements ChatroomMemberRepositoryCus
         }
 
         return queryFactory
-                .select(new QChatroomResponseDto(
+                .select(new QChatRoomResponseDto(
                         cm.chatroomId,
 
                         new CaseBuilder()
