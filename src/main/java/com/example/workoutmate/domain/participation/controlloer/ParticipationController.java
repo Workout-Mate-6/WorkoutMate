@@ -7,8 +7,6 @@ import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
-import com.example.workoutmate.global.enums.CustomErrorCode;
-import com.example.workoutmate.global.exception.CustomException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -33,9 +31,10 @@ public class ParticipationController {
     public ResponseEntity<ApiResponse<Void>> requestApproval(
             @PathVariable Long boardId,
             @PathVariable Long commentId,
+            @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.requestApporval(boardId, commentId, authUser);
+        participationService.requestApporval(boardId, commentId, participationRequestDto,authUser);
         return ApiResponse.success(HttpStatus.OK, "요청을 보냈습니다.", null);
     }
 
@@ -69,24 +68,23 @@ public class ParticipationController {
     // 운동파티 조회(게시글)
     @GetMapping("/boards/{boardId}/participations/attends")
     public ResponseEntity<ApiResponse<List<ParticipationAttendResponseDto>>> viewAttends(
-            @PathVariable Long boardId, @AuthenticationPrincipal CustomUserPrincipal authUser
+            @PathVariable Long boardId
     ) {
-
         return ApiResponse.success(
                 HttpStatus.OK,
-                "파티 조회 되었습니다.",
-                participationService.viewAttends(boardId, authUser)
+                "구성원들을 조회하였습니다.",
+                participationService.viewAttends(boardId)
         );
     }
 
     // 참여/불참 선택
-    @PatchMapping("/comments/{commentId}/participations")
+    @PatchMapping("/boards/{boardId}/participations")
     public ResponseEntity<ApiResponse<Void>> chooseParticipation(
-            @PathVariable Long commentId,
+            @PathVariable Long boardId,
             @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.chooseParticipation(commentId, participationRequestDto, authUser);
+        participationService.chooseParticipation(boardId, participationRequestDto, authUser);
         return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
     }
 }

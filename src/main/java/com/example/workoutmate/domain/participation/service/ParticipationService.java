@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -68,12 +69,17 @@ public class ParticipationService {
         Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
 
-        
+        // 타입 변환...
+        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
+        // 상태 검사 (신청만 허용)
+        if (!validState.contains(state)) {
+            throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
+        }
         // 현재 state 값 가져오기
         validateStateChange(participationRequestDto, participation);
 
         // state값 변경!
-        participation.updateState(ParticipationState.REQUESTED);
+        participation.updateState(participationRequestDto);
     }
 
     // 수락/거절
@@ -99,15 +105,16 @@ public class ParticipationService {
     // 참여 or 불참 선택
     @Transactional
     public void chooseParticipation(
-            Long commentId,
+            Long boardId,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
     ) {
         User user = userService.findById(authUser.getId());
 
-        // 어떤 댓글로 참여신청 했는지 파악
-        Participation participation = participationRepository.findByCommentIdAndApplicantId(commentId, user.getId())
+        // 게시글에 사용자가 남긴 반응(요청 찾기)
+        Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
+
 
         validateStateChange(participationRequestDto, participation); // 메서드
 
@@ -147,4 +154,9 @@ public class ParticipationService {
         participationValidator.validateAlreadyHandled(currentState, requestedState); // 같은 요청 두번 방지
         participationValidator.validateParticipationTransition(currentState, requestedState); // 잘못된 상태 변경 방지
     }
+
+    // 허용치 범위 설정! (신청만 허용)
+    Set<ParticipationState> validState = Set.of(
+            ParticipationState.REQUESTED
+    );
 }
