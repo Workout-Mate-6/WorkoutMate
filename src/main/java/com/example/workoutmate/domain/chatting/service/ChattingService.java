@@ -59,13 +59,21 @@ public class ChattingService {
                 .build();
         chatRoomRepository.save(chatRoom);
 
-        // Chatroom_member에 저장
-        ChatRoomMember chatRoomMember = ChatRoomMember.builder()
+        // chat_room_member에 sender 등록
+        ChatRoomMember senderMember = ChatRoomMember.builder()
                 .userId(sender.getId())
                 .chatroomId(chatRoom.getId())
                 .joinedAt(chatRoom.getCreatedAt())
                 .build();
-        chatRoomMemberRepository.save(chatRoomMember);
+        chatRoomMemberRepository.save(senderMember);
+
+        // chat_room_member에 receiver 등록
+        ChatRoomMember receiverMember = ChatRoomMember.builder()
+                .userId(receiver.getId())
+                .chatroomId(chatRoom.getId())
+                .joinedAt(chatRoom.getCreatedAt())
+                .build();
+        chatRoomMemberRepository.save(receiverMember);
 
         return ChattingMapper.toCreateDto(chatRoom);
     }
