@@ -1,12 +1,14 @@
 package com.example.workoutmate.domain.chatting.service;
 
 import com.example.workoutmate.domain.chatting.dto.ChatroomCreateResponseDto;
+import com.example.workoutmate.domain.chatting.dto.ChatroomResponseDto;
 import com.example.workoutmate.domain.chatting.entity.Chatroom;
 import com.example.workoutmate.domain.chatting.entity.ChatroomMember;
 import com.example.workoutmate.domain.chatting.entity.ChattingMapper;
 import com.example.workoutmate.domain.chatting.repository.ChatroomMemberRepository;
 import com.example.workoutmate.domain.chatting.repository.ChatroomRepository;
 import com.example.workoutmate.domain.user.entity.User;
+import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,6 +30,7 @@ public class ChattingService {
     private final ChatroomRepository chatroomRepository;
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Transactional
     public ChatroomCreateResponseDto createChatRoom(Long receiverId, CustomUserPrincipal authUser) {
@@ -63,5 +68,13 @@ public class ChattingService {
         chatroomMemberRepository.save(chatroomMember);
 
         return ChattingMapper.toCreateDto(chatroom);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<ChatroomResponseDto> getMyChatrooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
+        User user = userService.findById(authUser.getId());
+
+        return chatroomMemberRepository.findMyChatrooms(user.getId(), cursor, size);
     }
 }

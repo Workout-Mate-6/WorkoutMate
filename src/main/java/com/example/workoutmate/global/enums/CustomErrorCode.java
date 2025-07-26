@@ -43,6 +43,7 @@ public enum CustomErrorCode {
 
     // Chatting
     EQUALS_SENDER_RECEIVER(HttpStatus.BAD_REQUEST, "본인과는 채팅방을 생성할 수 없습니다."),
+    CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
 
     ;
 
