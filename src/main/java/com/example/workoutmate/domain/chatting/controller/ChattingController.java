@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.chatting.controller;
 
+import com.example.workoutmate.domain.chatting.dto.ChatMessageResponseDto;
 import com.example.workoutmate.domain.chatting.dto.ChatRoomCreateResponseDto;
 import com.example.workoutmate.domain.chatting.dto.ChatRoomResponseDto;
 import com.example.workoutmate.domain.chatting.service.ChattingService;
@@ -37,10 +38,22 @@ public class ChattingController {
     public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyChatRooms(
             @AuthenticationPrincipal CustomUserPrincipal authUser,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
-            @RequestParam(defaultValue = "10") Integer size) {
+            @RequestParam(defaultValue = "20") Integer size) {
 
         List<ChatRoomResponseDto> chatRoomList = chattingService.getMyChatRooms(authUser, cursor, size);
 
         return ApiResponse.success(HttpStatus.OK, "나의 채팅방 목록이 조회되었습니다.", chatRoomList);
+    }
+
+    @GetMapping("/chat_rooms/message/{chatRoomId}")
+    public ResponseEntity<ApiResponse<List<ChatMessageResponseDto>>> getChatRoomMessage(
+        @PathVariable Long chatRoomId,
+        @AuthenticationPrincipal CustomUserPrincipal authUser,
+        @RequestParam(required = false) Long cursor,
+        @RequestParam(defaultValue = "20") Integer size) {
+
+        List<ChatMessageResponseDto> chatMessageList = chattingService.getChatRoomMessage(chatRoomId, authUser, cursor, size);
+
+        return ApiResponse.success(HttpStatus.OK, "채팅방 메시지가 조회되었습니다.", chatMessageList);
     }
 }

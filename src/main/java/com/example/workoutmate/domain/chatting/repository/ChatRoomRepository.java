@@ -17,4 +17,5 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             "AND c.isDeleted = false")
     Optional<ChatRoom> findByUsersAndNotDeleted(@Param("user1") Long user1, @Param("user2") Long user2);
 
+    Optional<ChatRoom> findByIdAndIsDeletedFalse(Long chatRoomId);
 }
