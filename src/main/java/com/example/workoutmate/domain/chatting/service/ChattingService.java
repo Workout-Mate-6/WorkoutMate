@@ -27,6 +27,12 @@ import java.util.stream.Collectors;
 
 import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
+/**
+ * 채팅 관련 기능 클래스
+ * 채팅방 생성, 내 채팅방 조회, 채팅방 메시지 조회, 채팅방 나가기
+ *
+ * @author 이현하
+ */
 @Service
 @RequiredArgsConstructor
 public class ChattingService {
@@ -37,6 +43,14 @@ public class ChattingService {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
 
+
+    /**
+     * 채팅방 생성
+     *
+     * @param receiverId 채팅할 상대 id
+     * @param authUser 로그인한 유저 정보
+     * @return 채팅방 생성 정보
+     */
     @Transactional
     public ChatRoomCreateResponseDto createChatRoom(Long receiverId, CustomUserPrincipal authUser) {
         User sender = userService.findById(authUser.getId());
@@ -84,6 +98,14 @@ public class ChattingService {
     }
 
 
+    /**
+     * 내 채팅방 목록 조회
+     *
+     * @param authUser 로그인한 유저 정보
+     * @param cursor 이전 페이지의 마지막 채팅방 메시지 시간
+     * @param size 한 페이지에 조회할 채팅방 개수
+     * @return 조회된 내 채팅방 정보
+     */
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getMyChatRooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
         User user = userService.findById(authUser.getId());
@@ -92,6 +114,15 @@ public class ChattingService {
     }
 
 
+    /**
+     * 채팅방 메시지 조회
+     *
+     * @param chatRoomId 조회할 채팅방 id
+     * @param authUser 로그인한 유저 정보
+     * @param cursor 이전 페이지의 마지막 메시지 id
+     * @param size 한 페이지에 조회할 메시지 개수
+     * @return 조회된 채팅방 메시지 정보
+     */
     @Transactional(readOnly = true)
     public List<ChatMessageResponseDto> getChatRoomMessage(Long chatRoomId, CustomUserPrincipal authUser, Long cursor, Integer size) {
         User user = userService.findById(authUser.getId());
@@ -108,6 +139,12 @@ public class ChattingService {
     }
 
 
+    /**
+     * 채팅방 나가기
+     *
+     * @param chatRoomId 채팅방 id
+     * @param authUser 로그인한 유저 정보
+     */
     @Transactional
     public void leaveChatRoom(Long chatRoomId, CustomUserPrincipal authUser) {
         User user = userService.findById(authUser.getId());
