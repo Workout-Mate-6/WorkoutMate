@@ -62,7 +62,7 @@ public class ChattingService {
         // chat_room_member에 sender 등록
         ChatRoomMember senderMember = ChatRoomMember.builder()
                 .userId(sender.getId())
-                .chatroomId(chatRoom.getId())
+                .chatRoomId(chatRoom.getId())
                 .joinedAt(chatRoom.getCreatedAt())
                 .build();
         chatRoomMemberRepository.save(senderMember);
@@ -70,7 +70,7 @@ public class ChattingService {
         // chat_room_member에 receiver 등록
         ChatRoomMember receiverMember = ChatRoomMember.builder()
                 .userId(receiver.getId())
-                .chatroomId(chatRoom.getId())
+                .chatRoomId(chatRoom.getId())
                 .joinedAt(chatRoom.getCreatedAt())
                 .build();
         chatRoomMemberRepository.save(receiverMember);
@@ -80,7 +80,7 @@ public class ChattingService {
 
 
     @Transactional(readOnly = true)
-    public List<ChatRoomResponseDto> getMyChatrooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
+    public List<ChatRoomResponseDto> getMyChatRooms(CustomUserPrincipal authUser, LocalDateTime cursor, Integer size) {
         User user = userService.findById(authUser.getId());
 
         return chatRoomMemberRepository.findMyChatRooms(user.getId(), cursor, size);

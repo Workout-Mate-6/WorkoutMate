@@ -37,7 +37,7 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
 
         return queryFactory
                 .select(new QChatRoomResponseDto(
-                        cm.chatroomId,
+                        cm.chatRoomId,
 
                         new CaseBuilder()
                                 .when(c.senderId.eq(myId)).then(receiver.name)
@@ -46,7 +46,7 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
                         c.lastChatTime
                 ))
                 .from(cm)
-                .join(c).on(cm.chatroomId.eq(c.id))
+                .join(c).on(cm.chatRoomId.eq(c.id))
                 .join(sender).on(c.senderId.eq(sender.id))
                 .join(receiver).on(c.receiverId.eq(receiver.id))
                 .where(condition)

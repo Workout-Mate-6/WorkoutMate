@@ -24,7 +24,7 @@ public class ChatRoomMember {
     private Long userId;
 
     @NotNull
-    private Long chatroomId;
+    private Long chatRoomId;
 
     @Column(name = "joined_at")
     private LocalDateTime joinedAt;

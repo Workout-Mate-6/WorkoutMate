@@ -39,7 +39,7 @@ public class ChattingController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
             @RequestParam(defaultValue = "10") Integer size) {
 
-        List<ChatRoomResponseDto> chatRoomList = chattingService.getMyChatrooms(authUser, cursor, size);
+        List<ChatRoomResponseDto> chatRoomList = chattingService.getMyChatRooms(authUser, cursor, size);
 
         return ApiResponse.success(HttpStatus.OK, "나의 채팅방 목록이 조회되었습니다.", chatRoomList);
     }
