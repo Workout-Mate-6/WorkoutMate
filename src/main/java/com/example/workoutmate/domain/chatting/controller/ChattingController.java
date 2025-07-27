@@ -56,4 +56,15 @@ public class ChattingController {
 
         return ApiResponse.success(HttpStatus.OK, "채팅방 메시지가 조회되었습니다.", chatMessageList);
     }
+
+
+    @DeleteMapping("/chat_rooms/{chatRoomId}/deletion")
+    public ResponseEntity<ApiResponse<Void>> leaveChatRoom(
+            @PathVariable Long chatRoomId,
+            @AuthenticationPrincipal CustomUserPrincipal authUser) {
+
+        chattingService.leaveChatRoom(chatRoomId, authUser);
+
+        return ApiResponse.success(HttpStatus.OK, "채팅방에서 퇴장하였습니다.", null);
+    }
 }

@@ -9,10 +9,12 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 @RequiredArgsConstructor
 public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCustom {
 

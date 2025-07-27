@@ -25,8 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.workoutmate.global.enums.CustomErrorCode.CHATROOM_NOT_FOUND;
-import static com.example.workoutmate.global.enums.CustomErrorCode.EQUALS_SENDER_RECEIVER;
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -97,18 +96,54 @@ public class ChattingService {
     public List<ChatMessageResponseDto> getChatRoomMessage(Long chatRoomId, CustomUserPrincipal authUser, Long cursor, Integer size) {
         User user = userService.findById(authUser.getId());
 
-        ChatRoom chatRoom = chatRoomRepository.findByIdAndIsDeletedFalse(chatRoomId).orElseThrow(
-                () -> new CustomException(CHATROOM_NOT_FOUND, CHATROOM_NOT_FOUND.getMessage()));
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
 
-        if (!chatRoom.getSenderId().equals(user.getId()) &&
-                !chatRoom.getReceiverId().equals(user.getId())) {
-            throw new CustomException(CHATROOM_NOT_FOUND); // 채팅방 접근 권한 X
-        }
+        validateUserInChatRoom(chatRoom, user);
 
         List<ChatMessage> chatMessageList = chatMessageRepository.findChatRoomMessages(chatRoomId, cursor, size);
 
         return chatMessageList.stream()
                 .map(ChattingMapper::toMessageDto)
                 .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public void leaveChatRoom(Long chatRoomId, CustomUserPrincipal authUser) {
+        User user = userService.findById(authUser.getId());
+
+        ChatRoom chatRoom = findChatRoomById(chatRoomId);
+
+        validateUserInChatRoom(chatRoom, user);
+
+        ChatRoomMember member = chatRoomMemberRepository.findByUserIdAndChatRoomId(user.getId(), chatRoomId)
+                .orElseThrow(() -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."));
+
+        // 채팅방 퇴장
+        member.leave();
+
+        // 채팅방 멤버 모두 퇴장 상태면 채팅방 soft delete
+        boolean allLeft = chatRoomMemberRepository.countByChatRoomIdAndIsJoinedTrue(chatRoomId) == 0;
+
+        if (allLeft && !chatRoom.isDeleted()) {
+            chatRoom.delete();
+        }
+    }
+
+
+
+    /* 메서드 분리 */
+
+    // 채팅방에 멤버가 있는지 확인
+    private void validateUserInChatRoom(ChatRoom chatRoom, User user) {
+        if (!chatRoom.getSenderId().equals(user.getId()) && !chatRoom.getReceiverId().equals(user.getId())) {
+            throw new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage());
+        }
+    }
+
+    // id로 ChatRoom 찾기
+    private ChatRoom findChatRoomById(Long chatRoomId) {
+        return chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(CHATROOM_NOT_FOUND, CHATROOM_NOT_FOUND.getMessage()));
     }
 }

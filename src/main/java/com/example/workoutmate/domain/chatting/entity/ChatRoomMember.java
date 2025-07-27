@@ -35,4 +35,10 @@ public class ChatRoomMember {
     @Column(name = "is_joined")
     @Builder.Default
     private boolean isJoined = true;
+
+
+    public void leave() {
+        this.isJoined = false;
+        this.leftAt = LocalDateTime.now();
+    }
 }
