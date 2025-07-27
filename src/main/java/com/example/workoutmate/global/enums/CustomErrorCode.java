@@ -48,7 +48,8 @@ public enum CustomErrorCode {
     SELF_PARTICIPATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "게시글 작성자는 신청할 수 없습니다."),
     ALREADY_STATE(HttpStatus.BAD_REQUEST,"이미 처리된 요청입니다."), // 이거 하나로 한번만 누르면 되는걸로 하자
     INVALID_STATE_TRANSITION(HttpStatus.BAD_REQUEST, "변경할 수 없는 상태입니다.?"),
-    UNAUTHORIZED_PARTICIPATION(HttpStatus.BAD_REQUEST,"해당 요청은 사용자의 요청이 아닙니다.");
+    UNAUTHORIZED_PARTICIPATION(HttpStatus.BAD_REQUEST,"해당 요청은 사용자의 요청이 아닙니다."),
+    BOARD_FULL(HttpStatus.CONFLICT,"모집인원이 가득찼습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

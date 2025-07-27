@@ -93,7 +93,7 @@ public class ParticipationService {
         Participation participation = participationRepository
                 .findById(participationId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND)); // 참여 내역 검증
-        
+
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재 검증
         boardService.validateBoardWriter(authUser.getId(), board); // 권한 검증
 
@@ -115,8 +115,29 @@ public class ParticipationService {
         Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
 
-
         validateStateChange(participationRequestDto, participation); // 메서드
+
+        // 참가 인원 카운트 하는 로직
+        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
+        boolean isChoosingToParticipation = (state == ParticipationState.PARTICIPATION);
+        boolean isChoosingToDecline = (state == ParticipationState.DECLINED);
+        boolean isAccepted = participation.getState() == ParticipationState.ACCEPTED;
+        Board board = participation.getBoard();
+
+        // 참여 라고 했을때 +1 하는 로직
+        if (isChoosingToParticipation && isAccepted) {
+            if (board.getCurrentCount() >= board.getTargetCount()) {
+                throw new CustomException(CustomErrorCode.BOARD_FULL);
+            }
+            board.setCurrentCount(board.getCurrentCount() + 1);
+        }
+
+        // 불참으로 변경시 -1 하는 로직
+        if (isChoosingToDecline && participation.getState() == ParticipationState.PARTICIPATION) {
+            if (board.getCurrentCount() > 0) {
+                board.setCurrentCount(board.getCurrentCount() - 1);
+            }
+        }
 
         participation.updateState(participationRequestDto);
     }
