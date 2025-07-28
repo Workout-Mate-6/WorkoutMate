@@ -46,7 +46,15 @@ public enum CustomErrorCode {
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
     CHATROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."),
 
-    ;
+    // participation
+    DUPLICATE_APPLICATION(HttpStatus.CONFLICT, "이미 신청한 결과가 있습니다."),
+    PARTICIPATION_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 요청을 찾을수 없습니다."),
+    USER_RECEIVED_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "회원님께 온 요청이 없습니다."),
+    SELF_PARTICIPATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "게시글 작성자는 신청할 수 없습니다."),
+    ALREADY_STATE(HttpStatus.BAD_REQUEST,"이미 처리된 요청입니다."), // 이거 하나로 한번만 누르면 되는걸로 하자
+    INVALID_STATE_TRANSITION(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+    UNAUTHORIZED_PARTICIPATION(HttpStatus.BAD_REQUEST,"해당 요청은 사용자의 요청이 아닙니다."),
+    BOARD_FULL(HttpStatus.CONFLICT,"모집인원이 가득찼습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
