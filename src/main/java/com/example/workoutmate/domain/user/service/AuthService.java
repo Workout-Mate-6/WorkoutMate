@@ -9,6 +9,9 @@ import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,12 +103,16 @@ public class AuthService {
         return new LoginResponseDto(bearerToken);
     }
 
-    @Transactional // 미인증 유저 삭제
-    public void findUnverifiedUsersAndDelete(LocalDateTime time){
-        List<User> unverifiedUsers = userRepository.findUnverifiedUsers(time);
+    @Transactional
+    public int findUnverifiedUsersAndDelete(LocalDateTime time, int batchSize) {
+        Pageable pageable = PageRequest.of(0, batchSize);
+        Page<User> page = userRepository.findUnverifiedUsers(time, pageable);
+        List<User> users = page.getContent();
+        log.info("이번 배치 삭제 대상: {}명", users.size());
 
-        if (!unverifiedUsers.isEmpty()){
-            userRepository.deleteAll(unverifiedUsers);
+        if (!users.isEmpty()) {
+            userRepository.deleteAllInBatch(users); // 성능상 deleteAllInBatch가 더 빠름
         }
+        return users.size();
     }
 }

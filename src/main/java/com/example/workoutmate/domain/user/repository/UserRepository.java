@@ -1,6 +1,8 @@
 package com.example.workoutmate.domain.user.repository;
 
 import com.example.workoutmate.domain.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,5 +24,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(String email);
 
     @Query("SELECT u FROM User u WHERE u.isEmailVerified = false AND u.createdAt < :time")
-    List<User> findUnverifiedUsers(@Param("time")LocalDateTime time);
+    Page<User> findUnverifiedUsers(@Param("time")LocalDateTime time, Pageable pageable);
 }
