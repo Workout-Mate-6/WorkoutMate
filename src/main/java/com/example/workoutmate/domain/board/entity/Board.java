@@ -3,6 +3,8 @@ package com.example.workoutmate.domain.board.entity;
 import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.global.entity.BaseEntity;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +13,6 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "board")
@@ -86,5 +87,19 @@ public class Board extends BaseEntity {
     public void delete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
+    }
+
+
+    public void increaseCurrentCount() {
+        if (this.currentCount >= this.targetCount) {
+            throw new CustomException(CustomErrorCode.BOARD_FULL);
+        }
+        this.currentCount++;
+    }
+
+    public void decreaseCurrentCount() {
+        if (this.currentCount > 0) {
+            this.currentCount--;
+        }
     }
 }

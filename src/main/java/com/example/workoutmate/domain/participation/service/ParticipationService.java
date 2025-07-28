@@ -126,17 +126,12 @@ public class ParticipationService {
 
         // 참여 라고 했을때 +1 하는 로직
         if (isChoosingToParticipation && isAccepted) {
-            if (board.getCurrentCount() >= board.getTargetCount()) {
-                throw new CustomException(CustomErrorCode.BOARD_FULL);
-            }
-            board.setCurrentCount(board.getCurrentCount() + 1);
+            board.increaseCurrentCount();
         }
 
         // 불참으로 변경시 -1 하는 로직
         if (isChoosingToDecline && participation.getState() == ParticipationState.PARTICIPATION) {
-            if (board.getCurrentCount() > 0) {
-                board.setCurrentCount(board.getCurrentCount() - 1);
-            }
+            board.decreaseCurrentCount();
         }
 
         participation.updateState(participationRequestDto);
