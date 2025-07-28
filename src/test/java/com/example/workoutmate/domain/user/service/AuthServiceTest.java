@@ -141,7 +141,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void 유저_있으면_삭제() {
+    void 정상_배치_삭제() {
         // given
         List<User> users = List.of(
                 User.builder().email("a@test.com").build(),
