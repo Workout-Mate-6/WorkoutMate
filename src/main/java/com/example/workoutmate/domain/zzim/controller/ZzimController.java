@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.zzim.controller;
 
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimCountResponseDto;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimResponseDto;
+import com.example.workoutmate.domain.zzim.controller.dto.ZzimStatusResponseDto;
 import com.example.workoutmate.domain.zzim.service.ZzimService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
@@ -66,6 +67,18 @@ public class ZzimController {
         Page<ZzimResponseDto> zzimResponseDtoPage = zzimService.getUserZzims(userId, pageable);
 
         return ApiResponse.success(HttpStatus.OK, "유저의 찜 전체 목록 조회가 완료되었습니다.", zzimResponseDtoPage);
+    }
+
+    @GetMapping("/{boardId}/zzims/me")
+    public ResponseEntity<ApiResponse<ZzimStatusResponseDto>> checkIfZzimmed(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
+    ) {
+        Long userId = customUserPrincipal.getId();
+
+        ZzimStatusResponseDto responseDto = zzimService.checkZzimStatus(boardId, userId);
+
+        return ApiResponse.success(HttpStatus.OK, "유저의 찜 여부 조회 성공", responseDto);
     }
 
 }

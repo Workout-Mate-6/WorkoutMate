@@ -22,4 +22,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Long> {
 
     // 본인이 찜한 게시글 전체 목록 조회
     Page<Zzim> findAllByUserId(Long userId, Pageable pageable);
+
+    // 유저가 해당 게시글을 찜했는지 여부 조회
+    Optional<Zzim> findByBoardIdAndUserId(Long boardId, Long userId);
 }

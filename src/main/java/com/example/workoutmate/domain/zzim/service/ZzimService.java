@@ -6,6 +6,7 @@ import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimCountResponseDto;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimResponseDto;
+import com.example.workoutmate.domain.zzim.controller.dto.ZzimStatusResponseDto;
 import com.example.workoutmate.domain.zzim.entity.Zzim;
 import com.example.workoutmate.domain.zzim.repository.ZzimRepository;
 import com.example.workoutmate.global.enums.CustomErrorCode;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,6 +81,29 @@ public class ZzimService {
         Page<Zzim> zzimPage = zzimRepository.findAllByUserId(userId, pageable);
 
         return zzimPage.map(ZzimResponseDto::new);
+    }
+
+    @Transactional
+    public ZzimStatusResponseDto checkZzimStatus(Long boardId, Long userId) {
+
+        Optional<Zzim> zzimOptional = zzimRepository.findByBoardIdAndUserId(boardId, userId);
+
+        if (zzimOptional.isPresent()) {
+            Zzim zzim = zzimOptional.get();
+
+            return ZzimStatusResponseDto.builder()
+                    .boardId(boardId)
+                    .userId(userId)
+                    .zzimmed(true)
+                    .build();
+        } else {
+
+            return ZzimStatusResponseDto.builder()
+                    .boardId(boardId)
+                    .userId(userId)
+                    .zzimmed(false)
+                    .build();
+        }
     }
 
 
