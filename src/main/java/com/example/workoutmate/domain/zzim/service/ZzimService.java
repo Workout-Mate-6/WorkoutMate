@@ -61,16 +61,16 @@ public class ZzimService {
         return zzimPage.map(ZzimResponseDto::new);
     }
 
-//    @Transactional(readOnly = true)
-//    public ZzimCountResponseDto getZzimCountByBoardId(Long boardId) {
-//
-//        // 게시글 조회
-//        Board board = boardSearchService.getBoardById(boardId);
-//
-//        Long count = zzimRepository.countByBoard(board);
-//
-//        return new ZzimCountResponseDto(boardId, count);
-//    }
+    @Transactional(readOnly = true)
+    public ZzimCountResponseDto getZzimCountByBoardId(Long boardId) {
+
+        // 게시글 조회
+        Board board = boardSearchService.getBoardById(boardId);
+
+        Long count = zzimRepository.countByBoard(board);
+
+        return new ZzimCountResponseDto(boardId, count);
+    }
 
 
 }

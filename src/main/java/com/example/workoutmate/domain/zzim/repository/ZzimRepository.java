@@ -18,5 +18,5 @@ public interface ZzimRepository extends JpaRepository<Zzim, Long> {
 
     Page<Zzim> findAllByBoard(Board board, Pageable pageable);
 
-//    long countByBoard(Board board);
+    long countByBoard(Board board);
 }

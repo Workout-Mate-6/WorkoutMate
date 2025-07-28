@@ -46,14 +46,14 @@ public class ZzimController {
         return ApiResponse.success(HttpStatus.OK, "게시글 찜 전체 조회가 완료되었습니다.", zzimResponseDtoPages);
     }
 
-//    @GetMapping("/{boardId}/zzims/count")
-//    public ResponseEntity<ApiResponse<ZzimCountResponseDto>> getZzimCountByBoard(
-//            @PathVariable Long boardId
-//    ) {
-//        ZzimCountResponseDto responseDto = zzimService.getZzimCountByBoardId(boardId);
-//
-//        return ApiResponse.success(HttpStatus.OK, "게시글 찜 전체 갯수 조회가 완료되었습니다.", responseDto);
-//    }
+    @GetMapping("/{boardId}/zzims/count")
+    public ResponseEntity<ApiResponse<ZzimCountResponseDto>> getZzimCountByBoard(
+            @PathVariable Long boardId
+    ) {
+        ZzimCountResponseDto responseDto = zzimService.getZzimCountByBoardId(boardId);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글 찜 전체 갯수 조회가 완료되었습니다.", responseDto);
+    }
 
 
 }
