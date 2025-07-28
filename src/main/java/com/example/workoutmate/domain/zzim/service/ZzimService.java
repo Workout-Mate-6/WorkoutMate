@@ -95,6 +95,7 @@ public class ZzimService {
                     .boardId(boardId)
                     .userId(userId)
                     .zzimmed(true)
+                    .zzimId(zzim.getId())
                     .build();
         } else {
 
@@ -102,6 +103,7 @@ public class ZzimService {
                     .boardId(boardId)
                     .userId(userId)
                     .zzimmed(false)
+                    .zzimId(null)
                     .build();
         }
     }
