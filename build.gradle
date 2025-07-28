@@ -49,6 +49,9 @@ dependencies {
     // 시간 직렬화
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    // spring websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 }
 
 tasks.named('test') {
