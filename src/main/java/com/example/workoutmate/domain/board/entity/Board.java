@@ -1,15 +1,16 @@
 package com.example.workoutmate.domain.board.entity;
 
+import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.global.entity.BaseEntity;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Entity
 @Getter
 @NoArgsConstructor
@@ -42,30 +43,63 @@ public class Board extends BaseEntity {
 
     // 삭제 여부
     @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     // 삭제일
     @Column
     private LocalDateTime deletedAt;
 
+    // 모집 인원
+    @Column(name = "target_count", nullable = false)
+    private Long targetCount;
+
+    // 모집된 인원
+    @Column(name = "current_count")
+    @Builder.Default
+    private Long currentCount = 0L;
+
+    // 모집 상태
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.OPEN;
+
+
     @Builder
-    public Board(User writer, String title, String content, SportType sportType) {
+    public Board(User writer, String title, String content, SportType sportType, Long targetCount) {
         this.writer = writer;
         this.title = title;
         this.content = content;
         this.sportType = sportType;
+        this.targetCount = targetCount;
         this.isDeleted = false;
         this.deletedAt = null;
     }
 
-    public void update(String title, String content, SportType sportType) {
+    public void update(String title, String content, SportType sportType, Long targetCount) {
         this.title = title;
         this.content = content;
         this.sportType = sportType;
+        this.targetCount = targetCount;
     }
 
     public void delete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
+    }
+
+
+    public void increaseCurrentCount() {
+        if (this.currentCount >= this.targetCount) {
+            throw new CustomException(CustomErrorCode.BOARD_FULL);
+        }
+        this.currentCount++;
+    }
+
+    public void decreaseCurrentCount() {
+        if (this.currentCount > 0) {
+            this.currentCount--;
+        }
     }
 }
