@@ -4,14 +4,19 @@ import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
+import com.example.workoutmate.domain.zzim.controller.dto.ZzimCountResponseDto;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimResponseDto;
 import com.example.workoutmate.domain.zzim.entity.Zzim;
 import com.example.workoutmate.domain.zzim.repository.ZzimRepository;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -44,4 +49,28 @@ public class ZzimService {
 
         return new ZzimResponseDto(savedZzim);
     }
+
+    @Transactional(readOnly = true)
+    public Page<ZzimResponseDto> getZzimsByBoardId(Long boardId, Pageable pageable) {
+
+        // 게시글 객체 조회
+        Board board = boardSearchService.getBoardById(boardId);
+
+        Page<Zzim> zzimPage = zzimRepository.findAllByBoard(board, pageable);
+
+        return zzimPage.map(ZzimResponseDto::new);
+    }
+
+//    @Transactional(readOnly = true)
+//    public ZzimCountResponseDto getZzimCountByBoardId(Long boardId) {
+//
+//        // 게시글 조회
+//        Board board = boardSearchService.getBoardById(boardId);
+//
+//        Long count = zzimRepository.countByBoard(board);
+//
+//        return new ZzimCountResponseDto(boardId, count);
+//    }
+
+
 }
