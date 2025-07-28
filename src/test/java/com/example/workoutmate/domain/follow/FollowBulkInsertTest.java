@@ -1,13 +1,6 @@
 package com.example.workoutmate.domain.follow;
 
 
-import com.example.workoutmate.domain.follow.entity.Follow;
-import com.example.workoutmate.domain.follow.repository.FollowRepository;
-import com.example.workoutmate.domain.follow.repository.QFollowsRepository;
-import com.example.workoutmate.domain.user.entity.User;
-import com.example.workoutmate.domain.user.enums.UserGender;
-import com.example.workoutmate.domain.user.enums.UserRole;
-import com.example.workoutmate.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
