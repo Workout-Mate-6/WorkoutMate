@@ -81,4 +81,15 @@ public class ZzimController {
         return ApiResponse.success(HttpStatus.OK, "유저의 찜 여부 조회 성공", responseDto);
     }
 
+    @DeleteMapping("/zzims/{zzimId}")
+    public ResponseEntity<ApiResponse<Void>> deleteZzim(
+            @PathVariable Long zzimId,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal
+    ) {
+        Long userId = customUserPrincipal.getId();
+        zzimService.deleteZzim(zzimId, userId);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글 찜이 삭제되었습니다.", null);
+    }
+
 }
