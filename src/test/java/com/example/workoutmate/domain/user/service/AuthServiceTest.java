@@ -141,7 +141,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void findUnverifiedUsersAndDelete_유저_있으면_삭제() {
+    void 유저_있으면_삭제() {
         // given
         List<User> users = List.of(
                 User.builder().email("a@test.com").build(),
