@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +71,14 @@ public class ZzimService {
         Long count = zzimRepository.countByBoard(board);
 
         return new ZzimCountResponseDto(boardId, count);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ZzimResponseDto> getUserZzims(Long userId, Pageable pageable) {
+
+        Page<Zzim> zzimPage = zzimRepository.findAllByUserId(userId, pageable);
+
+        return zzimPage.map(ZzimResponseDto::new);
     }
 
 

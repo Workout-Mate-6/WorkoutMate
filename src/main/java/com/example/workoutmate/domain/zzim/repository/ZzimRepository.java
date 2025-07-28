@@ -19,4 +19,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Long> {
     Page<Zzim> findAllByBoard(Board board, Pageable pageable);
 
     long countByBoard(Board board);
+
+    // 본인이 찜한 게시글 전체 목록 조회
+    Page<Zzim> findAllByUserId(Long userId, Pageable pageable);
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,16 @@ public class ZzimController {
         return ApiResponse.success(HttpStatus.OK, "게시글 찜 전체 갯수 조회가 완료되었습니다.", responseDto);
     }
 
+    @GetMapping("/zzims/users")
+    public ResponseEntity<ApiResponse<Page<ZzimResponseDto>>> getUserZzims(
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Long userId = customUserPrincipal.getId();
+
+        Page<ZzimResponseDto> zzimResponseDtoPage = zzimService.getUserZzims(userId, pageable);
+
+        return ApiResponse.success(HttpStatus.OK, "유저의 찜 전체 목록 조회가 완료되었습니다.", zzimResponseDtoPage);
+    }
 
 }
