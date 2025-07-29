@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.board.repository;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,4 +40,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 삭제되지 않은 게시글 중에서 작성자가 특정 userId인 게시글 수 반환
     int countByWriter_IdAndIsDeletedFalse(Long writerId);
+
+    // 내 게시물 조회
+    Page<Board> findAllByWriterAndIsDeletedFalse(User user, Pageable pageable);
 }

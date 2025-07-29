@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/boards")
 @RequiredArgsConstructor
@@ -79,6 +81,17 @@ public class BoardController {
         Page<BoardResponseDto> boardResponseDtoPage = boardService.getBoardsByCategory(sportType, pageable);
 
         return ApiResponse.success(HttpStatus.OK, "운동 카테고리 별 게시글 조회 성공", boardResponseDtoPage);
+    }
+
+    // 내 게시물 조회하기
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getMyBoards(
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        Page<BoardResponseDto> boardResponseDtoPage = boardService.getMyBoards(customUserPrincipal, pageable);
+
+        return ApiResponse.success(HttpStatus.OK, "내 게시글 목록이 조회에 완료되었습니다.", boardResponseDtoPage);
     }
 
     // 게시글 수정
