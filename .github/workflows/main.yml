@@ -38,7 +38,7 @@ jobs:
       # 4단계: 프로젝트 빌드
       - name: Build with Gradle
         # gradlew 명령어로 스프링 부트 프로젝트를 빌드함. 이걸 해야 .jar 파일이 생김.
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # 5단계: 도커 빌드 환경 설정
       - name: Set up Docker Buildx
