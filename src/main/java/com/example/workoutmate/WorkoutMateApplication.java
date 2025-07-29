@@ -10,5 +10,4 @@ public class WorkoutMateApplication {
     public static void main(String[] args) {
         SpringApplication.run(WorkoutMateApplication.class, args);
     }
-
 }
