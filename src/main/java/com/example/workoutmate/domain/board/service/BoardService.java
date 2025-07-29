@@ -9,6 +9,7 @@ import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -91,6 +92,16 @@ public class BoardService {
         return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
+    // 내 게시물 목록 조회
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> getMyBoards(CustomUserPrincipal customUserPrincipal, Pageable pageable) {
+        User user = userService.findById(customUserPrincipal.getId());
+
+        Page<Board> boardPage = boardRepository.findAllByWriterAndIsDeletedFalse(user, pageable);
+
+        return boardPage.map(BoardMapper::boardToBoardResponse);
+    }
+
     //게시글 수정
     @Transactional
     public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
@@ -127,5 +138,6 @@ public class BoardService {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
     }
+
 
 }
