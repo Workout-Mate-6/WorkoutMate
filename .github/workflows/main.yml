@@ -18,6 +18,9 @@ jobs:
     env:
       # jwt 토큰 생성 위한 secret key. Secrets에서 값을 가져옴.
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ DB_PASSWORD }}
 
     # 이 작업이 수행할 단계(step)들을 순서대로 나열함.
     steps:
