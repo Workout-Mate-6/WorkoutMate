@@ -111,7 +111,7 @@ public class AuthService {
         log.info("이번 배치 삭제 대상: {}명", users.size());
 
         if (!users.isEmpty()) {
-            userRepository.deleteAllInBatch(users); // 성능상 deleteAllInBatch가 더 빠름
+            userRepository.deleteAllInBatch(users);
         }
         return users.size();
     }
