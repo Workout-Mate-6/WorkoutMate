@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.board.repository;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.user.entity.User;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,16 +26,15 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 내가 팔로잉한 사람들의 게시글 찾기
     Page<Board> findByWriter_IdIn(List<Long> writerIds, Pageable pageable);
-
     @Query(value = """
-            select b from Board b
-            join fetch b.writer w
-            where w.id in :writerIds
-            """,
+        select b from Board b
+        join fetch b.writer w
+        where w.id in :writerIds
+        """,
             countQuery = """
-                    select count(b) from Board b
-                    where b.writer.id in :writerIds
-                    """)
+        select count(b) from Board b
+        where b.writer.id in :writerIds
+        """)
     Page<Board> findAllByWriterIdInWithWriterFetch(@Param("writerIds") List<Long> writerIds, Pageable pageable);
 
     // 운동 종목 카테고리 검색 조회
@@ -42,6 +42,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 삭제되지 않은 게시글 중에서 작성자가 특정 userId인 게시글 수 반환
     int countByWriter_IdAndIsDeletedFalse(Long writerId);
+
+    // 내 게시물 조회
+    Page<Board> findAllByWriterAndIsDeletedFalse(User user, Pageable pageable);
 
     // participation 쪽에서 동시성 문제로 인한 비관적 락 적용
     @Lock(LockModeType.PESSIMISTIC_WRITE)
