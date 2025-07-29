@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.chatting.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -8,6 +9,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
@@ -29,6 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 // CORS 설정 - 허용할 origin 패턴 설정
                 .setAllowedOriginPatterns("*")
                 // WebSocket을 지원하지 않는 브라우저를 위한 SockJS 지원 추가
-                .withSockJS();
+                .withSockJS()
+        ;
     }
 }
