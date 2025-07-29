@@ -24,7 +24,7 @@ public class UnverifiedUserDeleteScheduler {
             int deleted;
             int totalDeleted = 0;
             do {
-                deleted = authService.findUnverifiedUsersAndDelete(LocalDateTime.now().minusMinutes(3), 1000); // 1000건씩
+                deleted = authService.findUnverifiedUsersAndDelete(LocalDateTime.now().minusMinutes(30), 1000); // 1000건씩
                 totalDeleted += deleted;
                 log.debug("배치 삭제 완료: {}명 (누적: {}명)", deleted, totalDeleted);
             } while (deleted == 1000);
