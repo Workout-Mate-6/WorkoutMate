@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,6 +91,7 @@ public class ParticipationTest {
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT); // ExecutorService 자바에서 쓰레드를 효율적으로 관리할 수 있게 도와주는 기능
         AtomicInteger successCount = new AtomicInteger(0); // AtomicInteger : 멀티스레드 환경에서 값을안전하게 증가시키는 변수
         AtomicInteger failCount = new AtomicInteger(0);
+        CountDownLatch latch = new CountDownLatch(1);
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -97,14 +99,17 @@ public class ParticipationTest {
         for (int i = 0; i < THREAD_COUNT; i++) {
             final int index = i;
 
+            // 멀티 스레딩 환경에서 비동기 작업 실행
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                // 비동기 작업 시작
                 try {
+                    latch.await(); // latch가 열릴 때까지 대기
                     User applicant = testUsers.get(index);
 
                     // 각 스레드에서 별도의 트랜잭션으로 댓글과 참여 정보 생성
                     Comment comment = createComment(applicant, board);
                     commentRepository.saveAndFlush(comment); // JPA 메서드로 즉시 DB에 반영
-
+                    // 댓글:요청 -> 게시글:수락 -> 댓글:참여
                     // 수락 상태인걸로 만들기
                     Participation participation = createParticipation(applicant, board, comment, ParticipationState.ACCEPTED); // 충돌 유발을 하기 위해 참여자 정보를 수락 상태로 미리 저장
                     participationRepository.saveAndFlush(participation); // JPA 메서드로 즉시 DB에 반영
@@ -133,12 +138,12 @@ public class ParticipationTest {
                 }
             }, executor);
 
-            futures.add(future);
+            futures.add(future); // 모든 비동기 작업이 완료될때까지 기다리기 위해
         }
-
+        latch.countDown();
         // 모든 작업 완료 대기
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executor.shutdown();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join(); // 모든 비동기 작업이 끝날때까지 현재 쓰레드 멈추고 기다리기
+        executor.shutdown(); // 이후에 스레드들은 소멸
 
         // then
         Board result = boardRepository.findById(board.getId())
