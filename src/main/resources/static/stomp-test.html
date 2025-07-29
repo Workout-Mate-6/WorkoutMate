@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>STOMP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+
+    <!-- http://localhost:63342/WorkoutMate/WorkoutMate.main/static/stomp-test.html -->
+    <script type="text/javascript">
+
+
+        let stompClient; // stompClient 변수를 전역으로 설정
+        let subscriptions = {}; // 구독 정보를 저장할 객체
+
+        function connectWebSocket(chatRoomId) {
+            const url = $('#websocketUrl').val();
+            const token = $('#jwtToken').val();
+
+            if (!token) {
+                alert('JWT Token을 입력해주세요.');
+                return;
+            }
+
+            // STOMP 연결 시 헤더에 인증 정보 추가
+            const connectHeaders = {
+                Authorization: `Bearer ${token}`
+            };
+
+            const socket = new SockJS(url);
+            stompClient = Stomp.over(socket);
+
+            // 연결 성공 시 이전 메시지 불러오고, 구독 시작
+            stompClient.connect(connectHeaders, () => {
+                console.log('connected!');
+
+                fetchOldMessages(chatRoomId); // 1. 이전 메시지 먼저 로딩
+
+                const subPath = `/sub/chat/rooms/${chatRoomId}`; // 2. 구독 경로
+                subscribeToPath(subPath); // 3. 실시간 메시지 구독 시작
+            }, stompErrorHandler);
+        }
+
+        function stompConnectHandler() {
+            console.log('connected!');
+        }
+
+        function stompErrorHandler(e) {
+            console.error('stomp connect error - ', e);
+        }
+
+        function subscribeToPath(path) {
+            const subscription = stompClient.subscribe(path, (data) => {
+                const message = JSON.parse(data.body);
+                displayMessage(message); // 메시지 수신 시 displayMessage 호출
+                // displayMessage(data.body);
+            });
+
+            // 구독 정보를 저장
+            subscriptions[path] = subscription;
+        }
+
+        function unsubscribeFromPath(path) {
+            if (subscriptions[path]) {
+                subscriptions[path].unsubscribe(); // 구독 해제
+                delete subscriptions[path]; // 구독 정보 삭제
+                console.log(`Unsubscribed from ${path}`);
+            }
+        }
+
+        // -- 수정된 부분: 메시지 객체를 받아 화면에 표시하도록 변경
+        function displayMessage(msg) {
+            const messageBox = $('#messageBox');
+            // 메시지 객체에서 발신자와 메시지 내용을 추출하여 표시
+            // const messageHtml = `<div class="alert alert-info"><strong>${msg.senderName}:</strong> ${msg.message} ${msg.createdAt}</div>`;
+            const messageHtml = `
+                <div class="alert alert-info d-flex justify-content-between align-items-center mb-1">
+                    <div>
+                        <strong>${msg.senderName}:</strong> ${msg.message}
+                    </div>
+                    <small class="text-muted">${msg.createdAt}</small>
+                </div>
+            `;
+            messageBox.append(messageHtml);
+            messageBox.scrollTop(messageBox[0].scrollHeight);
+        }
+
+        // function displayMessage(messageData) {
+        //     const messageBox = $('#messageBox');
+        //     // 수신된 메시지에서 message만 추출하여 추가
+        //     messageBox.append(`<div class="alert alert-info">${messageData}</div>`);
+        //     messageBox.scrollTop(messageBox[0].scrollHeight);
+        // }
+
+        function fetchOldMessages(chatRoomId) {
+            const apiUrl = `http://localhost:8080/api/chat_rooms/message/${chatRoomId}?cursor=&size=50`;
+            const token = $('#jwtToken').val();
+
+            if (!token) {
+                console.error('JWT Token is missing for fetching old messages.');
+                // connectWebSocket에서 이미 확인했지만, 방어적으로 코드 추가
+                return;
+            }
+
+            axios.get(apiUrl, {
+                headers: {
+                    'Authorization':
+                        `Bearer ${token}`
+                }
+            }).then(response => {
+                console.log('Old messages:', response.data);
+                const messages = response.data.data; // 서버에서 내려주는 메시지 리스트
+                if (messages) {
+                    messages.forEach(msg => {
+                        // -- 수정된 부분: 메시지 텍스트(msg.message)가 아닌 메시지 객체(msg) 전체를 전달
+                        displayMessage(msg);
+                    });
+                }
+            }).catch(error => {
+                console.error('이전 메시지 불러오기 실패:', error);
+            });
+        }
+
+        $(function () {
+            // 연결 버튼 클릭 시 웹소켓 연결
+
+            // 연결 후 -> 이전 메시지 불러오기
+//             $('#connectBtn').click(function () {
+//                 connectWebSocket();
+//
+//                 const chatRoomId = $('#chatRoomId').val(); // input 하나 추가해서 chatRoomId 받기
+//                 fetchOldMessages(chatRoomId);
+//             });
+
+            $('#connectBtn').click(function () {
+                const chatRoomId = $('#chatRoomId').val().trim();
+                if (!chatRoomId) {
+                    alert('chatRoomId를 입력하세요.');
+                    return;
+                }
+                connectWebSocket(chatRoomId); // chatRoomId 전달
+            });
+
+            // 구독 추가 버튼 클릭 시
+            $('#addSubscriptionBtn').click(function () {
+                const subscriptionCount = $('#subscriptionList .subscription-form').length; // 현재 구독 수
+                const subscriptionForm = `
+                    <div class="mb-3 input-group subscription-form" id="subscription-${subscriptionCount}" style="width: 500px;">
+                        <input type="text" class="form-control" placeholder="SUB PATH" id="path-${subscriptionCount}" />
+                        <button class="btn btn-primary subscribeBtn">SUB</button>
+                        <button class="btn btn-danger unsubscribeBtn" style="display: none;">UNSUB</button>
+                    </div>`;
+                $('#subscriptionList').append(subscriptionForm);
+            });
+
+            // 구독 버튼 클릭 시
+            $(document).on('click', '.subscribeBtn', function () {
+                const inputField = $(this).siblings('input');
+                const path = inputField.val();
+                subscribeToPath(path);
+                inputField.prop('disabled', true); // 입력 필드 비활성화
+                $(this).prop('disabled', true).hide(); // 구독 버튼 비활성화 및 숨김
+                $(this).siblings('.unsubscribeBtn').show(); // 구독 해제 버튼 표시
+            });
+
+            // 구독 해제 버튼 클릭 시
+            $(document).on('click', '.unsubscribeBtn', function () {
+                const inputField = $(this).siblings('input');
+                const path = inputField.val();
+                unsubscribeFromPath(path); // 구독 해제 함수 호출
+                inputField.prop('disabled', false); // 입력 필드 재활성화
+                $(this).siblings('.subscribeBtn').prop('disabled', false).show(); // 구독 버튼 재활성화
+                $(this).hide(); // 구독 해제 버튼 숨김
+            });
+
+            // 메시지 전송 버튼 클릭 시
+            $('#sendBtn').click(function () {
+                const destinationPath = $('#destinationPath').val(); // 대상 경로 가져오기
+                const messageJson = $('#message').val(); // JSON 형태의 메시지 가져오기
+                const chatRoomId = $('#chatRoomId').val().trim();
+                const token = $('#jwtToken').val();
+
+                try {
+                    const message = JSON.parse(messageJson); // JSON으로 변환
+
+                    message.chatRoomId = isNaN(chatRoomId) ? chatRoomId : Number(chatRoomId);
+
+                    // stompClient.send(destinationPath, {}, JSON.stringify(message)); // 메시지 발행
+                    stompClient.send(destinationPath, {
+                        Authorization: `Bearer ${token}`
+                    }, JSON.stringify(message));
+                } catch (error) {
+                    alert('유효한 JSON을 입력하세요!'); // JSON 오류 처리
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h1>WebSocket CONNECT</h1>
+    <div class="mb-3 input-group" style="width: 500px;">
+        <input type="text" id="websocketUrl" class="form-control" placeholder="ws://localhost:8080/api/ws/chat"
+               value="http://localhost:8080/api/ws/chat"/>
+        <button id="connectBtn" class="btn btn-primary">CONN</button>
+    </div>
+
+    <h2>SUBSCRIBE</h2>
+    <h6>ex : /sub/chat/mates/{chatRoomId}</h6>
+    <div id="subscriptionList"></div>
+    <div class="input-group mb-3">
+        <button id="addSubscriptionBtn" class="btn btn-secondary"
+        value="/sub/chat/mates/1">ADD</button>
+    </div>
+
+    <div class="mb-3">
+        <label for="jwtToken" class="form-label">JWT Token:</label>
+        <input type="text" id="jwtToken" class="form-control" placeholder="여기에 JWT 토큰을 입력하세요."/>
+    </div>
+
+    <h2>SEND MESSAGE</h2>
+    <div class="mb-3">
+        <label for="destinationPath" class="form-label">DESTINATION PATH:</label>
+        <input type="text" id="destinationPath" class="form-control" placeholder="/pub/chats/sendMessage"
+        value="/pub/chats/send-message"/>
+    </div>
+    <div class="mb-3">
+        <label for="chatRoomId" class="form-label">Chat Room ID:</label>
+        <input type="text" id="chatRoomId" class="form-control" placeholder="1"/>
+    </div>
+    <div class="mb-3">
+        <label for="message" class="form-label">MESSAGE(JSON):</label>
+        <textarea id="message" class="form-control"
+                  placeholder='{"targetUsername": "유저명", "message": "전송할 메시지", "sender": "발신자명"}'>
+{ "senderId" : 1, "message" : "안녕하세요?" }</textarea>
+    </div>
+    <button id="sendBtn" class="btn btn-success">SEND</button>
+
+    <h2 class="mt-4">MESSAGES</h2>
+    <div id="messageBox" class="border p-3" style="height: 200px; overflow-y: auto;"></div>
+</div>
+</body>
+</html>
