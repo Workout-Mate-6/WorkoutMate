@@ -1,6 +1,8 @@
 package com.example.workoutmate.global.config;
 
 import com.example.workoutmate.domain.user.enums.UserRole;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;

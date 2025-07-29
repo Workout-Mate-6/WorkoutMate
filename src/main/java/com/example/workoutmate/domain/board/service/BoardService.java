@@ -122,7 +122,7 @@ public class BoardService {
     }
 
     // 작성자 권한 체크 메서드
-    public static void validateBoardWriter(Long userId, Board board) {
+    public void validateBoardWriter(Long userId, Board board) {
         if (!board.getWriter().getId().equals(userId)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
