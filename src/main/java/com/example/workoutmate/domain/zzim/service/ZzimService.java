@@ -108,5 +108,16 @@ public class ZzimService {
         }
     }
 
+    @Transactional
+    public void deleteZzim(Long zzimId, Long userId) {
 
+        Zzim zzim = zzimRepository.findById(zzimId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ZZIM_NOT_FOUND));
+
+        if (!zzim.getUser().getId().equals(userId)) {
+            throw  new CustomException(CustomErrorCode.FORBIDDEN_ZZIM_ACCESS);
+        }
+
+        zzimRepository.delete(zzim);
+    }
 }

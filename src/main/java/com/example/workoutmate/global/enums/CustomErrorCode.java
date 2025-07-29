@@ -60,6 +60,8 @@ public enum CustomErrorCode {
     // Zzim
     ALREADY_ZZIM(HttpStatus.CONFLICT, "이미 찜한 게시글입니다."),
     CANNOT_ZZIM_OWN_BOARD(HttpStatus.BAD_REQUEST, "본인이 작성한 게시글은 찜할 수 없습니다."),
+    ZZIM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 찜 정보를 찾을 수 없습니다."),
+    FORBIDDEN_ZZIM_ACCESS(HttpStatus.FORBIDDEN, "해당 찜에 대한 권한이 없습니다."),
 
     // participation
     DUPLICATE_APPLICATION(HttpStatus.CONFLICT, "이미 신청한 결과가 있습니다."),
