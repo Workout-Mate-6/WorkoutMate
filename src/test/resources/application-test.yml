@@ -3,9 +3,10 @@ spring:
     name: WorkoutMate
 
   datasource:
-    url: jdbc:mysql://localhost:3306/${DB_SCHEME}?rewriteBatchedStatements=true
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
