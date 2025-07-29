@@ -111,7 +111,6 @@ public class User extends BaseEntity {
     public void issueVerificationCode(String code, LocalDateTime expiresAt) {
         this.verificationCode = code;
         this.verificationCodeExpiresAt = expiresAt;
-        this.isEmailVerified = false; // 새 코드 발급시 인증은 다시 false로
     }
 
     // 인증코드 성공적으로 검증(인증 완료)
