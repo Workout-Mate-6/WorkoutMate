@@ -23,8 +23,8 @@ public class EmailVerificationService {
         // 6자리 랜덤 인증코드 생성
         String code = generateVerificationCode();
 
-        // 인증코드와 만료시간 세팅 -> 테스트를 위해 1분으로 설정
-        user.issueVerificationCode(code, LocalDateTime.now().plusMinutes(3));
+        // 인증코드와 만료시간 세팅 -> 5분
+        user.issueVerificationCode(code, LocalDateTime.now().plusMinutes(5));
 
         userRepository.save(user);
 
