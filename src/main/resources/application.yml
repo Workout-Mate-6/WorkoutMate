@@ -17,7 +17,7 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
   # redis ?? ?? ? ?? ?? ? ??
 #  data:

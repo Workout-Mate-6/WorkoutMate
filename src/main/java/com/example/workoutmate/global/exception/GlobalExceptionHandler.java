@@ -54,8 +54,8 @@ public class GlobalExceptionHandler {
     }
 
     // HTTP 메시지 읽기(파싱) 예외처리
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        return ApiResponse.failure(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다");
-    }
+//    @ExceptionHandler(HttpMessageNotReadableException.class)
+//    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+//        return ApiResponse.failure(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다");
+//    }
 }

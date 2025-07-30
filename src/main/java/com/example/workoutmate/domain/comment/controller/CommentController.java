@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.comment.controller;
 import com.example.workoutmate.domain.comment.dto.CommentRequestDto;
 import com.example.workoutmate.domain.comment.dto.CommentResponseDto;
 import com.example.workoutmate.domain.comment.service.CommentService;
+import com.example.workoutmate.domain.comment.dto.CommentWithParticipationStatusResponseDto;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -69,6 +70,16 @@ public class CommentController {
         commentService.deleteComment(boardId, commentId, authUser);
 
         return ApiResponse.success(HttpStatus.OK, "댓글 삭제가 완료되었습니다.", null);
+    }
+
+    @GetMapping("/boards/{boardId}/comments/participations")
+    public ResponseEntity<ApiResponse<List<CommentWithParticipationStatusResponseDto>>> getCommentWithParticipation(
+            @PathVariable Long boardId
+    ) {
+
+        return ApiResponse.success(HttpStatus.OK,
+                "조회 되었습니다.",
+                commentService.getCommentWithParticipation(boardId));
     }
 
 }
