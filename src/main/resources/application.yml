@@ -34,6 +34,10 @@ spring:
     serialization:
       write-date-keys-as-timestamps: false
 
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY}
+    from: ${SENDGRID_FROM_EMAIL}
+    template-id: ${SENDGRID_TEMPLATE_ID}
 
 server:
   error:
