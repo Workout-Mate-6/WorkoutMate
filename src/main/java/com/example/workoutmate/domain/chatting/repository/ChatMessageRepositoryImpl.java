@@ -27,7 +27,7 @@ public class ChatMessageRepositoryImpl implements ChatMessageRepositoryCustom {
                         chatMessage.chatRoomId.eq(chatRoomId),
                         cursor != null ? chatMessage.id.lt(cursor) : null
                 )
-                .orderBy(chatMessage.id.desc())
+                .orderBy(chatMessage.id.asc())
                 .limit(size)
                 .fetch();
     }

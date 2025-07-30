@@ -23,6 +23,7 @@ public class Participation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private ParticipationState state = ParticipationState.NONE;
 

@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
-
 @Service
 @RequiredArgsConstructor
 public class ParticipationService {
@@ -122,7 +121,8 @@ public class ParticipationService {
         boolean isChoosingToParticipation = (state == ParticipationState.PARTICIPATION);
         boolean isChoosingToDecline = (state == ParticipationState.DECLINED);
         boolean isAccepted = participation.getState() == ParticipationState.ACCEPTED;
-        Board board = participation.getBoard();
+        // 락 적용
+        Board board = boardService.findByIdWithPessimisticLock(boardId);
 
         // 참여 라고 했을때 +1 하는 로직
         if (isChoosingToParticipation && isAccepted) {
@@ -175,4 +175,6 @@ public class ParticipationService {
     Set<ParticipationState> validState = Set.of(
             ParticipationState.REQUESTED
     );
+
+
 }

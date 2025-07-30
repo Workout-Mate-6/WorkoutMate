@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ParticipationCreateService {
@@ -36,5 +40,17 @@ public class ParticipationCreateService {
                 .build();
 
         participationRepository.save(participation);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, ParticipationState> getParticipationStatus(Long boardId, List<Long> userId) {
+        List<Participation> participations = participationRepository
+                .findByBoardIdAndApplicant_IdIn(boardId, userId);
+
+        return participations.stream()
+                .collect(Collectors.toMap(
+                        participation -> participation.getApplicant().getId(),
+                        Participation::getState
+                ));
     }
 }

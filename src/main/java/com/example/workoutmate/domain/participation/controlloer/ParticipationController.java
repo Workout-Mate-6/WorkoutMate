@@ -34,7 +34,7 @@ public class ParticipationController {
             @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.requestApporval(boardId, commentId, participationRequestDto,authUser);
+        participationService.requestApporval(boardId, commentId, participationRequestDto, authUser);
         return ApiResponse.success(HttpStatus.OK, "요청을 보냈습니다.", null);
     }
 

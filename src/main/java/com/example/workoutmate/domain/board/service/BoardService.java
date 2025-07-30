@@ -109,10 +109,10 @@ public class BoardService {
         Board board = boardSearchService.getBoardById(boardId);
 
         // 작성자 권한 체크
-        validateBoardWriter(userId,board);
+        validateBoardWriter(userId, board);
 
         // 모집인원 수정시, 이미 모집된 인원보다 항상 커야함
-        if(requestDto.getTargetCount()<board.getCurrentCount())
+        if (requestDto.getTargetCount() < board.getCurrentCount())
             throw new CustomException(CustomErrorCode.INVALID_TARGETCOUNT);
 
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getTargetCount());
@@ -139,5 +139,10 @@ public class BoardService {
         }
     }
 
+    // participation쪽 동시성 락 구현때문에 메서드 제작..
+    @Transactional(readOnly = true)
+    public Board findByIdWithPessimisticLock(Long id) {
+        return boardRepository.findByIdWithPessimisticLock(id).orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
+    }
 
 }
