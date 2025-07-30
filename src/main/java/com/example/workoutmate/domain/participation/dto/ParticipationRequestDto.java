@@ -3,9 +3,11 @@ package com.example.workoutmate.domain.participation.dto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class ParticipationRequestDto {
 
     @NotNull
