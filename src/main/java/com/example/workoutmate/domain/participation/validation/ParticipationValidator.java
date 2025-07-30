@@ -34,26 +34,16 @@ public class ParticipationValidator {
                 if (
                         // 여기서도 거절 했다가 수락은...
                         requestedState == ParticipationState.ACCEPTED ||
-                        requestedState == ParticipationState.PARTICIPATION ||
                         requestedState == ParticipationState.DECLINED
                 ) {
                     throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION);
                 }
                 break;
-            case PARTICIPATION:
-                if (
-                        requestedState == ParticipationState.REQUESTED ||
-                        requestedState == ParticipationState.REJECTED ||
-                        requestedState == ParticipationState.ACCEPTED
-                ) {
-                    throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION);
-                }
-                break;
+
             case DECLINED:
                 if (
                         requestedState == ParticipationState.ACCEPTED ||
-                        requestedState == ParticipationState.REJECTED ||
-                        requestedState == ParticipationState.PARTICIPATION
+                        requestedState == ParticipationState.REJECTED
                 ) {
                     throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION);
                 }
