@@ -1,4 +1,4 @@
-package com.example.workoutmate.global.config;
+package com.example.workoutmate.global.util;
 
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.enums.CustomErrorCode;
