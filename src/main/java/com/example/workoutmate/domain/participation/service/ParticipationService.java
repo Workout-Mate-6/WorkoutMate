@@ -71,7 +71,7 @@ public class ParticipationService {
         // 타입 변환...
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
         // 상태 검사 (신청만 허용)
-        if (!validState.contains(state)) {
+        if (!validStateRequested.contains(state)) {
             throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
         }
         // 현재 state 값 가져오기
@@ -98,12 +98,18 @@ public class ParticipationService {
 
         validateStateChange(participationRequestDto, participation); // 메서드
 
+        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
+
+        if (state == ParticipationState.ACCEPTED) {
+            board.increaseCurrentParticipants();
+        }
+
         participation.updateState(participationRequestDto);
     }
 
-    // 참여 or 불참 선택
+     // 불참만 가능하게
     @Transactional
-    public void chooseParticipation(
+    public void cancelParticipation(
             Long boardId,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
@@ -116,21 +122,21 @@ public class ParticipationService {
 
         validateStateChange(participationRequestDto, participation); // 메서드
 
-        // 참가 인원 카운트 하는 로직
+
+        // 타입 변환...
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
-        boolean isChoosingToParticipation = (state == ParticipationState.PARTICIPATION);
+        // 상태 검사 (불참만 허용)
+        if (!validStateDecline.contains(state)) {
+            throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
+        }
+
+        // 참가 인원 카운트 하는 로직
         boolean isChoosingToDecline = (state == ParticipationState.DECLINED);
-        boolean isAccepted = participation.getState() == ParticipationState.ACCEPTED;
         // 락 적용
         Board board = boardService.findByIdWithPessimisticLock(boardId);
 
-        // 참여 라고 했을때 +1 하는 로직
-        if (isChoosingToParticipation && isAccepted) {
-            board.increaseCurrentParticipants();
-        }
-
         // 불참으로 변경시 -1 하는 로직
-        if (isChoosingToDecline && participation.getState() == ParticipationState.PARTICIPATION) {
+        if (isChoosingToDecline && participation.getState() == ParticipationState.ACCEPTED) {
             board.decreaseCurrentParticipants();
         }
 
@@ -172,8 +178,13 @@ public class ParticipationService {
     }
 
     // 허용치 범위 설정! (신청만 허용)
-    Set<ParticipationState> validState = Set.of(
+    Set<ParticipationState> validStateRequested = Set.of(
             ParticipationState.REQUESTED
+    );
+
+    // 불참만 가능
+    Set<ParticipationState> validStateDecline = Set.of(
+            ParticipationState.DECLINED
     );
 
 

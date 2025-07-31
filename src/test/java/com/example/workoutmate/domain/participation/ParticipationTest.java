@@ -122,7 +122,7 @@ public class ParticipationTest {
                     );
 
                     // 실제 참여 처리 (여기서 동시성 제어가 일어남)
-                    participationService.chooseParticipation(board.getId(), dto, authUser);
+                    participationService.cancelParticipation(board.getId(), dto, authUser);
                     successCount.incrementAndGet();
 
                 } catch (CustomException e) {
