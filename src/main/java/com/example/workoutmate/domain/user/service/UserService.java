@@ -79,9 +79,6 @@ public class UserService {
             user.changePassword(encodedPassword);
         }
 
-        if(requestDto.getEmail() != null) {
-            user.changeEmail(requestDto.getEmail());
-        }
         if(requestDto.getName() != null) {
             user.changeName(requestDto.getName());
         }
