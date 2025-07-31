@@ -53,6 +53,9 @@ dependencies {
     // spring websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+    // env
+    implementation 'io.github.cdimascio:java-dotenv:5.1.1'
+
 }
 
 tasks.named('test') {
