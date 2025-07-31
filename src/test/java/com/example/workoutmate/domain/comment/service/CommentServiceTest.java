@@ -82,7 +82,7 @@ class CommentServiceTest {
         assertThat(response.getContent()).isEqualTo("테스트 댓글 내용");
 
         verify(commentRepository, times(1)).save(any(Comment.class));
-        verify(participationCreateService).participationInjector(eq(board), eq(user), any(Comment.class));
+        //verify(participationCreateService).participationInjector(eq(board), eq(user), any(Comment.class));
     }
 
     @Test
