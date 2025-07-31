@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SignatureException;
 import java.util.Collections;
 
 @Slf4j
@@ -70,7 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
-        } catch (SecurityException | MalformedJwtException e) {
+        } catch (MalformedJwtException | SecurityException e) {
+            log.error("Invalid JWT signature, 유효하지 않은 JWT 서명입니다.", e);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 JWT 서명입니다.");
+            return;}
+        catch (io.jsonwebtoken.security.SignatureException e) {
             log.error("Invalid JWT signature, 유효하지 않은 JWT 서명입니다.", e);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 JWT 서명입니다.");
             return;
@@ -84,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         } catch (Exception e) {
             log.error("Internal server error", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "예상치 못한 서버 에러입니다.");
             return;
         }
     }

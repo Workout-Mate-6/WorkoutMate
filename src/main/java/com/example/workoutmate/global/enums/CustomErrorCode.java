@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum CustomErrorCode {
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 오류"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+    ENUM_TYPE_MISMATCH(HttpStatus.NOT_FOUND,"ENUM에 존재하지 않은 값입니다."),
 
     // DB 조건 위반
     DATA_INTEGRITY_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 무결성 위반입니다."),
