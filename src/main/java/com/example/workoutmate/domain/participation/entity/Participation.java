@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.participation.entity;
 
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.user.entity.User;
@@ -36,12 +35,6 @@ public class Participation extends BaseEntity {
     @JoinColumn(name = "applicant_id", nullable = false)
     private User applicant;
 
-
-
-    // 요청쪽에서 사용
-    public void updateState(ParticipationState state) {
-        this.state = state;
-    }
 
     // 수락/거절쪽에서 사용
     public void updateState(ParticipationRequestDto participationRequestDto) {

@@ -3,7 +3,6 @@ package com.example.workoutmate.domain.participation.service;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
-import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.service.CommentService;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
@@ -23,7 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +35,6 @@ public class ParticipationService {
 
     private final ParticipationRepository participationRepository;
     private final QParticipationRepository qParticipationRepository;
-    private final CommentService commentService;
     private final BoardSearchService boardSearchService;
     private final BoardService boardService;
     private final UserService userService;

@@ -13,7 +13,6 @@ import com.example.workoutmate.domain.user.entity.QUser;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

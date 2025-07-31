@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.participation.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.participation.entity.Participation;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.repository.ParticipationRepository;
