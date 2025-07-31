@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
         return ApiResponse.failure(INVALID_REQUEST.getHttpStatus(), message);
     }
 
-    // 요청 body에 있는 필드가 Dto에 없을 시
+    // 요청 body로 보내는 필드가 Dto에 없을 시
     @ExceptionHandler(UnrecognizedPropertyException.class)
     public ResponseEntity<?> handleUnrecognizedPropertyException(UnrecognizedPropertyException e) {
         String message = String.format("요청에 포함된 잘못된 필드명입니다: [%s] 필드는 사용할 수 없습니다.", e.getPropertyName());
