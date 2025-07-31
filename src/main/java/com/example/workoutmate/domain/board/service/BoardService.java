@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.board.service;
 
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.BoardSportTypeResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
 import com.example.workoutmate.domain.board.entity.SportType;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -143,6 +146,17 @@ public class BoardService {
     @Transactional(readOnly = true)
     public Board findByIdWithPessimisticLock(Long id) {
         return boardRepository.findByIdWithPessimisticLock(id).orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
+    }
+
+    // 운동 종목 카테고리 항목 조회
+    @Transactional(readOnly = true)
+    public BoardSportTypeResponseDto getAllSportTypes() {
+
+        List<String> sportTypes = Arrays.stream(SportType.values())
+                .map(Enum::name) // "RUNNING", "FOOTBALL",...
+                .collect(Collectors.toList());
+
+        return new BoardSportTypeResponseDto(sportTypes);
     }
 
 }

@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.board.controller;
 
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.BoardSportTypeResponseDto;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -119,5 +120,14 @@ public class BoardController {
         boardService.deleteBoard(boardId, userId);
 
         return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 삭제되었습니다.", null);
+    }
+
+    // 운동 종목 카테고리 항목 조회
+    @GetMapping("/sportType")
+    public ResponseEntity<ApiResponse<BoardSportTypeResponseDto>> getAllSportTypes() {
+
+        BoardSportTypeResponseDto responseDto = boardService.getAllSportTypes();
+
+        return ApiResponse.success(HttpStatus.OK, "운동 종목 카테고리 전체 조회가 완료되었습니다.", responseDto);
     }
 }
