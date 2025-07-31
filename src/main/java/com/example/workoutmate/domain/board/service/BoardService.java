@@ -1,11 +1,13 @@
 package com.example.workoutmate.domain.board.service;
 
+import com.example.workoutmate.domain.board.dto.BoardFilterRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.dto.BoardSportTypeResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
 import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.board.repository.BoardQueryRepository;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardQueryRepository boardQueryRepository;
     private final BoardSearchService boardSearchService;
     private final UserService userService;
     private final FollowService followService;
@@ -157,6 +160,13 @@ public class BoardService {
                 .collect(Collectors.toList());
 
         return new BoardSportTypeResponseDto(sportTypes);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> searchBoards(Long userId, BoardFilterRequestDto filterRequestDto, Pageable pageable) {
+        Page<Board> boardPage = boardQueryRepository.searchWithFilters(userId, filterRequestDto, pageable);
+
+        return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
 }
