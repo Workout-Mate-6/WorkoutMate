@@ -15,6 +15,6 @@ public class EmailVerificationResponseDto {
     private String email;
     private String name;
     private UserGender gender;
-    private Boolean emailVerified;
+    private Boolean isEmailVerified;
     private LocalDateTime createdAt;
 }

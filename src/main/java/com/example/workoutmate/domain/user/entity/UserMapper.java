@@ -37,7 +37,7 @@ public class UserMapper {
                 .email(user.getEmail())
                 .name(user.getName())
                 .gender(user.getGender())
-                .emailVerified(user.isEmailVerified())
+                .isEmailVerified(user.isEmailVerified())
                 .createdAt(user.getCreatedAt())
                 .build();
     }
