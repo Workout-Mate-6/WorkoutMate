@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum CustomErrorCode {
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 오류"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+    ENUM_TYPE_MISMATCH(HttpStatus.NOT_FOUND,"ENUM에 존재하지 않은 값입니다."),
 
     // DB 조건 위반
     DATA_INTEGRITY_VIOLATION(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 무결성 위반입니다."),
@@ -40,7 +41,7 @@ public enum CustomErrorCode {
     // Board
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게시글을 찾을 수 없습니다."),
     UNAUTHORIZED_BOARD_ACCESS(HttpStatus.FORBIDDEN, "본인의 게시글만 수정 또는 삭제가 가능합니다."),
-    INVALID_TARGETCOUNT(HttpStatus.BAD_REQUEST, "모집인원은 모집 확정 인원보다 커야합니다."),
+    INVALID_MAX_PARTICIPANTS(HttpStatus.BAD_REQUEST, "모집인원은 모집 확정 인원보다 커야합니다."),
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),

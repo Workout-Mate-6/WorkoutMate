@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.user.entity;
 import com.example.workoutmate.domain.user.dto.AuthResponseDto;
 import com.example.workoutmate.domain.user.dto.EmailVerificationResponseDto;
 import com.example.workoutmate.domain.user.dto.SignupRequestDto;
+import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.enums.UserRole;
 
 public class UserMapper {
@@ -13,7 +14,7 @@ public class UserMapper {
                 .email(dto.getEmail())
                 .password(encodedPassword)
                 .name(dto.getName())
-                .gender(dto.getGender())
+                .gender(UserGender.from(dto.getGender()))
                 .role(UserRole.GUEST)
                 .isDeleted(false)
                 .build();

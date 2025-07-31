@@ -56,7 +56,7 @@ public class ParticipationTest {
     private List<User> testUsers;
 
     private static final int THREAD_COUNT = 10;
-    private static final Long TARGET_COUNT = 3L;
+    private static final Long MAX_PARTICIPANTS = 3L;
 
     // 데이터 사전 준비 준비 || 불필요한 DB 경합 방지를 위해
     @BeforeEach
@@ -122,7 +122,7 @@ public class ParticipationTest {
                     );
 
                     // 실제 참여 처리 (여기서 동시성 제어가 일어남)
-                    participationService.chooseParticipation(board.getId(), dto, authUser);
+                    participationService.cancelParticipation(board.getId(), dto, authUser);
                     successCount.incrementAndGet();
 
                 } catch (CustomException e) {
@@ -152,22 +152,22 @@ public class ParticipationTest {
         System.out.println("=== 테스트 결과 ===");
         System.out.println("성공한 참여자 수: " + successCount.get());
         System.out.println("실패한 참여자 수: " + failCount.get());
-        System.out.println("최종 현재 인원: " + result.getCurrentCount());
-        System.out.println("목표 인원: " + result.getTargetCount());
+        System.out.println("최종 현재 인원: " + result.getCurrentParticipants());
+        System.out.println("목표 인원: " + result.getMaxParticipants());
         System.out.println("전체 시도 횟수: " + (successCount.get() + failCount.get()));
 
         // 검증: 현재 인원이 목표 인원을 초과하지 않는지...
-        assertThat(result.getCurrentCount())
+        assertThat(result.getCurrentParticipants())
                 .as("현재 인원이 목표 인원을 초과하면 안됨")
-                .isLessThanOrEqualTo(result.getTargetCount());
+                .isLessThanOrEqualTo(result.getMaxParticipants());
 
         // 성공한 참여자 수는 목표 인원과 같거나 작아야됨
         assertThat(successCount.get())
                 .as("성공한 참여자 수는 목표 인원을 초과할 수 없음")
-                .isLessThanOrEqualTo(TARGET_COUNT.intValue());
+                .isLessThanOrEqualTo(MAX_PARTICIPANTS.intValue());
 
         // 동시성 제어가 제대로 작동했다면, 일부는 성공하고 일부는 실패해야 함
-        if (THREAD_COUNT > TARGET_COUNT) {
+        if (THREAD_COUNT > MAX_PARTICIPANTS) {
             assertThat(failCount.get())
                     .as("목표 인원보다 많은 스레드가 실행되면 일부는 실패해야 함")
                     .isGreaterThan(0);
@@ -194,8 +194,8 @@ public class ParticipationTest {
                 .title("동시성 테스트 게시글")
                 .content("인원 제한 테스트용 게시글입니다.")
                 .sportType(SportType.FOOTBALL)
-                .targetCount(TARGET_COUNT)
-                .currentCount(0L)
+                .maxParticipants(MAX_PARTICIPANTS)
+                .currentParticipants(0L)
                 .build();
     }
 
