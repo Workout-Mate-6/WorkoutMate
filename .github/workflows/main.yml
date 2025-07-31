@@ -96,6 +96,10 @@ jobs:
             docker stop my-app || true
             # 기존 'my-app' 컨테이너가 있으면 삭제함. 없으면 그냥 넘어감.
             docker rm my-app || true
+            
             # 새로 받은 이미지로 'my-app'이라는 이름의 컨테이너를 실행함.
             # -d: 백그라운드에서 실행, -p 8080:8080: 포트 연결
-            docker run -d -p 8080:8080 --name my-app ${{ secrets.DOCKERHUB_USERNAME }}/my-spring-app:latest
+            # docker run -d -p 8080:8080 --name my-app ${{ secrets.DOCKERHUB_USERNAME }}/my-spring-app:latest
+            
+            # 새로 받은 이미지로 docker 실행
+            docker compose up
