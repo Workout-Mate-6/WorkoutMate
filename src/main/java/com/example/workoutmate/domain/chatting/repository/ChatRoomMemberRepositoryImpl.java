@@ -43,7 +43,8 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
                     JPAExpressions
                             .select(m.createdAt.max())
                             .from(m)
-                            .where(m.chatRoomId.eq(c.id))
+                            .where(m.chatRoomId.eq(c.id)
+                                    .and(m.createdAt.after(cm.joinedAt)))
                             .lt(cursor)
             );
         }
@@ -52,7 +53,8 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
         var latestMessageSubquery = JPAExpressions
                 .select(m.createdAt.max())
                 .from(m)
-                .where(m.chatRoomId.eq(c.id));
+                .where(m.chatRoomId.eq(c.id)
+                        .and(m.createdAt.after(cm.joinedAt)));
 
         return queryFactory
                 .select(new QChatRoomResponseDto(
