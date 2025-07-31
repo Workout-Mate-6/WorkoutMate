@@ -17,8 +17,8 @@ public class BoardResponseDto {
     private final String title;
     private final String content;
     private final SportType sportType;
-    private final Long targetCount;
-    private final Long currentCount;
+    private final Long maxParticipants;
+    private final Long currentParticipants;
     private final Status status;
     private final LocalDateTime createdAt;
     private final LocalDateTime modifiedAt;
