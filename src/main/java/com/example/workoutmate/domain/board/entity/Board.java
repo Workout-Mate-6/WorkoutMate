@@ -51,13 +51,13 @@ public class Board extends BaseEntity {
     private LocalDateTime deletedAt;
 
     // 모집 인원
-    @Column(name = "target_count", nullable = false)
-    private Long targetCount;
+    @Column(name = "max_participants", nullable = false)
+    private Long maxParticipants;
 
     // 모집된 인원
-    @Column(name = "current_count")
+    @Column(name = "current_participants")
     @Builder.Default
-    private Long currentCount = 0L;
+    private Long currentParticipants = 0L;
 
     // 모집 상태
     @Builder.Default
@@ -67,21 +67,21 @@ public class Board extends BaseEntity {
 
 
     @Builder
-    public Board(User writer, String title, String content, SportType sportType, Long targetCount) {
+    public Board(User writer, String title, String content, SportType sportType, Long maxParticipants) {
         this.writer = writer;
         this.title = title;
         this.content = content;
         this.sportType = sportType;
-        this.targetCount = targetCount;
+        this.maxParticipants = maxParticipants;
         this.isDeleted = false;
         this.deletedAt = null;
     }
 
-    public void update(String title, String content, SportType sportType, Long targetCount) {
+    public void update(String title, String content, SportType sportType, Long maxParticipants) {
         this.title = title;
         this.content = content;
         this.sportType = sportType;
-        this.targetCount = targetCount;
+        this.maxParticipants = maxParticipants;
     }
 
     public void delete() {
@@ -90,16 +90,16 @@ public class Board extends BaseEntity {
     }
 
 
-    public void increaseCurrentCount() {
-        if (this.currentCount >= this.targetCount) {
+    public void increaseCurrentParticipants() {
+        if (this.currentParticipants >= this.maxParticipants) {
             throw new CustomException(CustomErrorCode.BOARD_FULL);
         }
-        this.currentCount++;
+        this.currentParticipants++;
     }
 
-    public void decreaseCurrentCount() {
-        if (this.currentCount > 0) {
-            this.currentCount--;
+    public void decreaseCurrentParticipants() {
+        if (this.currentParticipants > 0) {
+            this.currentParticipants--;
         }
     }
 }

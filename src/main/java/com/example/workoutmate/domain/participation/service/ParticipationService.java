@@ -101,7 +101,7 @@ public class ParticipationService {
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
 
         if (state == ParticipationState.ACCEPTED) {
-            board.increaseCurrentCount();
+            board.increaseCurrentParticipants();
         }
 
         participation.updateState(participationRequestDto);
@@ -137,7 +137,7 @@ public class ParticipationService {
 
         // 불참으로 변경시 -1 하는 로직
         if (isChoosingToDecline && participation.getState() == ParticipationState.ACCEPTED) {
-            board.decreaseCurrentCount();
+            board.decreaseCurrentParticipants();
         }
 
         participation.updateState(participationRequestDto);
