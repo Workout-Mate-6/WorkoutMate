@@ -77,14 +77,14 @@ public class ParticipationController {
         );
     }
 
-    // 참여/불참 선택
+    // 불참만 가능하게
     @PatchMapping("/boards/{boardId}/participations")
-    public ResponseEntity<ApiResponse<Void>> chooseParticipation(
+    public ResponseEntity<ApiResponse<Void>> cancelParticipation(
             @PathVariable Long boardId,
             @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.chooseParticipation(boardId, participationRequestDto, authUser);
+        participationService.cancelParticipation(boardId, participationRequestDto, authUser);
         return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
     }
 }

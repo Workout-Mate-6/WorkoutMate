@@ -120,7 +120,7 @@ public class QParticipationRepository {
                 .join(participation.applicant, user)
                 .where(
                         participation.board.id.eq(boardId),
-                        participation.state.eq(ParticipationState.PARTICIPATION)
+                        participation.state.eq(ParticipationState.ACCEPTED)
                 )
                 .fetch();
     }
