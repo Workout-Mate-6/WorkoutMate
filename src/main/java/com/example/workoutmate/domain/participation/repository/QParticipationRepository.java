@@ -34,6 +34,7 @@ import static com.example.workoutmate.domain.user.entity.QUser.user;
 public class QParticipationRepository {
 
     private final JPAQueryFactory queryFactory;
+
     /**
      * 로그인한 사용자가 작성한 게시글에 달린 참여 요청들을 조회합니다.
      * - 참여 상태로 필터링 가능
@@ -47,7 +48,6 @@ public class QParticipationRepository {
     ) {
         QParticipation participation = QParticipation.participation;
         QBoard board = QBoard.board;
-        QComment comment = QComment.comment;
         QUser user = QUser.user;
 
         // 로그인한 사용자가 작성한 게시글의 참여 요청만 조회
@@ -75,8 +75,7 @@ public class QParticipationRepository {
         List<Participation> content = queryFactory
                 .selectFrom(participation)
                 .join(participation.board, board).fetchJoin()
-                .join(participation.comment, comment).fetchJoin()
-                .join(comment.writer, user).fetchJoin()
+                .join(participation.applicant, user).fetchJoin() // 신청자 정보를 조회
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -90,7 +89,7 @@ public class QParticipationRepository {
                         Collectors.mapping(
                                 p -> new ParticipationResponseDto(
                                         p.getId(),
-                                        p.getComment().getWriter().getName(),
+                                        p.getApplicant().getName(), // 신청자 이름으로 변경
                                         p.getState().toString(),
                                         p.getCreatedAt()
                                 ),

@@ -21,7 +21,7 @@ public class ParticipationCreateService {
     private final ParticipationRepository participationRepository;
     // 참여자(대기) 매서드
     @Transactional
-    public void participationInjector(Board board, User user, Comment comment) {
+    public void participationInjector(Board board, User user) {
         // 작성자 제외!
         if (user.getId().equals(board.getWriter().getId())) {
             return;
@@ -35,7 +35,6 @@ public class ParticipationCreateService {
         Participation participation = Participation.builder()
                 .board(board)
                 .applicant(user)
-                .comment(comment)
                 .state(ParticipationState.NONE)
                 .build();
 

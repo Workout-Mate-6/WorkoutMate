@@ -23,10 +23,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -46,27 +48,16 @@ public class ParticipationService {
     @Transactional
     public void requestApporval(
             Long boardId,
-            Long commentId,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
     ) {
-
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재유무 검증
-        Comment comment = commentService.findById(commentId);
         User user = userService.findById(authUser.getId());
-        commentService.validateCommentWriter(comment, user); // 본인이 작성한 댓글인지 검증
 
-
-        // 본인이 작성한 게시글(댓글)로는 신청 못하게 하는로직
-        boolean isBoardWriter = board.getWriter().getId().equals(user.getId());
-        boolean isCommentWriter = comment.getWriter().getId().equals(user.getId());
-        if (isBoardWriter && isCommentWriter) {
+        // 본인이 작성한 게시글로는 신청 못하게 하는로직
+        if (board.getWriter().getId().equals(user.getId())) {
             throw new CustomException(CustomErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
-
-        // 테이블에서 상태 가져와서 확인
-        Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
 
         // 타입 변환...
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
@@ -74,11 +65,26 @@ public class ParticipationService {
         if (!validStateRequested.contains(state)) {
             throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
         }
-        // 현재 state 값 가져오기
-        validateStateChange(participationRequestDto, participation);
 
-        // state값 변경!
-        participation.updateState(participationRequestDto);
+        // 게시글에 요청이 있는지 없는지 확인
+        Optional<Participation> optionalParticipation =
+                participationRepository.findByBoardIdAndApplicantId(boardId, user.getId());
+
+        Participation participation;
+
+        // 값이 있는지 없는지 확인
+        if (optionalParticipation.isPresent()) { // 있으면
+            // 댓글로 인해 참여신청을 했는지에 대해서 확인
+            participation = optionalParticipation.get();
+
+            // 현재 state 값 가져오기
+            validateStateChange(participationRequestDto, participation);
+            // state값 변경!
+            participation.updateState(participationRequestDto);
+        } else { // 없으면
+            participation = Participation.builder().board(board).applicant(user).state(state).build();
+            participationRepository.save(participation);
+        }
     }
 
     // 수락/거절

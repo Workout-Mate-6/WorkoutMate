@@ -45,7 +45,7 @@ public class CommentService {
         Comment savedComment = commentRepository.save(comment);
 
         // participation 구현중에 로직 추가했습니다.!
-        participationCreateService.participationInjector(board, user, comment);
+        participationCreateService.participationInjector(board, user);
 
         return CommentMapper.data(savedComment);
     }

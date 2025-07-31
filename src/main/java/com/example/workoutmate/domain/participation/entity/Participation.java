@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "participation", uniqueConstraints = {@UniqueConstraint(name = "uq_participation_comment_user",columnNames = {"applicant_id"})}) // 신청 중복 제거
+@Table(name = "participation", uniqueConstraints = {@UniqueConstraint(name = "uq_participation_board_user",columnNames = {"board_id","applicant_id"})}) // 신청 중복 제거
 public class Participation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +31,12 @@ public class Participation extends BaseEntity {
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="comment_id", nullable = false)
-    private Comment comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id", nullable = false)
     private User applicant;
+
+
 
     // 요청쪽에서 사용
     public void updateState(ParticipationState state) {
