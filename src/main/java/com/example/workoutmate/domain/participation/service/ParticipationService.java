@@ -126,12 +126,12 @@ public class ParticipationService {
 
         // 참여 라고 했을때 +1 하는 로직
         if (isChoosingToParticipation && isAccepted) {
-            board.increaseCurrentCount();
+            board.increaseCurrentParticipants();
         }
 
         // 불참으로 변경시 -1 하는 로직
         if (isChoosingToDecline && participation.getState() == ParticipationState.PARTICIPATION) {
-            board.decreaseCurrentCount();
+            board.decreaseCurrentParticipants();
         }
 
         participation.updateState(participationRequestDto);

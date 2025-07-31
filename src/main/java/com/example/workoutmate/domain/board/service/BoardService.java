@@ -112,10 +112,10 @@ public class BoardService {
         validateBoardWriter(userId, board);
 
         // 모집인원 수정시, 이미 모집된 인원보다 항상 커야함
-        if (requestDto.getTargetCount() < board.getCurrentCount())
-            throw new CustomException(CustomErrorCode.INVALID_TARGETCOUNT);
+        if (requestDto.getMaxParticipants() < board.getCurrentParticipants())
+            throw new CustomException(CustomErrorCode.INVALID_maxParticipants);
 
-        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getTargetCount());
+        board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getMaxParticipants());
 
         // entity -> dto
         return BoardMapper.boardToBoardResponse(board);

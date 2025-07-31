@@ -22,12 +22,12 @@ public class BoardRequestDto {
 
     @NotNull(message = "모집인원은 필수입니다.")
     @Positive(message = "모집인원은 0보다 커야합니다.")
-    private Long targetCount;
+    private Long maxParticipants;
 
-    public BoardRequestDto(String title, String content, SportType sportType, Long targetCount) {
+    public BoardRequestDto(String title, String content, SportType sportType, Long maxParticipants) {
         this.title = title;
         this.content = content;
         this.sportType = sportType;
-        this.targetCount = targetCount;
+        this.maxParticipants = maxParticipants;
     }
 }
