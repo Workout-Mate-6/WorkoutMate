@@ -8,8 +8,6 @@ import com.example.workoutmate.domain.follow.entity.QFollow;
 import com.example.workoutmate.domain.user.entity.QUser;
 import com.example.workoutmate.domain.zzim.entity.QZzim;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -55,6 +54,9 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                 .from(board)
                 .where(condition)
                 .fetchOne();
+
+        // total 값이 null일 경우 NullException을 방지하기 위해 0으로 변환 과정
+        total = Objects.requireNonNullElse(total, 0L);
 
         return new PageImpl<>(content, pageable, total);
     }
