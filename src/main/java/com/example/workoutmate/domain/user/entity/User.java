@@ -28,24 +28,23 @@ public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;
 
-    @NotBlank
+    @Column(nullable = false)
     private String password;
 
-    @NotBlank
+    @Column(nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
+    @Column(nullable = false)
     private UserGender gender;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    @NotNull
+    @Column(nullable = false)
     private UserRole role = UserRole.GUEST;
 
     @Column(name = "deleted_at")
@@ -54,6 +53,17 @@ public class User extends BaseEntity {
     @Column(name = "is_deleted")
     @Builder.Default
     private boolean isDeleted = false;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(name = "verification_code_expires_at")
+    private LocalDateTime verificationCodeExpiresAt;
+
+    @Column(name = "is_email_verified")
+    @Builder.Default
+    private boolean isEmailVerified = false;
+
 
     //follow 쪽 에서 사용
     @OneToMany(mappedBy = "follower")
@@ -95,5 +105,18 @@ public class User extends BaseEntity {
     public void delete() {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
+    }
+
+    // 인증코드 발급 및 만료시간 세팅
+    public void issueVerificationCode(String code, LocalDateTime expiresAt) {
+        this.verificationCode = code;
+        this.verificationCodeExpiresAt = expiresAt;
+    }
+
+    // 인증코드 성공적으로 검증(인증 완료)
+    public void completeEmailVerification() {
+        this.isEmailVerified = true;
+        this.verificationCode = null;
+        this.verificationCodeExpiresAt = null;
     }
 }

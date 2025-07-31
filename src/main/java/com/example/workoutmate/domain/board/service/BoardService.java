@@ -9,6 +9,7 @@ import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -91,6 +92,16 @@ public class BoardService {
         return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
+    // 내 게시물 목록 조회
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> getMyBoards(CustomUserPrincipal customUserPrincipal, Pageable pageable) {
+        User user = userService.findById(customUserPrincipal.getId());
+
+        Page<Board> boardPage = boardRepository.findAllByWriterAndIsDeletedFalse(user, pageable);
+
+        return boardPage.map(BoardMapper::boardToBoardResponse);
+    }
+
     //게시글 수정
     @Transactional
     public BoardResponseDto updateBoard(Long boardId, Long userId, BoardRequestDto requestDto) {
@@ -98,10 +109,10 @@ public class BoardService {
         Board board = boardSearchService.getBoardById(boardId);
 
         // 작성자 권한 체크
-        validateBoardWriter(userId,board);
+        validateBoardWriter(userId, board);
 
         // 모집인원 수정시, 이미 모집된 인원보다 항상 커야함
-        if(requestDto.getTargetCount()<board.getCurrentCount())
+        if (requestDto.getTargetCount() < board.getCurrentCount())
             throw new CustomException(CustomErrorCode.INVALID_TARGETCOUNT);
 
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getTargetCount());
@@ -122,10 +133,16 @@ public class BoardService {
     }
 
     // 작성자 권한 체크 메서드
-    public static void validateBoardWriter(Long userId, Board board) {
+    public void validateBoardWriter(Long userId, Board board) {
         if (!board.getWriter().getId().equals(userId)) {
             throw new CustomException(CustomErrorCode.UNAUTHORIZED_BOARD_ACCESS);
         }
+    }
+
+    // participation쪽 동시성 락 구현때문에 메서드 제작..
+    @Transactional(readOnly = true)
+    public Board findByIdWithPessimisticLock(Long id) {
+        return boardRepository.findByIdWithPessimisticLock(id).orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
     }
 
 }

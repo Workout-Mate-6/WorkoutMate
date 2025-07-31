@@ -34,6 +34,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
 
     // jwt
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
@@ -48,6 +49,12 @@ dependencies {
 
     // 시간 직렬화
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // sendGrid Api
+    implementation 'com.sendgrid:sendgrid-java:4.10.2'
+
+    // spring websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 }
 
