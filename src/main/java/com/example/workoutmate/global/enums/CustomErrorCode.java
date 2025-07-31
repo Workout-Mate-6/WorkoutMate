@@ -42,6 +42,7 @@ public enum CustomErrorCode {
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게시글을 찾을 수 없습니다."),
     UNAUTHORIZED_BOARD_ACCESS(HttpStatus.FORBIDDEN, "본인의 게시글만 수정 또는 삭제가 가능합니다."),
     INVALID_MAX_PARTICIPANTS(HttpStatus.BAD_REQUEST, "모집인원은 모집 확정 인원보다 커야합니다."),
+    BOARD_HAS_PARTICIPANTS(HttpStatus.BAD_REQUEST, "현재 참여자가 있어 게시글을 삭제할 수 없습니다."),
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
