@@ -50,7 +50,8 @@ public class ParticipationController {
         return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
     }
 
-    // 전체조회 <state 값은 필수 아님>
+
+    // 본인 게시글의 신청자 (전체) 조회 <state 값은 필수 아님>
     @GetMapping("/participations")
     public ResponseEntity<ApiResponse<Page<ParticipationByBoardResponseDto>>> viewApproval(
             @RequestParam(defaultValue = "0") int page,
