@@ -119,7 +119,7 @@ public class BoardService {
 
         // 모집인원 수정시, 이미 모집된 인원보다 항상 커야함
         if (requestDto.getMaxParticipants() < board.getCurrentParticipants())
-            throw new CustomException(CustomErrorCode.INVALID_maxParticipants);
+            throw new CustomException(CustomErrorCode.INVALID_MAX_PARTICIPANTS);
 
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getMaxParticipants());
 
