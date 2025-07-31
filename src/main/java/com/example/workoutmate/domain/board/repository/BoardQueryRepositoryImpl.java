@@ -30,28 +30,31 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
 
         QBoard board = QBoard.board;
         QUser writer = QUser.user;
-        QFollow follow = QFollow.follow;
-        QZzim zzim = QZzim.zzim;
 
-        JPQLQuery<Board> query = queryFactory
+        // 조건
+        BooleanExpression condition = board.isDeleted.eq(false)
+                .and(eqSportType(filter.getSportType()))
+                .and(eqMyPosts(userId, filter.getOnlyMyPosts()))
+                .and(eqFollowing(userId, filter.getOnlyFollowing()))
+                .and(eqZzimmed(userId, filter.getOnlyZzimmed()));
+
+        // content 조회 쿼리
+        List<Board> content = queryFactory
                 .selectFrom(board)
                 .leftJoin(board.writer, writer).fetchJoin()
-                .where(
-                        board.isDeleted.eq(false),
-                        eqSportType(filter.getSportType()),
-                        eqMyPosts(userId, filter.getOnlyMyPosts()),
-                        eqFollowing(userId, filter.getOnlyFollowing()),
-                        eqZzimmed(userId, filter.getOnlyZzimmed())
-                )
-                .distinct();
-
-        long total = query.fetch().size();
-
-        List<Board> content = query
+                .where(condition)
+                .orderBy(board.modifiedAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(board.modifiedAt.desc())
+                .distinct()
                 .fetch();
+
+        // total count 쿼리 (fetchJoin 제거)
+        Long total = queryFactory
+                .select(board.count())
+                .from(board)
+                .where(condition)
+                .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
     }
