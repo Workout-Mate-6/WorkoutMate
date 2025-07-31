@@ -2,7 +2,6 @@ package com.example.workoutmate.domain.participation.repository;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.QBoard;
-import com.example.workoutmate.domain.comment.entity.QComment;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
@@ -65,11 +65,14 @@ public class QParticipationRepository {
         }
 
         // 전체 갯수 세기 (페이징용)
-        JPAQuery<Long> countQuery = queryFactory
-                .select(participation.count())
-                .from(participation)
-                .join(participation.board, board)
-                .where(builder);
+        long totalCount = Optional.ofNullable(
+                queryFactory
+                        .select(participation.count())
+                        .from(participation)
+                        .join(participation.board, board)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
 
         // 참여요청한 데이터 조회
         List<Participation> content = queryFactory
@@ -106,7 +109,7 @@ public class QParticipationRepository {
                 ))
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(dtoList, pageable, countQuery.fetchOne());
+        return new PageImpl<>(dtoList, pageable, totalCount);
     }
 
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
