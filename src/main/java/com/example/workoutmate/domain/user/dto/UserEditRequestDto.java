@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 public class UserEditRequestDto {
 
-    private String email;
     @ValidPassword
     private String password;
     @ValidPassword

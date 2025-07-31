@@ -160,6 +160,10 @@ public class ChattingService {
         ChatRoomMember member = chatRoomMemberRepository.findByUserIdAndChatRoomId(user.getId(), chatRoomId)
                 .orElseThrow(() -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."));
 
+        if (!member.isJoined()) {
+            throw new CustomException(ALREADY_LEFT_CHATROOM, ALREADY_LEFT_CHATROOM.getMessage());
+        }
+
         // 채팅방 퇴장
         member.leave();
 

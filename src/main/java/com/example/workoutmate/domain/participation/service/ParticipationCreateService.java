@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.participation.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.participation.entity.Participation;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.repository.ParticipationRepository;
@@ -21,7 +20,7 @@ public class ParticipationCreateService {
     private final ParticipationRepository participationRepository;
     // 참여자(대기) 매서드
     @Transactional
-    public void participationInjector(Board board, User user, Comment comment) {
+    public void participationInjector(Board board, User user) {
         // 작성자 제외!
         if (user.getId().equals(board.getWriter().getId())) {
             return;
@@ -35,7 +34,6 @@ public class ParticipationCreateService {
         Participation participation = Participation.builder()
                 .board(board)
                 .applicant(user)
-                .comment(comment)
                 .state(ParticipationState.NONE)
                 .build();
 
