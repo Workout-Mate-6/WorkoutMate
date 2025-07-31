@@ -1,10 +1,13 @@
 package com.example.workoutmate.domain.board.service;
 
+import com.example.workoutmate.domain.board.dto.BoardFilterRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.BoardSportTypeResponseDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
 import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.board.repository.BoardQueryRepository;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.user.entity.User;
@@ -20,13 +23,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final BoardQueryRepository boardQueryRepository;
     private final BoardSearchService boardSearchService;
     private final UserService userService;
     private final FollowService followService;
@@ -143,6 +149,24 @@ public class BoardService {
     @Transactional(readOnly = true)
     public Board findByIdWithPessimisticLock(Long id) {
         return boardRepository.findByIdWithPessimisticLock(id).orElseThrow(() -> new CustomException(CustomErrorCode.BOARD_NOT_FOUND));
+    }
+
+    // 운동 종목 카테고리 항목 조회
+    @Transactional(readOnly = true)
+    public BoardSportTypeResponseDto getAllSportTypes() {
+
+        List<String> sportTypes = Arrays.stream(SportType.values())
+                .map(Enum::name) // "RUNNING", "FOOTBALL",...
+                .collect(Collectors.toList());
+
+        return new BoardSportTypeResponseDto(sportTypes);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BoardResponseDto> searchBoards(Long userId, BoardFilterRequestDto filterRequestDto, Pageable pageable) {
+        Page<Board> boardPage = boardQueryRepository.searchWithFilters(userId, filterRequestDto, pageable);
+
+        return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
 }
