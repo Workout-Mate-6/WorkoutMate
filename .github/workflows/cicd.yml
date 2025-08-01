@@ -70,7 +70,8 @@ jobs:
 
       # 8 단계: .env 파일을 생성해서 환경변수 준비
       - name: Create .env file from secret
-        run: echo "${{ secrets.APP_ENV }}" > .env
+        run: |
+          echo "${{ secrets.APP_ENV }}" > .env
 
       # 8.5 단계: .env 및 docker-compose.yml 파일 EC2로 복사
       - name: Copy files to EC2
