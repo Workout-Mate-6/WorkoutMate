@@ -109,12 +109,15 @@ public class ParticipationService {
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
 
         if (state == ParticipationState.ACCEPTED) {
-            board.increaseCurrentParticipants();
-            if (board.getStatus().equals(Status.OPEN)) {
-                board.changeStatus(Status.CLOSED);
+            if (board.getCurrentParticipants() < board.getMaxParticipants()) {
+                board.increaseCurrentParticipants();
+                if (board.getCurrentParticipants().equals(board.getMaxParticipants())) {
+                    board.changeStatus(Status.CLOSED);
+                }
+            } else {
+                throw new CustomException(CustomErrorCode.BOARD_FULL);
             }
         }
-
         participation.updateState(participationRequestDto);
     }
 
