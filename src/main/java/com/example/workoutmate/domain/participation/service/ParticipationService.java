@@ -1,6 +1,7 @@
 package com.example.workoutmate.domain.participation.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.domain.comment.service.CommentService;
@@ -69,6 +70,10 @@ public class ParticipationService {
 
         Participation participation;
 
+        if (board.getStatus().equals(Status.CLOSED)) {
+            throw new CustomException(CustomErrorCode.BOARD_FULL);
+        }
+
         // 값이 있는지 없는지 확인
         if (optionalParticipation.isPresent()) { // 있으면
             // 댓글로 인해 참여신청을 했는지에 대해서 확인
@@ -105,6 +110,9 @@ public class ParticipationService {
 
         if (state == ParticipationState.ACCEPTED) {
             board.increaseCurrentParticipants();
+            if (board.getStatus().equals(Status.OPEN)) {
+                board.changeStatus(Status.CLOSED);
+            }
         }
 
         participation.updateState(participationRequestDto);
@@ -141,6 +149,9 @@ public class ParticipationService {
         // 불참으로 변경시 -1 하는 로직
         if (isChoosingToDecline && participation.getState() == ParticipationState.ACCEPTED) {
             board.decreaseCurrentParticipants();
+            if (board.getStatus().equals(Status.CLOSED)) {
+                board.changeStatus(Status.OPEN);
+            }
         }
 
         participation.updateState(participationRequestDto);
