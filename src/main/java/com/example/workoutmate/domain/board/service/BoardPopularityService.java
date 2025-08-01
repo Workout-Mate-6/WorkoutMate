@@ -41,7 +41,7 @@ public class BoardPopularityService {
     }
 
     // 인기글 Top10을 캐시에 저장
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 60 * 1000)
     @Transactional(readOnly = true)
     public void cacheTop10BoardDetails() {
         // Zset에서 상위 10개의 boardId를 랭킹 순으로 추출
@@ -70,7 +70,9 @@ public class BoardPopularityService {
                     // Redis ZSet에서 score(조회수) 읽기
                     Double score = stringRedisTemplate.opsForZSet().score(VIEW_RANKING_KEY, id.toString());
 
-                    return BoardMapper.toPopularBoardDto(board, score != null ? score.intValue() : 0);
+                    // 조회수 0 이상만 포함
+                    if (score == null || score == 0) return null;
+                    return BoardMapper.toPopularBoardDto(board, score.intValue());
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -108,6 +110,7 @@ public class BoardPopularityService {
     public List<PopularBoardDto> getPopularBoardsFromDatabase() {
         return boardRepository.findTop10ByOrderByViewCountDesc()
                 .stream()
+                .filter(board -> board.getViewCount() > 0)
                 .map(board -> BoardMapper.toPopularBoardDto(board, board.getViewCount()))
                 .toList();
     }
@@ -121,7 +124,7 @@ public class BoardPopularityService {
 
         for (String id : ids) {
             Double score = stringRedisTemplate.opsForZSet().score(VIEW_RANKING_KEY, id);
-            if (score != null) {
+            if (score != null && score > 0) {
                 boardRepository.findById(Long.valueOf(id))
                         .ifPresent(board -> {
                             board.increaseViewCount(score.intValue());
