@@ -2,6 +2,7 @@ package com.example.workoutmate.global.exception;
 
 import com.example.workoutmate.global.dto.ApiResponse;
 import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -69,6 +70,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<Object>> handleMissingRequestparmeter(MissingServletRequestParameterException e) {
         String message = String.format("필수 요청 파라미터가 누락되었습니다: [%s]", e.getParameterName());
+        return ApiResponse.failure(INVALID_REQUEST.getHttpStatus(), message);
+    }
+
+    // 요청 body로 보내는 필드가 Dto에 없을 시
+    @ExceptionHandler(UnrecognizedPropertyException.class)
+    public ResponseEntity<?> handleUnrecognizedPropertyException(UnrecognizedPropertyException e) {
+        String message = String.format("요청에 포함된 잘못된 필드명입니다: [%s] 필드는 사용할 수 없습니다.", e.getPropertyName());
         return ApiResponse.failure(INVALID_REQUEST.getHttpStatus(), message);
     }
 

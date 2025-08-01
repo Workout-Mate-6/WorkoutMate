@@ -27,14 +27,13 @@ public class ParticipationController {
 
     // 댓글 작성자용
     // 요청 보내기
-    @PatchMapping("/boards/{boardId}/comments/{commentId}/participations")
+    @PatchMapping("/boards/{boardId}/participations-request")
     public ResponseEntity<ApiResponse<Void>> requestApproval(
             @PathVariable Long boardId,
-            @PathVariable Long commentId,
             @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.requestApporval(boardId, commentId, participationRequestDto, authUser);
+        participationService.requestApporval(boardId, participationRequestDto, authUser);
         return ApiResponse.success(HttpStatus.OK, "요청을 보냈습니다.", null);
     }
 
@@ -51,7 +50,8 @@ public class ParticipationController {
         return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
     }
 
-    // 전체조회 <state 값은 필수 아님>
+
+    // 본인 게시글의 신청자 (전체) 조회 <state 값은 필수 아님>
     @GetMapping("/participations")
     public ResponseEntity<ApiResponse<Page<ParticipationByBoardResponseDto>>> viewApproval(
             @RequestParam(defaultValue = "0") int page,
@@ -78,7 +78,7 @@ public class ParticipationController {
     }
 
     // 불참만 가능하게
-    @PatchMapping("/boards/{boardId}/participations")
+    @PatchMapping("/boards/{boardId}/participations-decline")
     public ResponseEntity<ApiResponse<Void>> cancelParticipation(
             @PathVariable Long boardId,
             @Valid @RequestBody ParticipationRequestDto participationRequestDto,
