@@ -30,9 +30,8 @@ public class BoardPopularityService {
     private final BoardRepository boardRepository;
     private final ObjectMapper objectMapper;
 
-
-    private static final String VIEW_RANKING_KEY = "board:view:ranking"; // Redis에서 인기글 랭킹을 저장하는 키 (zset에 저장)
-    private static final String POPULAR_TOP10_KEY = "board:popular:top10"; // 인기글 top10 리스트를 저장할 캐시 키
+    public static final String VIEW_RANKING_KEY = "board:view:ranking"; // Redis에서 인기글 랭킹을 저장하는 키 (zset에 저장)
+    public static final String POPULAR_TOP10_KEY = "board:popular:top10"; // 인기글 top10 리스트를 저장할 캐시 키
 
     // 해당 게시글 조회수 증가 (ZSet)
     @Transactional
@@ -94,7 +93,6 @@ public class BoardPopularityService {
             String json = stringRedisTemplate.opsForValue().get(POPULAR_TOP10_KEY);
 
             if (json != null) {
-                // JSON 문자열을 PopularBoardDto 리스트로 파싱
                 JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, PopularBoardDto.class);
                 return objectMapper.readValue(json, type);
             }

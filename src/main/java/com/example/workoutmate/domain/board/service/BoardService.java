@@ -16,20 +16,32 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.workoutmate.domain.board.service.BoardPopularityService.POPULAR_TOP10_KEY;
+import static com.example.workoutmate.domain.board.service.BoardPopularityService.VIEW_RANKING_KEY;
+
+
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+
+    @Autowired
+    @Qualifier("customStringRedisTemplate")
+    private RedisTemplate<String, String> stringRedisTemplate;
 
     private final BoardRepository boardRepository;
     private final BoardQueryRepository boardQueryRepository;
@@ -141,6 +153,11 @@ public class BoardService {
         if (board.getCurrentParticipants() > 0) {
             throw new CustomException(CustomErrorCode.BOARD_HAS_PARTICIPANTS);
         }
+
+        // 게시글 삭제 로직
+        stringRedisTemplate.opsForZSet().remove(VIEW_RANKING_KEY, boardId.toString());
+        // 캐시 즉시 삭제
+        stringRedisTemplate.delete(POPULAR_TOP10_KEY);
 
         board.delete();
     }
