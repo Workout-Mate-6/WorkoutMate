@@ -1,7 +1,9 @@
 package com.example.workoutmate.domain.board.controller;
 
+import com.example.workoutmate.domain.board.dto.BoardFilterRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.BoardSportTypeResponseDto;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -16,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/boards")
@@ -81,6 +85,17 @@ public class BoardController {
         return ApiResponse.success(HttpStatus.OK, "운동 카테고리 별 게시글 조회 성공", boardResponseDtoPage);
     }
 
+    // 내 게시물 조회하기
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getMyBoards(
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        Page<BoardResponseDto> boardResponseDtoPage = boardService.getMyBoards(customUserPrincipal, pageable);
+
+        return ApiResponse.success(HttpStatus.OK, "내 게시글 목록이 조회에 완료되었습니다.", boardResponseDtoPage);
+    }
+
     // 게시글 수정
     @PutMapping("/{boardId}")
     public ResponseEntity<ApiResponse<BoardResponseDto>> updateBoard(
@@ -107,4 +122,27 @@ public class BoardController {
 
         return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 삭제되었습니다.", null);
     }
+
+    // 운동 종목 카테고리 항목 조회
+    @GetMapping("/sportType")
+    public ResponseEntity<ApiResponse<BoardSportTypeResponseDto>> getAllSportTypes() {
+
+        BoardSportTypeResponseDto responseDto = boardService.getAllSportTypes();
+
+        return ApiResponse.success(HttpStatus.OK, "운동 종목 카테고리 전체 조회가 완료되었습니다.", responseDto);
+    }
+
+    // 전체 조회 기능 통합
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> filterBoards(
+            @ModelAttribute BoardFilterRequestDto filterRequestDto,
+            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
+            ) {
+        Long userId = customUserPrincipal.getId();
+        Page<BoardResponseDto> result = boardService.searchBoards(userId, filterRequestDto, pageable);
+
+        return ApiResponse.success(HttpStatus.OK, "게시글 필터 조회 성공", result);
+    }
+
 }

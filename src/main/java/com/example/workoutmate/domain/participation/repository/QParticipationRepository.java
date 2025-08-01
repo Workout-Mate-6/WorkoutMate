@@ -2,7 +2,6 @@ package com.example.workoutmate.domain.participation.repository;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.QBoard;
-import com.example.workoutmate.domain.comment.entity.QComment;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
@@ -14,7 +13,6 @@ import com.example.workoutmate.domain.user.entity.QUser;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
@@ -34,6 +33,7 @@ import static com.example.workoutmate.domain.user.entity.QUser.user;
 public class QParticipationRepository {
 
     private final JPAQueryFactory queryFactory;
+
     /**
      * 로그인한 사용자가 작성한 게시글에 달린 참여 요청들을 조회합니다.
      * - 참여 상태로 필터링 가능
@@ -47,7 +47,6 @@ public class QParticipationRepository {
     ) {
         QParticipation participation = QParticipation.participation;
         QBoard board = QBoard.board;
-        QComment comment = QComment.comment;
         QUser user = QUser.user;
 
         // 로그인한 사용자가 작성한 게시글의 참여 요청만 조회
@@ -65,18 +64,20 @@ public class QParticipationRepository {
         }
 
         // 전체 갯수 세기 (페이징용)
-        JPAQuery<Long> countQuery = queryFactory
-                .select(participation.count())
-                .from(participation)
-                .join(participation.board, board)
-                .where(builder);
+        long totalCount = Optional.ofNullable(
+                queryFactory
+                        .select(participation.count())
+                        .from(participation)
+                        .join(participation.board, board)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
 
         // 참여요청한 데이터 조회
         List<Participation> content = queryFactory
                 .selectFrom(participation)
                 .join(participation.board, board).fetchJoin()
-                .join(participation.comment, comment).fetchJoin()
-                .join(comment.writer, user).fetchJoin()
+                .join(participation.applicant, user).fetchJoin() // 신청자 정보를 조회
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -90,7 +91,7 @@ public class QParticipationRepository {
                         Collectors.mapping(
                                 p -> new ParticipationResponseDto(
                                         p.getId(),
-                                        p.getComment().getWriter().getName(),
+                                        p.getApplicant().getName(), // 신청자 이름으로 변경
                                         p.getState().toString(),
                                         p.getCreatedAt()
                                 ),
@@ -107,7 +108,7 @@ public class QParticipationRepository {
                 ))
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(dtoList, pageable, countQuery.fetchOne());
+        return new PageImpl<>(dtoList, pageable, totalCount);
     }
 
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
@@ -120,7 +121,7 @@ public class QParticipationRepository {
                 .join(participation.applicant, user)
                 .where(
                         participation.board.id.eq(boardId),
-                        participation.state.eq(ParticipationState.PARTICIPATION)
+                        participation.state.eq(ParticipationState.ACCEPTED)
                 )
                 .fetch();
     }

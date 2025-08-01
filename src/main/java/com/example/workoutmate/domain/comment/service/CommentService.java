@@ -7,8 +7,9 @@ import com.example.workoutmate.domain.comment.dto.CommentResponseDto;
 import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.entity.CommentMapper;
 import com.example.workoutmate.domain.comment.repository.CommentRepository;
+import com.example.workoutmate.domain.comment.dto.CommentWithParticipationStatusResponseDto;
+import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
-import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -18,6 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
@@ -41,7 +45,7 @@ public class CommentService {
         Comment savedComment = commentRepository.save(comment);
 
         // participation 구현중에 로직 추가했습니다.!
-        participationCreateService.participationInjector(board, user, comment);
+        participationCreateService.participationInjector(board, user);
 
         return CommentMapper.data(savedComment);
     }
@@ -108,5 +112,32 @@ public class CommentService {
         if (!comment.getWriter().getId().equals(user.getId())) {
             throw new CustomException(UNAUTHORIZED_COMMENT_ACCESS);
         }
+    }
+
+    // 게시글에 달린 댓글조회(state포함)
+    @Transactional(readOnly = true)
+    public List<CommentWithParticipationStatusResponseDto> getCommentWithParticipation(Long boardId) {
+        boardSearchService.getBoardById(boardId); // 게시글 확인
+
+        List<Comment> comments = commentRepository.findByBoardIdWithWriter(boardId);
+        List<Long> userId = comments.stream().map(c->c.getWriter().getId()).toList(); // 중복 제거
+
+        Map<Long, ParticipationState> participationStateMap = participationCreateService.getParticipationStatus(boardId, userId);
+        return comments.stream()
+                .map(comment -> {
+                    User writer = comment.getWriter();
+                    ParticipationState state = participationStateMap.getOrDefault(
+                            writer.getId(),
+                            ParticipationState.NONE
+                    );
+                    return new CommentWithParticipationStatusResponseDto(
+                            comment.getId(),
+                            writer.getId(),
+                            writer.getName(),
+                            comment.getContent(),
+                            state
+                    );
+                })
+                .toList();
     }
 }

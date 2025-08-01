@@ -11,7 +11,6 @@ import com.example.workoutmate.domain.chatting.repository.ChatMessageRepository;
 import com.example.workoutmate.domain.chatting.repository.ChatRoomMemberRepository;
 import com.example.workoutmate.domain.chatting.repository.ChatRoomRepository;
 import com.example.workoutmate.domain.user.entity.User;
-import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
@@ -40,7 +39,6 @@ public class ChattingService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final UserService userService;
-    private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
 
 
@@ -67,6 +65,12 @@ public class ChattingService {
         // 기존 채팅방 반환
         if (existingRoom.isPresent()) {
             ChatRoom chatRoom = existingRoom.get();
+
+            ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomIdAndUserId(chatRoom.getId(), sender.getId()).orElseThrow(
+                    () -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage()));
+
+            chatRoomMember.join();
+
             return new ChatRoomCreateResponseDto(
                     chatRoom.getId(), sender.getId(), receiver.getId(), chatRoom.getCreatedAt());
         }
@@ -155,6 +159,10 @@ public class ChattingService {
 
         ChatRoomMember member = chatRoomMemberRepository.findByUserIdAndChatRoomId(user.getId(), chatRoomId)
                 .orElseThrow(() -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."));
+
+        if (!member.isJoined()) {
+            throw new CustomException(ALREADY_LEFT_CHATROOM, ALREADY_LEFT_CHATROOM.getMessage());
+        }
 
         // 채팅방 퇴장
         member.leave();

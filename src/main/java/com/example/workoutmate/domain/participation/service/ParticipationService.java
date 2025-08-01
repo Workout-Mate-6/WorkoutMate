@@ -3,7 +3,6 @@ package com.example.workoutmate.domain.participation.service;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
-import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.service.CommentService;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
@@ -27,8 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +35,6 @@ public class ParticipationService {
 
     private final ParticipationRepository participationRepository;
     private final QParticipationRepository qParticipationRepository;
-    private final CommentService commentService;
     private final BoardSearchService boardSearchService;
     private final BoardService boardService;
     private final UserService userService;
@@ -47,39 +45,43 @@ public class ParticipationService {
     @Transactional
     public void requestApporval(
             Long boardId,
-            Long commentId,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
     ) {
-
         Board board = boardSearchService.getBoardById(boardId); // 게시글 존재유무 검증
-        Comment comment = commentService.findById(commentId);
         User user = userService.findById(authUser.getId());
-        commentService.validateCommentWriter(comment, user); // 본인이 작성한 댓글인지 검증
 
-
-        // 본인이 작성한 게시글(댓글)로는 신청 못하게 하는로직
-        boolean isBoardWriter = board.getWriter().getId().equals(user.getId());
-        boolean isCommentWriter = comment.getWriter().getId().equals(user.getId());
-        if (isBoardWriter && isCommentWriter) {
+        // 본인이 작성한 게시글로는 신청 못하게 하는로직
+        if (board.getWriter().getId().equals(user.getId())) {
             throw new CustomException(CustomErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
-
-        // 테이블에서 상태 가져와서 확인
-        Participation participation = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PARTICIPATION_NOT_FOUND));
 
         // 타입 변환...
         ParticipationState state = ParticipationState.of(participationRequestDto.getState());
         // 상태 검사 (신청만 허용)
-        if (!validState.contains(state)) {
+        if (!validStateRequested.contains(state)) {
             throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
         }
-        // 현재 state 값 가져오기
-        validateStateChange(participationRequestDto, participation);
 
-        // state값 변경!
-        participation.updateState(participationRequestDto);
+        // 게시글에 요청이 있는지 없는지 확인
+        Optional<Participation> optionalParticipation =
+                participationRepository.findByBoardIdAndApplicantId(boardId, user.getId());
+
+        Participation participation;
+
+        // 값이 있는지 없는지 확인
+        if (optionalParticipation.isPresent()) { // 있으면
+            // 댓글로 인해 참여신청을 했는지에 대해서 확인
+            participation = optionalParticipation.get();
+
+            // 현재 state 값 가져오기
+            validateStateChange(participationRequestDto, participation);
+            // state값 변경!
+            participation.updateState(participationRequestDto);
+        } else { // 없으면
+            participation = Participation.builder().board(board).applicant(user).state(state).build();
+            participationRepository.save(participation);
+        }
     }
 
     // 수락/거절
@@ -99,12 +101,18 @@ public class ParticipationService {
 
         validateStateChange(participationRequestDto, participation); // 메서드
 
+        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
+
+        if (state == ParticipationState.ACCEPTED) {
+            board.increaseCurrentParticipants();
+        }
+
         participation.updateState(participationRequestDto);
     }
 
-    // 참여 or 불참 선택
+     // 불참만 가능하게
     @Transactional
-    public void chooseParticipation(
+    public void cancelParticipation(
             Long boardId,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
@@ -117,21 +125,22 @@ public class ParticipationService {
 
         validateStateChange(participationRequestDto, participation); // 메서드
 
-        // 참가 인원 카운트 하는 로직
-        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
-        boolean isChoosingToParticipation = (state == ParticipationState.PARTICIPATION);
-        boolean isChoosingToDecline = (state == ParticipationState.DECLINED);
-        boolean isAccepted = participation.getState() == ParticipationState.ACCEPTED;
-        Board board = participation.getBoard();
 
-        // 참여 라고 했을때 +1 하는 로직
-        if (isChoosingToParticipation && isAccepted) {
-            board.increaseCurrentCount();
+        // 타입 변환...
+        ParticipationState state = ParticipationState.of(participationRequestDto.getState());
+        // 상태 검사 (불참만 허용)
+        if (!validStateDecline.contains(state)) {
+            throw new CustomException(CustomErrorCode.INVALID_STATE_TRANSITION); // 이거 잘못된 요청이라는 걸로 수정
         }
 
+        // 참가 인원 카운트 하는 로직
+        boolean isChoosingToDecline = (state == ParticipationState.DECLINED);
+        // 락 적용
+        Board board = boardService.findByIdWithPessimisticLock(boardId);
+
         // 불참으로 변경시 -1 하는 로직
-        if (isChoosingToDecline && participation.getState() == ParticipationState.PARTICIPATION) {
-            board.decreaseCurrentCount();
+        if (isChoosingToDecline && participation.getState() == ParticipationState.ACCEPTED) {
+            board.decreaseCurrentParticipants();
         }
 
         participation.updateState(participationRequestDto);
@@ -172,7 +181,14 @@ public class ParticipationService {
     }
 
     // 허용치 범위 설정! (신청만 허용)
-    Set<ParticipationState> validState = Set.of(
+    Set<ParticipationState> validStateRequested = Set.of(
             ParticipationState.REQUESTED
     );
+
+    // 불참만 가능
+    Set<ParticipationState> validStateDecline = Set.of(
+            ParticipationState.DECLINED
+    );
+
+
 }

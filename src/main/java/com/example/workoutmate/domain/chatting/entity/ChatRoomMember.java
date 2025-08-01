@@ -37,6 +37,11 @@ public class ChatRoomMember {
     private boolean isJoined = true;
 
 
+    public void join() {
+        this.isJoined = true;
+        this.joinedAt = LocalDateTime.now();
+    }
+
     public void leave() {
         this.isJoined = false;
         this.leftAt = LocalDateTime.now();
