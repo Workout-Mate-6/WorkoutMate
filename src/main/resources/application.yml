@@ -1,17 +1,16 @@
 spring:
+  profiles:
+    # 환경변수로 받되, 기본은 dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
   application:
     name: WorkoutMate
 
   config:
     import: optional:file:.env[.properties]
-
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    hikari:
-      maximum-pool-size: 30
-      minimum-idle: 10
+  mvc:
+    servlet:
+      path: /api
 
   jpa:
     show-sql: true
@@ -22,17 +21,7 @@ spring:
       hibernate:
         format_sql: false
 
-  # redis ?? ?? ? ?? ?? ? ??
-#  data:
-#    redis:
-#      host: ${REDIS_HOST}
-#      port: ${REDIS_PORT}
-
-  mvc:
-    servlet:
-      path: /api
-
-# 시간 직렬화 위해
+  # 시간 직렬화 위해
   jackson:
     serialization:
       write-date-keys-as-timestamps: false

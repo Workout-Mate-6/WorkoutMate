@@ -65,3 +65,14 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// 개발 환경과 배포 환경의 db 분리
+def profile = project.findProperty("profile") ?: "dev"
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources", "src/main/resources-${profile}"]
+        }
+    }
+}
