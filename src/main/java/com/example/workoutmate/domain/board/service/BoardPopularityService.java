@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.board.service;
 import com.example.workoutmate.domain.board.dto.PopularBoardDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
+import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,7 +109,7 @@ public class BoardPopularityService {
     public List<PopularBoardDto> getPopularBoardsFromDatabase() {
         return boardRepository.findTop10ByOrderByViewCountDesc()
                 .stream()
-                .filter(board -> board.getViewCount() > 0)
+                .filter(board -> board.getViewCount() > 0 && board.getStatus() == Status.OPEN)
                 .map(board -> BoardMapper.toPopularBoardDto(board, board.getViewCount()))
                 .toList();
     }
@@ -130,5 +131,23 @@ public class BoardPopularityService {
                         });
             }
         }
+    }
+
+    // 랭킹에서 삭제
+    public void removeFromRanking(Long boardId) {
+        Double score = stringRedisTemplate.opsForZSet().score(VIEW_RANKING_KEY, boardId.toString());
+        if (score != null) {
+            boardRepository.findById(boardId).ifPresent(board -> {
+                board.increaseViewCount(score.intValue());
+                boardRepository.save(board);
+            });
+        }
+        stringRedisTemplate.opsForZSet().remove(VIEW_RANKING_KEY, boardId.toString());
+        stringRedisTemplate.delete(POPULAR_TOP10_KEY);
+    }
+
+    // 랭킹에 복귀 (DB의 viewCount 기준)
+    public void restoreToRanking(Long boardId, int viewCount) {
+        stringRedisTemplate.opsForZSet().add(VIEW_RANKING_KEY, boardId.toString(), viewCount);
     }
 }
