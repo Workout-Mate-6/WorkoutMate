@@ -1,18 +1,6 @@
 # 1. 베이스 이미지 선택 (JDK 17, MAC 기반)
 FROM eclipse-temurin:17-jdk
 
-# ARG 받도록 구성 (빌드시 환경변수 주입)
-ARG SECRET_KEY
-ARG DB_URL
-ARG DB_USERNAME
-ARG DB_PASSWORD
-
-# run time 환경변수
-ENV SECRET_KEY = $SECRET_KEY
-ENV DB_URL = $DB_URL
-ENV DB_USERNAME = $DB_USERNAME
-ENV DB_PASSWORD = $DB_PASSWORD
-
 # 2. JAR 파일이 생성될 경로를 변수로 지정
 ARG JAR_FILE_PATH=build/libs/*.jar
 

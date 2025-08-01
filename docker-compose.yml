@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    image: doohaaa/my-spring-app:latest
+    container_name: springboot-container
+    ports:
+      - "8080:8080"
+    # 같은 폴더 내부에 있는 .env 파일 주입
+    env_file:
+      - .env
+    # application.yml 파일을 활성화 시킴
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
+    restart: "no"
+networks:
+  spring-net:
+
+# volume 설정이 필요없는 이유는 AWS RDS MYSQL 사용하기 때문
