@@ -30,6 +30,7 @@ public class BoardService {
     private final BoardSearchService boardSearchService;
     private final UserService userService;
     private final FollowService followService;
+    private final BoardPopularityService popularityService;
 
     // 게시글 생성/저장
     @Transactional
@@ -50,6 +51,7 @@ public class BoardService {
     // 게시글 단건 조회
     @Transactional(readOnly = true)
     public BoardResponseDto getBoard(Long boardId) {
+        popularityService.incrementViewCount(boardId);
 
         Board board = boardSearchService.getBoardById(boardId);
 

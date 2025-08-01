@@ -2,7 +2,9 @@ package com.example.workoutmate.domain.board.controller;
 
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
+import com.example.workoutmate.domain.board.dto.PopularBoardDto;
 import com.example.workoutmate.domain.board.entity.SportType;
+import com.example.workoutmate.domain.board.service.BoardPopularityService;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
@@ -25,6 +27,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final BoardPopularityService boardPopularityService;
 
     // 게시글 작성
     @PostMapping
@@ -119,5 +122,12 @@ public class BoardController {
         boardService.deleteBoard(boardId, userId);
 
         return ApiResponse.success(HttpStatus.OK, "게시글이 성공적으로 삭제되었습니다.", null);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<ApiResponse<List<PopularBoardDto>>> getPopularBoards() {
+        List<PopularBoardDto> popularBoards = boardPopularityService.
+                getPopularBoardsFromCache();
+        return ApiResponse.success(HttpStatus.OK, "인기 게시글이 성공적으로 조회되었습니다.", popularBoards);
     }
 }
