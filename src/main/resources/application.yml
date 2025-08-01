@@ -6,8 +6,10 @@ spring:
   application:
     name: WorkoutMate
 
+  # env 파일 사용 위해
   config:
     import: optional:file:.env[.properties]
+
   mvc:
     servlet:
       path: /api
