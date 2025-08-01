@@ -41,7 +41,7 @@ public class BoardPopularityService {
     }
 
     // 인기글 Top10을 캐시에 저장
-    @Scheduled(fixedRate = 60 * 1000)
+    @Scheduled(fixedRate = 5 * 60 * 1000)
     @Transactional(readOnly = true)
     public void cacheTop10BoardDetails() {
         // Zset에서 상위 10개의 boardId를 랭킹 순으로 추출
