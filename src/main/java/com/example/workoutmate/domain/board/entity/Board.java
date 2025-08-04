@@ -7,6 +7,7 @@ import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
@@ -64,6 +65,10 @@ public class Board extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.OPEN;
+
+    // 운동 할 시간
+    @Column(nullable = false)
+    private LocalDateTime startTime;
 
 
     @Builder
