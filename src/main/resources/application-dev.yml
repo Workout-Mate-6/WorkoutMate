@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/${DEV_DB_SCHEME}?rewriteBatchedStatements=true
+    username: ${DEV_DB_USERNAME}
+    password: ${DEV_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
