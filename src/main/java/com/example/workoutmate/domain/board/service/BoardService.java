@@ -135,6 +135,11 @@ public class BoardService {
 
         validateBoardWriter(userId, board);
 
+        // 현재 모집된 인원이 있을경우 삭제 불가
+        if (board.getCurrentParticipants() > 0) {
+            throw new CustomException(CustomErrorCode.BOARD_HAS_PARTICIPANTS);
+        }
+
         board.delete();
     }
 
@@ -162,6 +167,7 @@ public class BoardService {
         return new BoardSportTypeResponseDto(sportTypes);
     }
 
+    // 게시글 통합 조회(필터링) 기능
     @Transactional(readOnly = true)
     public Page<BoardResponseDto> searchBoards(Long userId, BoardFilterRequestDto filterRequestDto, Pageable pageable) {
         Page<Board> boardPage = boardQueryRepository.searchWithFilters(userId, filterRequestDto, pageable);

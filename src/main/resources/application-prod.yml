@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: ${DEPLOY_DB_URL}
+    username: ${DEPLOY_DB_USERNAME}
+    password: ${DEPLOY_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10

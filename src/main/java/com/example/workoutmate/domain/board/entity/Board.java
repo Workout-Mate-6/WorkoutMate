@@ -102,4 +102,10 @@ public class Board extends BaseEntity {
             this.currentParticipants--;
         }
     }
+
+    public void changeStatus(Status status) {
+        if (this.status != status) {
+            this.status = status;
+        }
+    }
 }
