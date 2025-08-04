@@ -1,6 +1,7 @@
 package com.example.workoutmate.global.enums;
 
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -57,7 +58,7 @@ public enum CustomErrorCode {
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
     CHATROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."),
     ALREADY_LEFT_CHATROOM(HttpStatus.BAD_REQUEST, "이미 채팅방을 나간 유저입니다."),
-
+    TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "헤더에 JWT 토큰이 존재하지 않습니다."),
 
     // Zzim
     ALREADY_ZZIM(HttpStatus.CONFLICT, "이미 찜한 게시글입니다."),
