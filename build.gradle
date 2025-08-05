@@ -60,6 +60,9 @@ dependencies {
     // env
     implementation 'io.github.cdimascio:java-dotenv:5.1.1'
 
+    // log
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
 }
 
 tasks.named('test') {

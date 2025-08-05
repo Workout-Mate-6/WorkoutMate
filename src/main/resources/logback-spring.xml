@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- 콘솔 출력: JSON 로그 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <!-- 루트 로거 설정 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- 패키지별 로깅 레벨 커스터마이징 -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="com.yourcompany" level="DEBUG"/> <!-- 앱 패키지 -->
+
+</configuration>
