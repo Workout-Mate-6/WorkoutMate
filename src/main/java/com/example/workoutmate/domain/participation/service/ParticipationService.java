@@ -41,8 +41,6 @@ public class ParticipationService {
     private final BoardService boardService;
     private final UserService userService;
     private final ParticipationValidator participationValidator;
-    private final BoardPopularityService boardPopularityService;
-
 
     // 요청
     @Transactional
@@ -115,7 +113,6 @@ public class ParticipationService {
                 board.increaseCurrentParticipants();
                 if (board.getCurrentParticipants().equals(board.getMaxParticipants())) {
                     board.changeStatus(Status.CLOSED);
-                    boardPopularityService.removeFromRanking(board.getId());
                 }
             } else {
                 throw new CustomException(CustomErrorCode.BOARD_FULL);
@@ -157,7 +154,6 @@ public class ParticipationService {
             board.decreaseCurrentParticipants();
             if (board.getStatus().equals(Status.CLOSED)) {
                 board.changeStatus(Status.OPEN);
-                boardPopularityService.restoreToRanking(board.getId(), board.getViewCount());
             }
         }
 
