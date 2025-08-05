@@ -5,6 +5,8 @@ import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
 import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.global.enums.CustomErrorCode;
+import com.example.workoutmate.global.exception.CustomException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -112,7 +114,7 @@ public class BoardPopularityService {
             String json = objectMapper.writeValueAsString(result);
             stringRedisTemplate.opsForValue().set(POPULAR_TOP10_KEY, json, Duration.ofMinutes(65));
         } catch (Exception e) {
-            log.error("인기글 리스트 캐싱 중 예외 발생", e);
+            throw new CustomException(CustomErrorCode.CACHE_SAVE_FAILED);
         }
     }
 
