@@ -24,9 +24,9 @@ services:
       # Docker 로그 파일 경로 전체 접근
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # promtail 에 대한 환경 설정 파일
-      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml
       # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
-      - ./promtail/positions:/tmp
+      - ./positions:/tmp
     command:
       - --config.file=/etc/promtail/promtail-config.yml
 
