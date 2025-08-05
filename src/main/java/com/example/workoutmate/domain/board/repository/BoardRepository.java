@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -51,6 +52,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b WHERE b.id = :id")
     Optional<Board> findByIdWithPessimisticLock(@Param("id") Long id);
 
-
-
+    // 조회수 변경시 modifiedAt 시간 변경X
+    @Modifying
+    @Query("UPDATE Board b SET b.viewCount = :viewCount WHERE b.id = :boardId")
+    void updateViewCount(@Param("boardId") Long boardId, @Param("viewCount") int viewCount);
 }
