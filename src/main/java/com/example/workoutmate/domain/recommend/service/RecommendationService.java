@@ -7,8 +7,10 @@ import com.example.workoutmate.domain.participation.service.ParticipationCreateS
 import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.domain.recommend.calculator.ScoreCalculator;
 import com.example.workoutmate.domain.recommend.config.RecommendationConfig;
+import com.example.workoutmate.domain.recommend.dto.BoardResponseDto;
 import com.example.workoutmate.domain.recommend.dto.RecommendationDto;
 import com.example.workoutmate.domain.recommend.dto.UserActivityData;
+import com.example.workoutmate.domain.recommend.dto.UserSimpleDto;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.domain.zzim.service.ZzimService;
@@ -71,7 +73,17 @@ public class RecommendationService {
                                     + typeScore * recommendationConfig.getWeights().getType()
                                     + timeScore * recommendationConfig.getWeights().getTime();
                     return RecommendationDto.builder()
-                            .board(board)
+                            .board(BoardResponseDto.builder()
+                                    .id(board.getId())
+                                    .title(board.getTitle())
+                                    .content(board.getContent())
+                                    .maxParticipants(board.getMaxParticipants())
+                                    .currentParticipants(board.getCurrentParticipants())
+                                    .writer(UserSimpleDto.builder()
+                                            .id(user.getId())
+                                            .nickname(user.getName())
+                                            .build())
+                                    .build())
                             .finalScore(finalScore)
                             .participationScore(participationScore)
                             .zzimScore(zzimScore)

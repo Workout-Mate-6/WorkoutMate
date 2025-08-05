@@ -8,7 +8,7 @@ import lombok.Data;
 @Builder
 public class RecommendationDto {
 
-    private Board board;
+    private BoardResponseDto board;
     private double finalScore; // 최종 점수
 
     // 요소별 점수
