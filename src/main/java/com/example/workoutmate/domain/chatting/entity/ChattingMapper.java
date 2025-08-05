@@ -39,6 +39,7 @@ public class ChattingMapper {
                 .senderName(chatMessage.getSender().getName())
                 .message(chatMessage.getMessage())
                 .createdAt(chatMessage.getCreatedAt())
+                .type(chatMessage.getType())
                 .build();
     }
 
