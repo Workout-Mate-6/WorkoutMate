@@ -14,6 +14,22 @@ services:
       SPRING_PROFILES_ACTIVE: prod
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
+
+  # promtail
+  promtail:
+    image: grafana/promtail:3.4.1
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      # Docker 로그 파일 경로 전체 접근
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # promtail 에 대한 환경 설정 파일
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
+      - ./promtail/positions:/tmp
+    command:
+      - --config.file=/etc/promtail/promtail-config.yml
+
 networks:
   spring-net:
 
