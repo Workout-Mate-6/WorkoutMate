@@ -14,6 +14,7 @@ public class BoardMapper {
                 .content(dto.getContent())
                 .sportType(dto.getSportType())
                 .maxParticipants(dto.getMaxParticipants())
+                .startTime(dto.getStartTime())
                 .build();
     }
 
@@ -26,6 +27,7 @@ public class BoardMapper {
                 .content(board.getContent())
                 .sportType(board.getSportType())
                 .maxParticipants(board.getMaxParticipants())
+                .startTime(board.getStartTime())
                 .currentParticipants(board.getCurrentParticipants())
                 .status(board.getStatus())
                 .createdAt(board.getCreatedAt())

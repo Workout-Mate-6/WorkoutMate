@@ -26,9 +26,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,7 +120,7 @@ public class ParticipationService {
         participation.updateState(participationRequestDto);
     }
 
-     // 불참만 가능하게
+    // 불참만 가능하게
     @Transactional
     public void cancelParticipation(
             Long boardId,
@@ -205,4 +204,22 @@ public class ParticipationService {
     );
 
 
+    public Map<Long, Set<Long>> getBoardParticipants(List<Board> boards) {
+        List<Long> boardIds = boards.stream().map(Board::getId).collect(Collectors.toList());
+
+        List<Object[]> results = participationRepository.findBoardIdAndUserIdByBoardIdsAndState(
+                boardIds, ParticipationState.ACCEPTED // 예시로 참여 확정 상태만
+        );
+        Map<Long, Set<Long>> boardParticipation = new HashMap<>();
+        for (Object[] row : results) {
+            Long boardId = (Long) row[0];
+            Long userId = (Long) row[1];
+            boardParticipation.computeIfAbsent(boardId,k->new HashSet<>()).add(userId);
+        }
+        return boardParticipation;
+    }
+
+    public List<Participation> findByApplicant_Id(Long userId) {
+        return participationRepository.findAllByApplicant_Id(userId);
+    }
 }

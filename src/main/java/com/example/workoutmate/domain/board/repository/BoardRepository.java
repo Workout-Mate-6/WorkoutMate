@@ -52,5 +52,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Optional<Board> findByIdWithPessimisticLock(@Param("id") Long id);
 
 
-
+    List<Board> findAllByWriterIdNotAndIsDeletedFalse(Long userId, Pageable pageable);
 }

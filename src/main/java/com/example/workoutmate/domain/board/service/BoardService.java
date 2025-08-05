@@ -175,4 +175,8 @@ public class BoardService {
         return boardPage.map(BoardMapper::boardToBoardResponse);
     }
 
+    // 내가 작성하지 않고 삭제되지 않은 게시글 찾기
+    public List<Board> findRecommendationCandidates(Long userId, Pageable pageable) {
+        return boardRepository.findAllByWriterIdNotAndIsDeletedFalse(userId, pageable);
+    }
 }
