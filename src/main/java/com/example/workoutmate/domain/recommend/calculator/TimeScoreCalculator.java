@@ -27,6 +27,6 @@ public class TimeScoreCalculator implements ScoreCalculator {
         Set<Integer> preferredHours = activityData.getPreferredHours();
 
         return boards.stream().collect(Collectors.toMap(Board::getId,
-                board -> preferredHours.contains(board.getCreatedAt().getHour()) ? 1.0 : 0.0));
+                board -> preferredHours.contains(board.getStartTime().getHour()) ? 1.0 : 0.0));
     }
 }

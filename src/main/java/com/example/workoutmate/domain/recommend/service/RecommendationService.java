@@ -1,9 +1,9 @@
 package com.example.workoutmate.domain.recommend.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.service.BoardService;
 import com.example.workoutmate.domain.follow.service.FollowService;
-import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
 import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.domain.recommend.calculator.ScoreCalculator;
 import com.example.workoutmate.domain.recommend.config.RecommendationConfig;
@@ -39,7 +39,7 @@ public class RecommendationService {
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId, int limit) {
         User user = userService.findById(userId);
-        Pageable pageable = PageRequest.of(0, recommendationConfig.getMaxCandidateSize());
+        Pageable pageable = PageRequest.of(0, recommendationConfig.getMaxCandidateSize()); // 최대 1000개까지만 후보 게시글을 가져옴(1000개인 이유는 야물에서 1000개 까지만 설정했기 때문)
         List<Board> candidateBoards = boardService.findRecommendationCandidates(userId, pageable);
 
         if (candidateBoards.isEmpty()) {
@@ -48,6 +48,20 @@ public class RecommendationService {
         UserActivityData activityData = UserActivityData.builder()
                 .participations(participationService.findByApplicant_Id(userId))
                 .zzims(zzimService.findByUserId(userId)).friends(followService.findByFollower_Id(userId)).build();
+
+        Set<SportType> preferredTypes = activityData.getPreferredSportTypes();
+        for (Board board : candidateBoards) {
+            System.out.println("boardId: " + board.getId() +
+                    ", boardSportType: " + board.getSportType() +
+                    ", preferredTypes: " + preferredTypes +
+                    ", 포함여부: " + preferredTypes.contains(board.getSportType()));
+        }
+
+        // 제대로 찍히는지 검증
+        // 여기서 participation, 선호 타입/시간 set 직접 println!
+        System.out.println("=== 참여 내역: " + activityData.getParticipations());
+        System.out.println("=== 선호 운동 타입: " + activityData.getPreferredSportTypes());
+        System.out.println("=== 선호 시간대: " + activityData.getPreferredHours());
 
         // 점수 계산
         Map<String, Map<Long, Double>> scoreByType = scoreCalculators.stream().collect(
@@ -63,15 +77,25 @@ public class RecommendationService {
                     double participationScore = scoreByType.getOrDefault("participation", Map.of()).getOrDefault(boardId, 0.0);
                     double zzimScore = scoreByType.getOrDefault("zzim", Map.of()).getOrDefault(boardId, 0.0);
                     double friendScore = scoreByType.getOrDefault("friend", Map.of()).getOrDefault(boardId, 0.0);
-                    double typeScore = scoreByType.getOrDefault("type", Map.of()).getOrDefault(boardId, 0.0);
+                    double typeScore = scoreByType.getOrDefault("sportType", Map.of()).getOrDefault(boardId, 0.0);
                     double timeScore = scoreByType.getOrDefault("time", Map.of()).getOrDefault(boardId, 0.0);
 
+                    // 제대로 찍히는지 검증
+                    System.out.println("boardId: " + boardId
+                            + " participationScore: " + participationScore
+                            + " zzimScore: " + zzimScore
+                            + " friendScore: " + friendScore
+                            + " typeScore: " + typeScore
+                            + " timeScore: " + timeScore);
+
+                    // 최종 계산
                     double finalScore =
                             participationScore * recommendationConfig.getWeights().getParticipation()
                                     + zzimScore * recommendationConfig.getWeights().getZzim()
                                     + friendScore * recommendationConfig.getWeights().getFriend()
                                     + typeScore * recommendationConfig.getWeights().getType()
                                     + timeScore * recommendationConfig.getWeights().getTime();
+
                     return RecommendationDto.builder()
                             .board(BoardResponseDto.builder()
                                     .id(board.getId())
