@@ -112,7 +112,7 @@ public class BoardPopularityService {
             String json = objectMapper.writeValueAsString(result);
             stringRedisTemplate.opsForValue().set(POPULAR_TOP10_KEY, json, Duration.ofMinutes(65));
         } catch (Exception e) {
-            // 예외처리, 로깅 등
+            log.error("인기글 리스트 캐싱 중 예외 발생", e);
         }
     }
 
