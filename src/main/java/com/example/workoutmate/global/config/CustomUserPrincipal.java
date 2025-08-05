@@ -5,11 +5,12 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
 @Getter
-public class CustomUserPrincipal implements UserDetails {
+public class CustomUserPrincipal implements UserDetails, Principal {
 
     private final Long id;
     private final String email;
@@ -33,6 +34,12 @@ public class CustomUserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
+        return email;
+    }
+
+    // WebSocket에서 사용자 식별용
+    @Override
+    public String getName() {
         return email;
     }
 }

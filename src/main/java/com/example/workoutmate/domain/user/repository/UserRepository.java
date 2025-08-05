@@ -23,6 +23,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(String email);
 
+    Optional<User> findByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(String email);
+
     @Query("SELECT u FROM User u WHERE u.isEmailVerified = false AND u.createdAt < :time")
     Page<User> findUnverifiedUsers(@Param("time")LocalDateTime time, Pageable pageable);
 }

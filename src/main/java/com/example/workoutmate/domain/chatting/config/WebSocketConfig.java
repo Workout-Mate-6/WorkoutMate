@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.chatting.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -11,6 +12,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final ChatAuthHandler chatAuthHandler;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -33,5 +36,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 // WebSocket을 지원하지 않는 브라우저를 위한 SockJS 지원 추가
                 .withSockJS()
         ;
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(chatAuthHandler);
     }
 }
