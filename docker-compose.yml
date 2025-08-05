@@ -30,6 +30,20 @@ services:
     command:
       - --config.file=/etc/promtail/promtail-config.yml
 
+  # Loki
+  loki:
+    image: grafana/loki:3.4.1
+    container_name: loki
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./loki/data:/loki
+      - ./loki-config.yml:/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    command:
+      - --config.file=/etc/loki/loki-config.yml
+
 networks:
   spring-net:
 
