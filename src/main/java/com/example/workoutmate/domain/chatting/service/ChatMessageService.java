@@ -7,11 +7,9 @@ import com.example.workoutmate.domain.chatting.repository.ChatMessageRepository;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
@@ -23,6 +21,7 @@ public class ChatMessageService {
     public ChatDto save(ChatDto chatDto, String email) {
         User sender = userService.findByEmail(email);
 
+        chatDto.setTypeTalk();
         ChatMessage chatMessage = ChattingMapper.toChatMessage(chatDto, sender);
 
         chatMessageRepository.save(chatMessage);

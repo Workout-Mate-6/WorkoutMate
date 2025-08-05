@@ -16,6 +16,7 @@ public class ChattingMapper {
                 .sender(user)
                 .message(chatDto.getMessage())
                 .createdAt(LocalDateTime.now())
+                .type(chatDto.getType())
                 .build();
     }
 
@@ -49,6 +50,7 @@ public class ChattingMapper {
                 .senderName(chatMessage.getSender().getName())
                 .message(chatMessage.getMessage())
                 .createdAt(chatMessage.getCreatedAt().toString())
+                .type(chatMessage.getType())
                 .build();
     }
 }
