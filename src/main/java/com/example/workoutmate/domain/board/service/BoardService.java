@@ -25,23 +25,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.example.workoutmate.domain.board.service.BoardPopularityService.POPULAR_TOP10_KEY;
-import static com.example.workoutmate.domain.board.service.BoardPopularityService.VIEW_RANKING_KEY;
-
-
 @Service
 @RequiredArgsConstructor
 public class BoardService {
-
-    @Autowired
-    @Qualifier("customStringRedisTemplate")
-    private RedisTemplate<String, String> stringRedisTemplate;
 
     private final BoardRepository boardRepository;
     private final BoardQueryRepository boardQueryRepository;
@@ -49,6 +40,7 @@ public class BoardService {
     private final UserService userService;
     private final FollowService followService;
     private final BoardPopularityService popularityService;
+    private final BoardViewCountService boardViewCountService;
 
     // 게시글 생성/저장
     @Transactional
@@ -63,18 +55,21 @@ public class BoardService {
         boardRepository.save(board);
 
         // entity -> dto
-        return BoardMapper.boardToBoardResponse(board);
+        return BoardMapper.boardToBoardResponse(board, 0);
     }
 
     // 게시글 단건 조회
     @Transactional(readOnly = true)
     public BoardResponseDto getBoard(Long boardId) {
-        popularityService.incrementViewCount(boardId);
-
         Board board = boardSearchService.getBoardById(boardId);
 
+        popularityService.incrementViewCount(board.getId());
+        boardViewCountService.incrementViewCount(board.getId());
+
+        int viewCount = boardViewCountService.getViewCount(board.getId());
+
         // entity -> dto
-        return BoardMapper.boardToBoardResponse(board);
+        return BoardMapper.boardToBoardResponse(board, viewCount);
     }
 
     // 게시글 전체 조회
@@ -84,7 +79,7 @@ public class BoardService {
         Page<Board> boardPage = boardRepository.findAllByIsDeletedFalse(pageable);
 
         // Page<Board> → Page<BoardResponseDto>
-        return boardPage.map(BoardMapper::boardToBoardResponse);
+        return boardViewCountService.toDtoPage(boardPage);
     }
 
     // 팔로잉한 유저 게시글 전체 조회
@@ -99,7 +94,7 @@ public class BoardService {
         Page<Board> boardPage = boardRepository.findAllByWriterIdInWithWriterFetch(followingIds, pageable);
 
         // Page<Board> → Page<BoardResponseDto>
-        return boardPage.map(BoardMapper::boardToBoardResponse);
+        return boardViewCountService.toDtoPage(boardPage);
     }
 
     // 운동 종목 별 카테고리 조회
@@ -109,7 +104,7 @@ public class BoardService {
         Page<Board> boardPage = boardRepository.findAllByIsDeletedFalseAndSportType(pageable, sportType);
 
         // Page<Board> → Page<BoardResponseDto>
-        return boardPage.map(BoardMapper::boardToBoardResponse);
+        return boardViewCountService.toDtoPage(boardPage);
     }
 
     // 내 게시물 목록 조회
@@ -119,7 +114,7 @@ public class BoardService {
 
         Page<Board> boardPage = boardRepository.findAllByWriterAndIsDeletedFalse(user, pageable);
 
-        return boardPage.map(BoardMapper::boardToBoardResponse);
+        return boardViewCountService.toDtoPage(boardPage);
     }
 
     //게시글 수정
@@ -137,8 +132,11 @@ public class BoardService {
 
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getMaxParticipants());
 
+        int viewCount = boardViewCountService.getViewCount(board.getId());
+
         // entity -> dto
-        return BoardMapper.boardToBoardResponse(board);
+        return BoardMapper.boardToBoardResponse(board, viewCount);
+
     }
 
     // 게시글 삭제
@@ -154,10 +152,8 @@ public class BoardService {
             throw new CustomException(CustomErrorCode.BOARD_HAS_PARTICIPANTS);
         }
 
-        // 게시글 삭제 로직
-        stringRedisTemplate.opsForZSet().remove(VIEW_RANKING_KEY, boardId.toString());
-        // 캐시 즉시 삭제
-        stringRedisTemplate.delete(POPULAR_TOP10_KEY);
+        popularityService.removeFromRanking(boardId);
+        boardViewCountService.removeFromHash(board.getId());
 
         board.delete();
     }
@@ -191,7 +187,7 @@ public class BoardService {
     public Page<BoardResponseDto> searchBoards(Long userId, BoardFilterRequestDto filterRequestDto, Pageable pageable) {
         Page<Board> boardPage = boardQueryRepository.searchWithFilters(userId, filterRequestDto, pageable);
 
-        return boardPage.map(BoardMapper::boardToBoardResponse);
+        return boardViewCountService.toDtoPage(boardPage);
     }
 
 }

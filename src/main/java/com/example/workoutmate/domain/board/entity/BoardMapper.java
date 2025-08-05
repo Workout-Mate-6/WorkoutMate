@@ -19,7 +19,7 @@ public class BoardMapper {
     }
 
     // Entity -> dto
-    public static BoardResponseDto boardToBoardResponse(Board board) {
+    public static BoardResponseDto boardToBoardResponse(Board board, Integer viewCount) {
         return BoardResponseDto.builder()
                 .id(board.getId())
                 .writerId(board.getWriter().getId())
@@ -28,6 +28,7 @@ public class BoardMapper {
                 .sportType(board.getSportType())
                 .maxParticipants(board.getMaxParticipants())
                 .currentParticipants(board.getCurrentParticipants())
+                .viewCount(viewCount != null ? viewCount : 0)
                 .status(board.getStatus())
                 .createdAt(board.getCreatedAt())
                 .modifiedAt(board.getModifiedAt())
