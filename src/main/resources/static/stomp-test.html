@@ -24,21 +24,27 @@
             const url = $('#websocketUrl').val();
             const token = $('#jwtToken').val();
 
-            if (!token) {
-                alert('JWT Token을 입력해주세요.');
-                return;
-            }
+            // if (!token) {
+            //     alert('JWT Token을 입력해주세요.');
+            //     return;
+            // }
 
             // STOMP 연결 시 헤더에 인증 정보 추가
             const connectHeaders = {
                 Authorization: `Bearer ${token}`
             };
 
-            const socket = new SockJS(url);
+            const urlWithToken = `${url}?token=${token}`;
+
+            const socket = new SockJS(urlWithToken);
+            // const socket = new WebSocket(url);
             stompClient = Stomp.over(socket);
 
             // 연결 성공 시 이전 메시지 불러오고, 구독 시작
-            stompClient.connect(connectHeaders, () => {
+            // stompClient.connect(connectHeaders, () => {
+            stompClient.connect({
+                Authorization: `Bearer ${token}`
+            }, () => {
                 console.log('connected!');
 
                 fetchOldMessages(chatRoomId); // 1. 이전 메시지 먼저 로딩

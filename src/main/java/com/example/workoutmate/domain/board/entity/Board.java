@@ -47,6 +47,10 @@ public class Board extends BaseEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
+    @Builder.Default
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount = 0;
+
     // 삭제일
     @Column
     private LocalDateTime deletedAt;
@@ -113,4 +117,9 @@ public class Board extends BaseEntity {
             this.status = status;
         }
     }
+
+    public void increaseViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
 }

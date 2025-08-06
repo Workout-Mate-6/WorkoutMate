@@ -20,6 +20,7 @@ public class BoardResponseDto {
     private final Long maxParticipants;
     private final LocalDateTime startTime;
     private final Long currentParticipants;
+    private final Integer viewCount;
     private final Status status;
     private final LocalDateTime createdAt;
     private final LocalDateTime modifiedAt;

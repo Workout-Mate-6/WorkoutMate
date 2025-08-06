@@ -2,6 +2,7 @@ package com.example.workoutmate.domain.chatting.controller;
 
 import com.example.workoutmate.domain.chatting.dto.ChatDto;
 import com.example.workoutmate.domain.chatting.service.ChatMessageService;
+import com.example.workoutmate.global.config.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -18,8 +19,10 @@ public class ChatController {
     private final ChatMessageService chatMessageService;
 
     @MessageMapping("/chats/send-message")
-    public void sendMessage(@Payload ChatDto chat) {
-        ChatDto chatDto = chatMessageService.save(chat);
+    public void sendMessage(@Payload ChatDto chat,
+                            CustomUserPrincipal user) {
+
+        ChatDto chatDto = chatMessageService.save(chat, user.getEmail());
         template.convertAndSend("/sub/chat/mates/" + chat.getChatRoomId(), chatDto);
     }
 }

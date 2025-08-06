@@ -1,6 +1,7 @@
 package com.example.workoutmate.global.enums;
 
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -43,6 +44,7 @@ public enum CustomErrorCode {
     UNAUTHORIZED_BOARD_ACCESS(HttpStatus.FORBIDDEN, "본인의 게시글만 수정 또는 삭제가 가능합니다."),
     INVALID_MAX_PARTICIPANTS(HttpStatus.BAD_REQUEST, "모집인원은 모집 확정 인원보다 커야합니다."),
     BOARD_HAS_PARTICIPANTS(HttpStatus.BAD_REQUEST, "현재 참여자가 있어 게시글을 삭제할 수 없습니다."),
+    CACHE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "인기글 리스트 캐싱에 실패했습니다."), // ← 추가
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
@@ -58,7 +60,7 @@ public enum CustomErrorCode {
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
     CHATROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."),
     ALREADY_LEFT_CHATROOM(HttpStatus.BAD_REQUEST, "이미 채팅방을 나간 유저입니다."),
-
+    TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "헤더에 JWT 토큰이 존재하지 않습니다."),
 
     // Zzim
     ALREADY_ZZIM(HttpStatus.CONFLICT, "이미 찜한 게시글입니다."),
