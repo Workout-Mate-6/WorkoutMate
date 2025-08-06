@@ -2,10 +2,8 @@ package com.example.workoutmate.domain.participation.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.enums.Status;
-import com.example.workoutmate.domain.board.service.BoardPopularityService;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
-import com.example.workoutmate.domain.comment.service.CommentService;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;

@@ -1,6 +1,5 @@
 package com.example.workoutmate.domain.board.dto;
 
-import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.enums.Status;
 import lombok.Builder;
