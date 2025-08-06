@@ -57,6 +57,7 @@ public enum CustomErrorCode {
     // Chatting
     EQUALS_SENDER_RECEIVER(HttpStatus.BAD_REQUEST, "본인과는 채팅방을 생성할 수 없습니다."),
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    CHATROOM_DELETED(HttpStatus.BAD_REQUEST, "삭제된 채팅방입니다."),
     CHATROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."),
     ALREADY_LEFT_CHATROOM(HttpStatus.BAD_REQUEST, "이미 채팅방을 나간 유저입니다."),
     TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "헤더에 JWT 토큰이 존재하지 않습니다."),

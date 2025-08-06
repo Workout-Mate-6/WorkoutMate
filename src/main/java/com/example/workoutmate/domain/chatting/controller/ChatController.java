@@ -20,6 +20,6 @@ public class ChatController {
     public void sendMessage(@Payload ChatDto chat,
                             CustomUserPrincipal user) {
 
-        chatMessageService.save(chat, user.getEmail());
+        chatMessageService.saveAndSend(chat, user.getEmail());
     }
 }
