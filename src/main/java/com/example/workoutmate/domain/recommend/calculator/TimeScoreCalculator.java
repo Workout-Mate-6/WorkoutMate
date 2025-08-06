@@ -11,10 +11,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class TimeScoreCalculator implements ScoreCalculator {
+    private static final double ADJACENT_HOUR_WEIGHT = 0.3;
+
     @Override
     public String getScoreType() {
         return "time";
@@ -31,9 +34,7 @@ public class TimeScoreCalculator implements ScoreCalculator {
         }
 
         // 시간대 마다 참여 횟수 집계
-        Map<Integer, Long> hourCount = participations.stream()
-                .map(p -> p.getBoard().getStartTime().getHour())
-                .collect(Collectors.groupingBy(hour -> hour, Collectors.counting()));
+        Map<Integer, Long> hourCount = calculateHourParticipation(participations);
 
         // 전체 참여 횟수
         long total = hourCount.values().stream().mapToLong(Long::longValue).sum();
@@ -43,10 +44,40 @@ public class TimeScoreCalculator implements ScoreCalculator {
 
         // 게시글의 시간대에 맞는 점수 부여
         return boards.stream().collect(Collectors.toMap(Board::getId, board -> {
-                    int hour = board.getStartTime().getHour();
-                    long count = hourCount.getOrDefault(hour, 0L);
-                    return (double) count / total;
+                    if (board.getStartTime() == null) {
+                        return 0.0;
+                    }
+                    int boardHour = board.getStartTime().getHour();
+                    return calculateTimeScore(boardHour, hourCount, total);
                 }
         ));
+    }
+
+    private Map<Integer, Long> calculateHourParticipation(List<Participation> participations) {
+        return participations.stream()
+                .filter(p -> p.getBoard() != null && p.getBoard().getStartTime() != null) // null 안전성 체크
+                .map(p -> p.getBoard().getStartTime().getHour()) // 시간 추출
+                .collect(Collectors.groupingBy(
+                        Function.identity(), // 시간대별로 그룹핑
+                        Collectors.counting() // 각 시간대별 참여 횟수 계산
+                ));
+    }
+
+    private double calculateTimeScore(int boardHour, Map<Integer, Long> hourCount, long total) {
+        // 해당 시간대 정확히 일치하는 참여 비율
+        double exactScore = hourCount.getOrDefault(boardHour, 0L) / (double) total;
+
+        // 인접 시간대 점수 계산 (24시간 순환 고려)
+        int prevHour = (boardHour - 1 + 24) % 24; // 이전 시간 (23시 다음은 0시)
+        int nextHour = (boardHour + 1) % 24;      // 다음 시간 (23시 다음은 0시)
+
+        double prevScore = hourCount.getOrDefault(prevHour, 0L) / (double) total * ADJACENT_HOUR_WEIGHT;
+        double nextScore = hourCount.getOrDefault(nextHour, 0L) / (double) total * ADJACENT_HOUR_WEIGHT;
+
+        // 총점 계산 (정확한 시간 + 인접 시간들의 부분 점수)
+        double totalScore = exactScore + prevScore + nextScore;
+
+        // 최대 1.0으로 제한
+        return Math.min(1.0, totalScore);
     }
 }

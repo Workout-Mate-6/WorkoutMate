@@ -21,8 +21,8 @@ public class ZzimScoreCalculator implements ScoreCalculator{
 
     @Override
     public Map<Long, Double> calculatorScores(User user, List<Board> boards, UserActivityData activityData, ParticipationService participationService, ZzimService zzimService) {
-        // 유저가 찜한거는 1.0 안한거는 0.0
-        Set<Long> zzimBordId = zzimService.getZzimBoardIdByUser(user);
+
+        Set<Long> zzimBordId = activityData.getZzimBoardIds();
 
         return boards.stream().collect(Collectors.toMap(
                 Board::getId,

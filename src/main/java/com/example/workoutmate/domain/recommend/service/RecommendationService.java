@@ -50,6 +50,8 @@ public class RecommendationService {
                 .zzims(zzimService.findByUserId(userId)).friends(followService.findByFollower_Id(userId)).build();
 
         Set<SportType> preferredTypes = activityData.getPreferredSportTypes();
+        Set<Integer> preferredHours = activityData.getPreferredHours();
+
         for (Board board : candidateBoards) {
             System.out.println("boardId: " + board.getId() +
                     ", boardSportType: " + board.getSportType() +
@@ -66,59 +68,62 @@ public class RecommendationService {
         // 점수 계산
         Map<String, Map<Long, Double>> scoreByType = scoreCalculators.stream().collect(
                 Collectors.toMap(ScoreCalculator::getScoreType,
-                        calc -> calc.calculatorScores(
-                                user, candidateBoards, activityData, participationService, zzimService)
+                        calc -> {
+                            Map<Long, Double> scores = calc.calculatorScores(
+                                    user, candidateBoards, activityData, participationService, zzimService);
+                            return scores;
+                        }
                 )
         );
 
-        // 가중치 반영!
-        return candidateBoards.stream().map(board -> {
-                    long boardId = board.getId();
-                    double participationScore = scoreByType.getOrDefault("participation", Map.of()).getOrDefault(boardId, 0.0);
-                    double zzimScore = scoreByType.getOrDefault("zzim", Map.of()).getOrDefault(boardId, 0.0);
-                    double friendScore = scoreByType.getOrDefault("friend", Map.of()).getOrDefault(boardId, 0.0);
-                    double typeScore = scoreByType.getOrDefault("sportType", Map.of()).getOrDefault(boardId, 0.0);
-                    double timeScore = scoreByType.getOrDefault("time", Map.of()).getOrDefault(boardId, 0.0);
-
-                    // 제대로 찍히는지 검증
-                    System.out.println("boardId: " + boardId
-                            + " participationScore: " + participationScore
-                            + " zzimScore: " + zzimScore
-                            + " friendScore: " + friendScore
-                            + " typeScore: " + typeScore
-                            + " timeScore: " + timeScore);
-
-                    // 최종 계산
-                    double finalScore =
-                            participationScore * recommendationConfig.getWeights().getParticipation()
-                                    + zzimScore * recommendationConfig.getWeights().getZzim()
-                                    + friendScore * recommendationConfig.getWeights().getFriend()
-                                    + typeScore * recommendationConfig.getWeights().getType()
-                                    + timeScore * recommendationConfig.getWeights().getTime();
-
-                    return RecommendationDto.builder()
-                            .board(BoardResponseDto.builder()
-                                    .id(board.getId())
-                                    .title(board.getTitle())
-                                    .content(board.getContent())
-                                    .maxParticipants(board.getMaxParticipants())
-                                    .currentParticipants(board.getCurrentParticipants())
-                                    .writer(UserSimpleDto.builder()
-                                            .id(user.getId())
-                                            .nickname(user.getName())
-                                            .build())
-                                    .build())
-                            .finalScore(finalScore)
-                            .participationScore(participationScore)
-                            .zzimScore(zzimScore)
-                            .friendScore(friendScore)
-                            .typeScore(typeScore)
-                            .timeScore(timeScore)
-                            .build();
-                })
-                .filter(dto -> dto.getFinalScore() > recommendationConfig.getMinScore())
-                .sorted(Comparator.comparingDouble(RecommendationDto::getFinalScore).reversed()).limit(limit)
+        List<RecommendationDto> recommendations = candidateBoards.stream()
+                .map(board -> createrecommendationDto(board, scoreByType))
+                .filter(dto ->dto.getFinalScore() > recommendationConfig.getMinScore())
+                .sorted(Comparator.comparingDouble(RecommendationDto::getFinalScore).reversed())
+                .limit(limit)
                 .collect(Collectors.toList());
 
+        return recommendations;
+
+
+    }
+
+    private RecommendationDto createrecommendationDto(Board board, Map<String, Map<Long, Double>> scoreByType) {
+        long boardId = board.getId();
+        RecommendationConfig.Weights weights = recommendationConfig.getWeights();
+
+        // 각 점수 타입별 점수 추출
+        double participationScore = scoreByType.getOrDefault("participation", Map.of()).getOrDefault(boardId, 0.0);
+        double zzimScore = scoreByType.getOrDefault("zzim", Map.of()).getOrDefault(boardId, 0.0);
+        double friendScore = scoreByType.getOrDefault("friend", Map.of()).getOrDefault(boardId, 0.0);
+        double sportTypeScore = scoreByType.getOrDefault("sportType", Map.of()).getOrDefault(boardId, 0.0);
+        double timeScore = scoreByType.getOrDefault("time", Map.of()).getOrDefault(boardId, 0.0);
+
+        // 가중치 적용하여 최종 점수 계산
+        double finalScore = participationScore * weights.getParticipation()
+                + zzimScore * weights.getZzim()
+                + friendScore * weights.getFriend()
+                + sportTypeScore * weights.getType()
+                + timeScore * weights.getTime();
+
+        return RecommendationDto.builder()
+                .board(BoardResponseDto.builder()
+                        .id(board.getId())
+                        .title(board.getTitle())
+                        .content(board.getContent())
+                        .maxParticipants(board.getMaxParticipants())
+                        .currentParticipants(board.getCurrentParticipants())
+                        .writer(UserSimpleDto.builder()
+                                .id(board.getWriter().getId()) // 수정: board의 작성자 정보 사용
+                                .nickname(board.getWriter().getName())
+                                .build())
+                        .build())
+                .finalScore(finalScore)
+                .participationScore(participationScore)
+                .zzimScore(zzimScore)
+                .friendScore(friendScore)
+                .typeScore(sportTypeScore) // sportType 점수로 통일
+                .timeScore(timeScore)
+                .build();
     }
 }
