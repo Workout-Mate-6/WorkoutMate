@@ -28,14 +28,14 @@ scrape_configs:
     pipeline_stages:
       - json:
           expressions:
-            timestamp: @timestamp
+            timestamp: '["@timestamp"]'
             level: level
             threadName: thread_name
             loggerName: logger_name
             message: message
             context: context
       - labels:
-          level: ''
+          level: level
       - timestamp:
           source: timestamp
           format: RFC3339Nano

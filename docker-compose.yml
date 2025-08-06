@@ -27,6 +27,8 @@ services:
       - /home/ubuntu/promtail-config.yml:/etc/promtail/promtail-config.yml
       # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
       - /home/ubuntu/promtail/positions:/tmp
+      # log
+      - /home/ubuntu/logs:/logs
     command:
       - --config.file=/etc/promtail/promtail-config.yml
 
