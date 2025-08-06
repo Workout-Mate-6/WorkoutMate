@@ -24,15 +24,10 @@
             const url = $('#websocketUrl').val();
             const token = $('#jwtToken').val();
 
-            // if (!token) {
-            //     alert('JWT Token을 입력해주세요.');
-            //     return;
-            // }
-
-            // STOMP 연결 시 헤더에 인증 정보 추가
-            const connectHeaders = {
-                Authorization: `Bearer ${token}`
-            };
+            if (!chatRoomId || !token) {
+                alert('JWT Tokenr과 채팅방 ID를 모두 입력해주세요.');
+                return;
+            }
 
             const urlWithToken = `${url}?token=${token}`;
 
@@ -47,10 +42,13 @@
             }, () => {
                 console.log('connected!');
 
+                subscribeErrorQueue();
+
                 fetchOldMessages(chatRoomId); // 1. 이전 메시지 먼저 로딩
 
                 const subPath = `/sub/chat/rooms/${chatRoomId}`; // 2. 구독 경로
                 subscribeToPath(subPath); // 3. 실시간 메시지 구독 시작
+
             }, stompErrorHandler);
         }
 
@@ -60,6 +58,22 @@
 
         function stompErrorHandler(e) {
             console.error('stomp connect error - ', e);
+        }
+
+        function subscribeErrorQueue() {
+            stompClient.subscribe('/user/queue/errors', function(error) {
+                try {
+                    const errorPayload = JSON.parse(error.body);
+                    console.error('[STOMP 에러 수신]');
+                    console.error('에러 타입:', errorPayload.error);
+                    console.error('에러 메시지:', errorPayload.message);
+
+                    // 사용자 알림
+                    alert("메시지 전송 실패: " + errorPayload.message);
+                } catch (e) {
+                    console.error('[STOMP 에러 수신 실패] 올바른 JSON이 아닙니다.', error.body);
+                }
+            });
         }
 
         function subscribeToPath(path) {
@@ -85,15 +99,6 @@
         function displayMessage(msg) {
             const messageBox = $('#messageBox');
             // 메시지 객체에서 발신자와 메시지 내용을 추출하여 표시
-            // const messageHtml = `<div class="alert alert-info"><strong>${msg.senderName}:</strong> ${msg.message} ${msg.createdAt}</div>`;
-            // const messageHtml = `
-            //     <div class="alert alert-info d-flex justify-content-between align-items-center mb-1">
-            //         <div>
-            //             <strong>${msg.senderName}:</strong> ${msg.message}
-            //         </div>
-            //         <small class="text-muted">${msg.createdAt}</small>
-            //     </div>
-            // `;
 
             let messageHtml = '';
 
