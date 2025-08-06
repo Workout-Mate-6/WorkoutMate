@@ -6,6 +6,7 @@ import com.example.workoutmate.domain.participation.service.ParticipationService
 import com.example.workoutmate.domain.recommend.dto.UserActivityData;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.zzim.service.ZzimService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,8 +15,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class TimeScoreCalculator implements ScoreCalculator {
+    // 인접 시간대
     private static final double ADJACENT_HOUR_WEIGHT = 0.3;
 
     @Override
@@ -39,16 +42,21 @@ public class TimeScoreCalculator implements ScoreCalculator {
         // 전체 참여 횟수
         long total = hourCount.values().stream().mapToLong(Long::longValue).sum();
         if (total == 0) {
+            log.warn("유저 {}의 시간별 참여기록 없음", user.getId());
             return boards.stream().collect(Collectors.toMap(Board::getId, b -> 0.0));
         }
+        log.debug("유저 {}의 시간별 참여 패턴 : {}", user.getId(), hourCount);
 
         // 게시글의 시간대에 맞는 점수 부여
         return boards.stream().collect(Collectors.toMap(Board::getId, board -> {
                     if (board.getStartTime() == null) {
+                        log.warn("게시글 {}의 시작시간이 없음", board.getId());
                         return 0.0;
                     }
                     int boardHour = board.getStartTime().getHour();
-                    return calculateTimeScore(boardHour, hourCount, total);
+                    double score = calculateTimeScore(boardHour, hourCount, total);
+                    log.trace("게시글 : {}, 시간대 : {}, 시간점수 : {} ", board.getId(), boardHour, score);
+                    return score;
                 }
         ));
     }

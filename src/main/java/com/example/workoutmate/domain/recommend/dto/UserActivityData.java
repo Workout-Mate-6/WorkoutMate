@@ -108,13 +108,4 @@ public class UserActivityData {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
-
-    // 캐시 초기화 메서드 (데이터가 변경되었을 때 사용)
-    public void clearCache() {
-        this.cachedFriendIds = null;
-        this.cachedZzimBoardIds = null;
-        this.cachedPreferredSportTypes = null;
-        this.cachedPreferredHours = null;
-    }
-
 }
