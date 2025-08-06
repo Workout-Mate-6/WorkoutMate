@@ -1,0 +1,22 @@
+global:
+  # 메트릭 수집하는 주기 설정
+  scrape_interval: 15s
+
+scrape_configs:
+  # 메트릭 수집하는 job 의 이름
+  - job_name: 'prometheus'
+    static_configs:
+      # 메트릭을 수집할 호스트 및 포트 번호 설정
+      - targets: [ 'localhost:9090' ]
+
+  - job_name: 'loki'
+    static_configs:
+      - targets: [ 'loki:3100' ]
+
+  - job_name: 'spring-boot-app-metric'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: [ 'host.docker.interal:8080' ]
+        # grafana 와 같은 대시보드에서 메트릭을 식별하는 라벨 설정
+        labels:
+          instance: 'spring-boot-app'
