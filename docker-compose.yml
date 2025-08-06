@@ -24,7 +24,7 @@ services:
       # Docker 로그 파일 경로 전체 접근
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # promtail 에 대한 환경 설정 파일
-      - /home/ubuntu/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /home/ubuntu/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
       # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
       - /home/ubuntu/promtail/positions:/tmp
       # log
@@ -40,7 +40,7 @@ services:
     user: root
     volumes:
       - /home/ubuntu/loki/data:/loki
-      - /home/ubuntu/loki-config.yml:/etc/loki/loki-config.yml
+      - /home/ubuntu/loki/loki-config.yml:/etc/loki/loki-config.yml
     ports:
       - "3100:3100"
     command:
@@ -53,7 +53,7 @@ services:
     restart: unless-stopped
     user: root
     volumes:
-      - /home/ubuntu/prometheus-config.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/prometheus/prometheus-config.yml:/etc/prometheus/prometheus.yml
       - /home/ubuntu/prometheus/data:/prometheus
     ports:
       - "9090:9090"
