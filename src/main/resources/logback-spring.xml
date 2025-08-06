@@ -21,7 +21,7 @@
     <!-- 운영 환경용 설정: 콘솔 + 파일 출력 -->
     <springProfile name="prod">
         <!-- 로그 파일 경로 및 이름 설정 -->
-        <property name="LOG_PATH" value="/home/ubuntu/logs"/>
+        <property name="LOG_PATH" value="./logs"/>
         <property name="LOG_FILE_NAME" value="app_log"/>
         <property name="ERR_LOG_FILE_NAME" value="err_log"/>
 
