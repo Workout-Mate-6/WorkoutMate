@@ -26,7 +26,6 @@ storage_config:
   tsdb_shipper:
     active_index_directory: /loki/index
     cache_location: /loki/index_cache
-    shared_store: filesystem
 
   # 파일 시스템 스토리지 설정 추가
   filesystem:
