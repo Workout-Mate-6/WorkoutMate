@@ -1,7 +1,9 @@
 package com.example.workoutmate.domain.chatting.config;
 
+import com.example.workoutmate.domain.chatting.event.ChatPublisher;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -12,13 +14,11 @@ import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class StompExceptionHandler {
 
     private final SimpMessagingTemplate template;
-
-    public StompExceptionHandler(SimpMessagingTemplate template) {
-        this.template = template;
-    }
+    private final ChatPublisher chatPublisher;
 
     @MessageExceptionHandler(CustomException.class)
     public void handleCustomException(CustomException e, CustomUserPrincipal principal) {
@@ -30,10 +30,6 @@ public class StompExceptionHandler {
         errorPayload.put("message", e.getMessage());
 
         // 에러 메시지 전송
-        template.convertAndSendToUser(
-                principal.getName(),
-                "/queue/errors",
-                errorPayload
-        );
+        chatPublisher.sendError(errorPayload, principal);
     }
 }
