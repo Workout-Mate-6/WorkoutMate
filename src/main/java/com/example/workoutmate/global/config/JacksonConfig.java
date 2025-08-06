@@ -12,13 +12,13 @@ JwtAuthenticaitonEntryPoint.java, JwtAccessDeniedHandler.java 속
 LocalDateTime.now() 직렬화를 위한 클래스
 */
 
-@Configuration
-public class JacksonConfig {
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
-    }
-}
+//@Configuration
+//public class JacksonConfig {
+//    @Bean
+//    public ObjectMapper objectMapper() {
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.registerModule(new JavaTimeModule());
+//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+//        return mapper;
+//    }
+//}
