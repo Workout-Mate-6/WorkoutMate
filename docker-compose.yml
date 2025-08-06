@@ -60,6 +60,17 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
 
+  # Grafana
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+
 networks:
   spring-net:
 
