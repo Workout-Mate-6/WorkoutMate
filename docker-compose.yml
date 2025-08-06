@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # app (spring-boot-app)
   app:
     image: doohaaa/my-spring-app:latest
     container_name: springboot-container
