@@ -5,7 +5,6 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import com.example.workoutmate.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
