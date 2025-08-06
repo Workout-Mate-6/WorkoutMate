@@ -92,11 +92,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             mkdir -p /home/ubuntu/promtail
-            chown -R ubuntu:ubuntu /home/ubuntu/promtail
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/promtail
             mkdir -p /home/ubuntu/loki
-            chown -R ubuntu:ubuntu /home/ubuntu/loki
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/loki
             mkdir -p /home/ubuntu/prometheus
-            chown -R ubuntu:ubuntu /home/ubuntu/prometheus
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/prometheus
 
       # 8.5 단계: promtail-config.yml 파일 EC2로 복사
       - name: Copy files to EC2 (1)
