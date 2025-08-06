@@ -7,7 +7,7 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       # 메트릭을 수집할 호스트 및 포트 번호 설정
-      - targets: [ '${EC2_HOST}:9090' ]
+      - targets: [ '3.37.87.217:9090' ]
 
   - job_name: 'loki'
     static_configs:
@@ -16,7 +16,7 @@ scrape_configs:
   - job_name: 'spring-boot-app-metric'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ '${EC2_HOST}:8080' ]
+      - targets: [ '3.37.87.217:8080' ]
         # grafana 와 같은 대시보드에서 메트릭을 식별하는 라벨 설정
         labels:
           instance: 'spring-boot-app'
