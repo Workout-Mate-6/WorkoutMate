@@ -6,7 +6,6 @@ import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class StompExceptionHandler {
 
-    private final SimpMessagingTemplate template;
     private final ChatPublisher chatPublisher;
 
     @MessageExceptionHandler(CustomException.class)
