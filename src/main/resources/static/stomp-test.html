@@ -86,14 +86,33 @@
             const messageBox = $('#messageBox');
             // 메시지 객체에서 발신자와 메시지 내용을 추출하여 표시
             // const messageHtml = `<div class="alert alert-info"><strong>${msg.senderName}:</strong> ${msg.message} ${msg.createdAt}</div>`;
-            const messageHtml = `
-                <div class="alert alert-info d-flex justify-content-between align-items-center mb-1">
-                    <div>
-                        <strong>${msg.senderName}:</strong> ${msg.message}
-                    </div>
-                    <small class="text-muted">${msg.createdAt}</small>
+            // const messageHtml = `
+            //     <div class="alert alert-info d-flex justify-content-between align-items-center mb-1">
+            //         <div>
+            //             <strong>${msg.senderName}:</strong> ${msg.message}
+            //         </div>
+            //         <small class="text-muted">${msg.createdAt}</small>
+            //     </div>
+            // `;
+
+            let messageHtml = '';
+
+            if (msg.type === 'TALK') {
+                messageHtml = `
+            <div class="alert alert-info d-flex justify-content-between align-items-center mb-1">
+                <div>
+                    <strong>${msg.senderName}:</strong> ${msg.message}
                 </div>
-            `;
+                <small class="text-muted">${msg.createdAt}</small>
+            </div>
+        `;
+            } else if (msg.type === 'ENTER' || msg.type === 'LEAVE') {
+                messageHtml = `
+            <div class="alert alert-secondary text-center mb-1">
+                ${msg.message}
+            </div>
+        `;
+            }
             messageBox.append(messageHtml);
             messageBox.scrollTop(messageBox[0].scrollHeight);
         }
@@ -106,7 +125,7 @@
         // }
 
         function fetchOldMessages(chatRoomId) {
-            const apiUrl = `http://localhost:8080/api/chat_rooms/message/${chatRoomId}?cursor=&size=50`;
+            const apiUrl = `http://localhost:8080/api/chat-rooms/message/${chatRoomId}?cursor=&size=50`;
             const token = $('#jwtToken').val();
 
             if (!token) {
@@ -246,7 +265,8 @@
         <label for="message" class="form-label">MESSAGE(JSON):</label>
         <textarea id="message" class="form-control"
                   placeholder='{"targetUsername": "유저명", "message": "전송할 메시지", "sender": "발신자명"}'>
-{ "senderId" : 1, "message" : "안녕하세요?" }</textarea>
+{"type": "TALK", "message": "안녕하세요?"}
+</textarea>
     </div>
     <button id="sendBtn" class="btn btn-success">SEND</button>
 

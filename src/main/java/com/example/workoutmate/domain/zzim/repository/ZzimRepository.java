@@ -25,4 +25,9 @@ public interface ZzimRepository extends JpaRepository<Zzim, Long> {
 
     // 유저가 해당 게시글을 찜했는지 여부 조회
     Optional<Zzim> findByBoardIdAndUserId(Long boardId, Long userId);
+
+    // 해당 유저의 모든 찜 리스트
+    List<Zzim> findAllByUser(User user);
+
+    List<Zzim> findAllByUserId(Long userId);
 }

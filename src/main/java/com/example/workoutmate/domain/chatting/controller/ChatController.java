@@ -6,7 +6,6 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -15,14 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class ChatController {
 
-    private final SimpMessageSendingOperations template;
     private final ChatMessageService chatMessageService;
 
     @MessageMapping("/chats/send-message")
     public void sendMessage(@Payload ChatDto chat,
                             CustomUserPrincipal user) {
 
-        ChatDto chatDto = chatMessageService.save(chat, user.getEmail());
-        template.convertAndSend("/sub/chat/mates/" + chat.getChatRoomId(), chatDto);
+        chatMessageService.save(chat, user.getEmail());
     }
 }
