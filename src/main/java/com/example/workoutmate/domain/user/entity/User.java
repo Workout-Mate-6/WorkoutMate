@@ -4,6 +4,7 @@ import com.example.workoutmate.domain.follow.entity.Follow;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.entity.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -66,8 +67,10 @@ public class User extends BaseEntity {
 
 
     //follow 쪽 에서 사용
+    @JsonIgnore
     @OneToMany(mappedBy = "follower")
     private List<Follow> followers;
+    @JsonIgnore
     @OneToMany(mappedBy = "following")
     private List<Follow> followings;
     //

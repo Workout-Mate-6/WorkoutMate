@@ -7,6 +7,7 @@ import com.example.workoutmate.domain.chatting.entity.ChatMessage;
 import com.example.workoutmate.domain.chatting.entity.ChatRoom;
 import com.example.workoutmate.domain.chatting.entity.ChatRoomMember;
 import com.example.workoutmate.domain.chatting.entity.ChattingMapper;
+import com.example.workoutmate.domain.chatting.event.ChatPublisher;
 import com.example.workoutmate.domain.chatting.repository.ChatMessageRepository;
 import com.example.workoutmate.domain.chatting.repository.ChatRoomMemberRepository;
 import com.example.workoutmate.domain.chatting.repository.ChatRoomRepository;
@@ -38,8 +39,9 @@ public class ChattingService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final UserService userService;
     private final ChatMessageRepository chatMessageRepository;
+    private final UserService userService;
+    private final ChatPublisher chatPublisher;
 
 
     /**
@@ -71,6 +73,12 @@ public class ChattingService {
 
             chatRoomMember.join();
 
+            // 채팅 입장 메시지 저장
+            ChatMessage chatMessage = ChattingMapper.memberToJoinMessage(chatRoomMember, sender);
+            chatMessageRepository.save(chatMessage);
+            // 실시간 입장 메시지 전송
+            chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
+
             return new ChatRoomCreateResponseDto(
                     chatRoom.getId(), sender.getId(), receiver.getId(), chatRoom.getCreatedAt());
         }
@@ -97,6 +105,12 @@ public class ChattingService {
                 .joinedAt(chatRoom.getCreatedAt())
                 .build();
         chatRoomMemberRepository.save(receiverMember);
+
+        // 채팅 생성 메시지 저장
+        ChatMessage chatMessage = ChattingMapper.memberToStartMessage(senderMember, sender);
+        chatMessageRepository.save(chatMessage);
+        // 실시간 입장 메시지 전송
+        chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
 
         return ChattingMapper.toCreateDto(chatRoom);
     }
@@ -157,15 +171,21 @@ public class ChattingService {
 
         validateUserInChatRoom(chatRoom, user);
 
-        ChatRoomMember member = chatRoomMemberRepository.findByUserIdAndChatRoomId(user.getId(), chatRoomId)
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByUserIdAndChatRoomId(user.getId(), chatRoomId)
                 .orElseThrow(() -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."));
 
-        if (!member.isJoined()) {
+        if (!chatRoomMember.isJoined()) {
             throw new CustomException(ALREADY_LEFT_CHATROOM, ALREADY_LEFT_CHATROOM.getMessage());
         }
 
         // 채팅방 퇴장
-        member.leave();
+        chatRoomMember.leave();
+
+        // 채팅 퇴장 메시지 저장
+        ChatMessage chatMessage = ChattingMapper.memberToLeaveMessage(chatRoomMember, user);
+        chatMessageRepository.save(chatMessage);
+        // 실시간 메시지 전송
+        chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
 
         // 채팅방 멤버 모두 퇴장 상태면 채팅방 soft delete
         boolean allLeft = chatRoomMemberRepository.countByChatRoomIdAndIsJoinedTrue(chatRoomId) == 0;

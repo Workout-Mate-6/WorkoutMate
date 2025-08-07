@@ -18,8 +18,8 @@ public class PopularBoardDto {
     private String title;
     private String content;
     private String sportType;
-    private Long targetCount;
-    private Long currentCount;
+    private Long maxParticipants;
+    private Long currentParticipants;
     private Integer viewCount;
     private Status status;
     private LocalDateTime createdAt;

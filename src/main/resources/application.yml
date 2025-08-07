@@ -54,3 +54,21 @@ jwt:
 logging:
   level:
     org.springframework.jdbc.core: DEBUG
+
+# Spring actuator 관련 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  # 가중치 계산
+recommendation:
+  weights:
+    participation: 0.4
+    zzim: 0.2
+    friend: 0.1
+    type: 0.15
+    time: 0.15
+  max-candidate-size : 1000
+  min-score: 0.1
