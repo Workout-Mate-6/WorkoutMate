@@ -52,6 +52,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b WHERE b.id = :id")
     Optional<Board> findByIdWithPessimisticLock(@Param("id") Long id);
 
+
+    List<Board> findAllByWriterIdNotAndIsDeletedFalse(Long userId, Pageable pageable);
     // 조회수 변경시 modifiedAt 시간 변경X
     @Modifying
     @Query("UPDATE Board b SET b.viewCount = :viewCount WHERE b.id = :boardId")
