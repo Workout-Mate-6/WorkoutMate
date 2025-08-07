@@ -53,6 +53,13 @@ logging:
   level:
     org.springframework.jdbc.core: DEBUG
 
+# Spring actuator 관련 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
   # 가중치 계산
 recommendation:
   weights:
