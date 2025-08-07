@@ -69,6 +69,10 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private Status status = Status.OPEN;
 
+    // 운동 할 시간
+    @Column(nullable = false)
+    private LocalDateTime startTime;
+
 
     @Builder
     public Board(User writer, String title, String content, SportType sportType, Long maxParticipants) {

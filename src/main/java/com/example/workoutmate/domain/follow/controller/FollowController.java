@@ -36,7 +36,7 @@ public class FollowController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Long cursor
     ) {
-        return ApiResponse.success(HttpStatus.OK, "", followService.viewFollower(userId, size, cursor));
+        return ApiResponse.success(HttpStatus.OK, "팔로워 목록을 조회하였습니다.", followService.viewFollower(userId, size, cursor));
     }
 
     // 내가 팔로우한 사람들 조회
@@ -46,7 +46,7 @@ public class FollowController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Long cursor
     ) {
-        return ApiResponse.success(HttpStatus.OK, "", followService.viewFollowing(userId, size, cursor));
+        return ApiResponse.success(HttpStatus.OK, "팔로잉 목록을 조회하였습니다.", followService.viewFollowing(userId, size, cursor));
     }
 
     // 팔로우 취소

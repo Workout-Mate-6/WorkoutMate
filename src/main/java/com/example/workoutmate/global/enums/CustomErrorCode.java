@@ -1,7 +1,6 @@
 package com.example.workoutmate.global.enums;
 
 import lombok.Getter;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter

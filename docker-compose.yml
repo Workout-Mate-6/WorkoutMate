@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # app (spring-boot-app)
   app:
     image: doohaaa/my-spring-app:latest
     container_name: springboot-container
@@ -14,6 +15,65 @@ services:
       SPRING_PROFILES_ACTIVE: prod
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
+    volumes:
+      - /home/ubuntu/logs:/logs
+
+  # promtail
+  promtail:
+    image: grafana/promtail:3.4.1
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      # Docker 로그 파일 경로 전체 접근
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # promtail 에 대한 환경 설정 파일
+      - /home/ubuntu/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
+      - /home/ubuntu/promtail/positions:/tmp
+      # log
+      - /home/ubuntu/logs:/logs
+    command:
+      - --config.file=/etc/promtail/promtail-config.yml
+
+  # Loki
+  loki:
+    image: grafana/loki:3.4.1
+    container_name: loki
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/loki/data:/loki
+      - /home/ubuntu/loki/loki-config.yml:/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    command:
+      - --config.file=/etc/loki/loki-config.yml
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/prometheus/prometheus-config.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/prometheus/data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+
 networks:
   spring-net:
 

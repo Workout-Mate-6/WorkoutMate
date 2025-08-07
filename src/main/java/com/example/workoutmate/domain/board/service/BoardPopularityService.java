@@ -3,7 +3,6 @@ package com.example.workoutmate.domain.board.service;
 import com.example.workoutmate.domain.board.dto.PopularBoardDto;
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.BoardMapper;
-import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
