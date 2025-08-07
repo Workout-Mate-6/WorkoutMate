@@ -19,6 +19,7 @@
 
         let stompClient; // stompClient 변수를 전역으로 설정
         let subscriptions = {}; // 구독 정보를 저장할 객체
+        let pingIntervalId; // 토큰 인증을 위한 ping 객체
 
         function connectWebSocket(chatRoomId) {
             const url = $('#websocketUrl').val();
@@ -49,6 +50,8 @@
                 const subPath = `/sub/chat/rooms/${chatRoomId}`; // 2. 구독 경로
                 subscribeToPath(subPath); // 3. 실시간 메시지 구독 시작
 
+                startPingInterval(); // 4. 5분마다 ping 전송 및 토큰 확인
+
             }, stompErrorHandler);
         }
 
@@ -58,6 +61,7 @@
 
         function stompErrorHandler(e) {
             console.error('stomp connect error - ', e);
+
         }
 
         function subscribeErrorQueue() {
@@ -70,10 +74,24 @@
 
                     // 사용자 알림
                     alert("메시지 전송 실패: " + errorPayload.message);
+
+                    disconnectWebSocket();
+
                 } catch (e) {
                     console.error('[STOMP 에러 수신 실패] 올바른 JSON이 아닙니다.', error.body);
                 }
             });
+        }
+
+        function disconnectWebSocket() {
+            // 연결 종료 시 ping 삭제
+            clearPing();
+
+            if (stompClient) {
+                stompClient.disconnect(() => {
+                    console.log("WebSocket disconnected");
+                })
+            }
         }
 
         function subscribeToPath(path) {
@@ -93,6 +111,40 @@
                 delete subscriptions[path]; // 구독 정보 삭제
                 console.log(`Unsubscribed from ${path}`);
             }
+        }
+
+        function clearPing() {
+            if (pingIntervalId !== null) {
+                clearInterval(pingIntervalId);
+                pingIntervalId = null;
+            }
+        }
+
+        function startPingInterval() {
+            const token = $('#jwtToken').val();
+
+            clearPing();
+
+            pingIntervalId = setInterval(() => {
+
+                // 연결 안되어 있는 상태면 ping 종료
+                if (!stompClient || !stompClient.connected) {
+                    clearInterval(pingIntervalId);
+                    pingIntervalId = null;
+                    console.log("ping interval cleared");
+                    return;
+                }
+
+                console.log("[PING] 30초마다 ping을 전송합니다", new Date());
+                if (stompClient && stompClient.connected) {
+                    stompClient.send(
+                        '/pub/chat.ping',
+                        { Authorization: `Bearer ${token}` },
+                        JSON.stringify({ timestamp: Date.now() })
+                    );
+                    console.log("ping 전송됨");
+                }
+            }, 30 * 1000); // 30초마다 전송
         }
 
         // -- 수정된 부분: 메시지 객체를 받아 화면에 표시하도록 변경
