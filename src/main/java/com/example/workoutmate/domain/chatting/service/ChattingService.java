@@ -68,8 +68,12 @@ public class ChattingService {
         if (existingRoom.isPresent()) {
             ChatRoom chatRoom = existingRoom.get();
 
-            ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByChatRoomIdAndUserId(chatRoom.getId(), sender.getId()).orElseThrow(
-                    () -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage()));
+            if (chatRoom.isDeleted()) {
+                throw new CustomException(CHATROOM_DELETED, CHATROOM_DELETED.getMessage());
+            }
+
+            ChatRoomMember chatRoomMember = getChatRoomMemberByChatRoomIdAndUserId(
+                    chatRoom.getId(), sender.getId());
 
             chatRoomMember.join();
 
@@ -210,5 +214,11 @@ public class ChattingService {
     private ChatRoom findChatRoomById(Long chatRoomId) {
         return chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(CHATROOM_NOT_FOUND, CHATROOM_NOT_FOUND.getMessage()));
+    }
+
+    // 채팅방 id와 유저 id로 채팅방 멤버 객체 반환
+    private ChatRoomMember getChatRoomMemberByChatRoomIdAndUserId(Long chatRoomId, Long userId) {
+        return chatRoomMemberRepository.findByChatRoomIdAndUserId(chatRoomId, userId).orElseThrow(
+                () -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage()));
     }
 }

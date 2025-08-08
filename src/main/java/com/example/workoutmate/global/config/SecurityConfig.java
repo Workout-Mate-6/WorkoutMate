@@ -71,7 +71,7 @@ public class SecurityConfig {
 
         // 허용할 출처(Origin)를 명시적으로 지정
         configuration.setAllowedOrigins(
-                List.of("http://localhost:63342", "https://jiangxy.github.io")
+                List.of("http://localhost:63355", "https://jiangxy.github.io")
         );
 
         // 허용할 HTTP 메서드 설정

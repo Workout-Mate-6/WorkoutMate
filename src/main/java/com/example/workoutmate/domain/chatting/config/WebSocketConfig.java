@@ -20,10 +20,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // 구독 경로 설정 - 목적지에서 메시지를 받을 수 있는 주소 설정
         registry.enableSimpleBroker(
                 "/sub/chat/mates"
+                , "/queue" // 에러 처리를 위한 주소
         );
 
         // 발행 경로 설정 - 해당 주소에서 메시지를 보냄
         registry.setApplicationDestinationPrefixes("/pub");
+
+        // convertAndSendToUser() 전송을 위한 설정
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
