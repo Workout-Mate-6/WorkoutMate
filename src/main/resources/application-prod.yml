@@ -12,3 +12,5 @@ spring:
       host: ${DEPLOY_REDIS_HOST}
       port: ${DEPLOY_REDIS_PORT}
       timeout: 3000
+      ssl:
+        enabled: true
