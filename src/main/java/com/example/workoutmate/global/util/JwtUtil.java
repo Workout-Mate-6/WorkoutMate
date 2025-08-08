@@ -64,13 +64,4 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    public boolean validateToken(String token) {
-        try {
-            extractClaims(substringToken(token));
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
 }

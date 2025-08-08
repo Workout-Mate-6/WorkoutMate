@@ -121,8 +121,6 @@
         }
 
         function startPingInterval() {
-            const token = $('#jwtToken').val();
-
             clearPing();
 
             pingIntervalId = setInterval(() => {
@@ -135,11 +133,13 @@
                     return;
                 }
 
+                const currentToken = $('#jwtToken').val();
+
                 console.log("[PING] 30초마다 ping을 전송합니다", new Date());
                 if (stompClient && stompClient.connected) {
                     stompClient.send(
                         '/pub/chat.ping',
-                        { Authorization: `Bearer ${token}` },
+                        { Authorization: `Bearer ${currentToken}` },
                         JSON.stringify({ timestamp: Date.now() })
                     );
                     console.log("ping 전송됨");

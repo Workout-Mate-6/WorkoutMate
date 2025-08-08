@@ -12,14 +12,12 @@ import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import com.example.workoutmate.global.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-
-import static com.example.workoutmate.global.enums.CustomErrorCode.ALREADY_LEFT_CHATROOM;
-import static com.example.workoutmate.global.enums.CustomErrorCode.CHATROOM_MEMBER_NOT_FOUND;
+import static com.example.workoutmate.global.enums.CustomErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -59,11 +57,11 @@ public class ChatMessageService {
 
 
     public void sendPingError(String token, CustomUserPrincipal authUser) {
-        if (jwtUtil.validateToken(token)) {
-            Map<String, Object> errorPayload = Map.of(
-                    "error", "세션이 만료되었습니다. 다시 로그인해주세요."
-            );
-            chatPublisher.sendError(errorPayload, authUser);
+        Claims claims = jwtUtil.extractClaims(jwtUtil.substringToken(token));
+        String email = claims.get("email", String.class);
+
+        if (!email.equals(authUser.getEmail())) {
+            throw new CustomException(TOKEN_USER_MISMATCH, TOKEN_USER_MISMATCH.getMessage() + " 다시 로그인해주세요.");
         }
     }
 }
