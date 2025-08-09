@@ -5,13 +5,15 @@ services:
     image: doohaaa/my-spring-app:latest
     container_name: springboot-container
     ports:
-      - "8080:8080"
+      - "8081:8080"
     # 같은 폴더 내부에 있는 .env 파일 주입
     env_file:
       - .env
     # application-prod.yml 파일을 활성화 시킴
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
 networks:
