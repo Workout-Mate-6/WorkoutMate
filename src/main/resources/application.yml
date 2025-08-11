@@ -25,11 +25,6 @@ spring:
 
   cache:
     type: redis
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      timeout: 3000
 
 # 시간 직렬화 위해
   jackson:
