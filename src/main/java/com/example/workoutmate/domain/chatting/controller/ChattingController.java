@@ -36,7 +36,7 @@ public class ChattingController {
      * @param authUser 로그인한 유저 정보
      * @return 채팅방 정보 (새 채팅방 or 기존 채팅방)
      */
-    @PostMapping("/chat_rooms/{userId}")
+    @PostMapping("/chat-rooms/{userId}")
     public ResponseEntity<ApiResponse<ChatRoomCreateResponseDto>> createChatRoom(
             @PathVariable Long userId,
             @AuthenticationPrincipal CustomUserPrincipal authUser) {
@@ -55,7 +55,7 @@ public class ChattingController {
      * @param size 한 페이지에 조회할 채팅방 개수
      * @return 조회된 내 채팅방 정보
      */
-    @GetMapping("/chat_rooms/me")
+    @GetMapping("/chat-rooms/me")
     public ResponseEntity<ApiResponse<List<ChatRoomResponseDto>>> getMyChatRooms(
             @AuthenticationPrincipal CustomUserPrincipal authUser,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
@@ -76,7 +76,7 @@ public class ChattingController {
      * @param size 한 페이지에 조회할 메시지 개수
      * @return 조회된 채팅방 메시지 정보
      */
-    @GetMapping("/chat_rooms/message/{chatRoomId}")
+    @GetMapping("/chat-rooms/message/{chatRoomId}")
     public ResponseEntity<ApiResponse<List<ChatMessageResponseDto>>> getChatRoomMessage(
         @PathVariable Long chatRoomId,
         @AuthenticationPrincipal CustomUserPrincipal authUser,
@@ -95,7 +95,7 @@ public class ChattingController {
      * @param chatRoomId 채팅방 id
      * @param authUser 로그인한 유저 정보
      */
-    @DeleteMapping("/chat_rooms/{chatRoomId}/deletion")
+    @DeleteMapping("/chat-rooms/{chatRoomId}/deletion")
     public ResponseEntity<ApiResponse<Void>> leaveChatRoom(
             @PathVariable Long chatRoomId,
             @AuthenticationPrincipal CustomUserPrincipal authUser) {

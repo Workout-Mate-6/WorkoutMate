@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class BoardRequestDto {
@@ -24,10 +26,14 @@ public class BoardRequestDto {
     @Positive(message = "모집인원은 0보다 커야합니다.")
     private Long maxParticipants;
 
-    public BoardRequestDto(String title, String content, SportType sportType, Long maxParticipants) {
+    @NotNull(message = "운동 모임의 시간을 작성해주세요!")
+    private LocalDateTime startTime;
+
+    public BoardRequestDto(String title, String content, SportType sportType, Long maxParticipants, LocalDateTime startTime) {
         this.title = title;
         this.content = content;
         this.sportType = sportType;
         this.maxParticipants = maxParticipants;
+        this.startTime = startTime;
     }
 }

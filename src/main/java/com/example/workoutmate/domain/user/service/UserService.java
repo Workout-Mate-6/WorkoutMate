@@ -117,4 +117,9 @@ public class UserService {
         return userRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
                 () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
     }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(email).orElseThrow(
+                () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
+    }
 }

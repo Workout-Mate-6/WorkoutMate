@@ -3,9 +3,7 @@ package com.example.workoutmate.global.util;
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +14,9 @@ import org.springframework.util.StringUtils;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+
+import static com.example.workoutmate.global.enums.CustomErrorCode.EXPIRED_JWT_TOKEN;
+import static com.example.workoutmate.global.enums.CustomErrorCode.SC_UNAUTHORIZED;
 
 @Slf4j(topic = "jwtUtil")
 @Component
@@ -57,10 +58,16 @@ public class JwtUtil {
     }
 
     public Claims extractClaims(String token){
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(EXPIRED_JWT_TOKEN, EXPIRED_JWT_TOKEN.getMessage());
+        } catch (JwtException e) {
+            throw new CustomException(SC_UNAUTHORIZED, SC_UNAUTHORIZED.getMessage());
+        }
     }
 }

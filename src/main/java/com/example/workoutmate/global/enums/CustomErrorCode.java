@@ -18,6 +18,7 @@ public enum CustomErrorCode {
     SERVER_EXCEPTION_JWT(HttpStatus.INTERNAL_SERVER_ERROR, "Not Found Token"),
     SC_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "유효하지 않은 JWT 서명입니다."),
     SC_BAD_REQUEST(HttpStatus.BAD_REQUEST,"지원되지 않는 JWT 토큰입니다."),
+    EXPIRED_JWT_TOKEN(HttpStatus.BAD_REQUEST, "만료된 JWT 토큰입니다."),
     SC_INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패 했습니다"),
     EMAIL_NOT_VERIFIED_FOR_SIGNUP(HttpStatus.CONFLICT,  "이미 가입 대기 중인 이메일입니다. 인증코드를 다시 받으려면 [재발송] 버튼을 눌러주세요."),
@@ -43,6 +44,7 @@ public enum CustomErrorCode {
     UNAUTHORIZED_BOARD_ACCESS(HttpStatus.FORBIDDEN, "본인의 게시글만 수정 또는 삭제가 가능합니다."),
     INVALID_MAX_PARTICIPANTS(HttpStatus.BAD_REQUEST, "모집인원은 모집 확정 인원보다 커야합니다."),
     BOARD_HAS_PARTICIPANTS(HttpStatus.BAD_REQUEST, "현재 참여자가 있어 게시글을 삭제할 수 없습니다."),
+    CACHE_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "인기글 리스트 캐싱에 실패했습니다."), // ← 추가
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
@@ -56,9 +58,11 @@ public enum CustomErrorCode {
     // Chatting
     EQUALS_SENDER_RECEIVER(HttpStatus.BAD_REQUEST, "본인과는 채팅방을 생성할 수 없습니다."),
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    CHATROOM_DELETED(HttpStatus.BAD_REQUEST, "삭제된 채팅방입니다."),
     CHATROOM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방 멤버가 존재하지 않습니다."),
     ALREADY_LEFT_CHATROOM(HttpStatus.BAD_REQUEST, "이미 채팅방을 나간 유저입니다."),
-
+    TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "헤더에 JWT 토큰이 존재하지 않습니다."),
+    TOKEN_USER_MISMATCH(HttpStatus.BAD_REQUEST, "유저 정보가 일치하지 않습니다."),
 
     // Zzim
     ALREADY_ZZIM(HttpStatus.CONFLICT, "이미 찜한 게시글입니다."),
