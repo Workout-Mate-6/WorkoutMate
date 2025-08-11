@@ -4,8 +4,8 @@ name: CI/CD Docker to EC2
 # 언제 이 워크플로우를 실행할지 정하는 부분임.
 on:
   push:
-    # "release/2.1.0" 브랜치에 코드가 push 될 때마다 실행될 거임.
-    branches: [ "release/2.1.0" ]
+    # "main" 브랜치에 코드가 push 될 때마다 실행될 거임.
+    branches: [ "main" ]
 
 # 워크플로우가 해야 할 작업(job)들을 정의함.
 jobs:
