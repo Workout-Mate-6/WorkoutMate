@@ -15,7 +15,11 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "board")
+@Table(name = "board",
+        indexes = {
+                @Index(name = "idx_board_list", columnList = "is_deleted, modified_at DESC, id DESC")
+        }
+)
 public class Board extends BaseEntity {
 
     // 게시글 ID (PK)
@@ -24,7 +28,7 @@ public class Board extends BaseEntity {
     private Long id;
 
     // 작성자
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
     private User writer;
 
