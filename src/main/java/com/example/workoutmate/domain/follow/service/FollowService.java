@@ -4,6 +4,8 @@ import com.example.workoutmate.domain.follow.dto.FollowsResponseDto;
 import com.example.workoutmate.domain.follow.entity.Follow;
 import com.example.workoutmate.domain.follow.repository.FollowRepository;
 import com.example.workoutmate.domain.follow.repository.QFollowsRepository;
+import com.example.workoutmate.domain.notification.enums.NotificationType;
+import com.example.workoutmate.domain.notification.service.NotificationService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -22,9 +24,12 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final QFollowsRepository qFollowsRepository;
     private final UserService userService;
+    private final NotificationService notificationService;
 
 
     public void follow(Long userId, CustomUserPrincipal authUser) {
+        System.out.println("[팔로우-요청] followerId=" + authUser.getId() + ", followingId=" + userId);
+
         userService.findById(userId);
         // 본인 팔로워 못하게
         if (userId.equals(authUser.getId())) {
@@ -43,6 +48,15 @@ public class FollowService {
         // 팔로우 등록
         Follow follow = new Follow(follower, following);
         followRepository.save(follow);
+        System.out.println("[팔로우-저장완료] follower=" + follower.getId() + ", following=" + following.getId());
+
+        // 팔로우 알림 전송
+        String content = follower.getName() + "님이 당신을 팔로우했습니다.";
+        notificationService.sendNotification(
+                following,
+                NotificationType.FOLLOW,
+                content
+        );
     }
 
     public List<FollowsResponseDto> viewFollower(
