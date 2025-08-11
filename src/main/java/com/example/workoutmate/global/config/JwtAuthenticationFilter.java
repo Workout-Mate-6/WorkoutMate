@@ -40,12 +40,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String bearerJwt = httpRequest.getHeader("Authorization");
 
-        if (bearerJwt == null) {
+        /* html에서 토큰을 통해 서버에 연결하기 위해 토큰 인증 절차를 수정하였습니다.*/
+        String token = null;
+
+        if (bearerJwt != null && bearerJwt.startsWith("Bearer")) {
+            token = jwtUtil.substringToken(bearerJwt);
+        } else {
+            // Authorization 헤더가 없으면 쿼리 파라미터에서 token을 가져오기
+            token = request.getParameter("token");
+        }
+
+        if (token == null || token.isEmpty()) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = jwtUtil.substringToken(bearerJwt);
+        /* 여기 부분 까지 수정을 진행하였습니다.*/
 
         try {
             Claims claims = jwtUtil.extractClaims(token);

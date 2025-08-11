@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/notifications/subscribe").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -70,7 +71,11 @@ public class SecurityConfig {
 
         // 허용할 출처(Origin)를 명시적으로 지정
         configuration.setAllowedOrigins(
-                List.of("http://localhost:63342", "https://jiangxy.github.io")
+                List.of(
+                        "http://127.0.0.1:5500",    // sse를 위한 로컬 서버
+                        "http://localhost:5500",    // sse를 위한 로컬 서버
+                        "http://localhost:63342",
+                        "https://jiangxy.github.io")
         );
 
         // 허용할 HTTP 메서드 설정
