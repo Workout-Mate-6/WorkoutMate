@@ -6,3 +6,11 @@ spring:
     hikari:
       maximum-pool-size: 30
       minimum-idle: 10
+
+  data:
+    redis:
+      host: ${DEPLOY_REDIS_HOST}
+      port: ${DEPLOY_REDIS_PORT}
+      timeout: 3000
+      ssl:
+        enabled: true
