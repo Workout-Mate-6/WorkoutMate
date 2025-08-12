@@ -1,0 +1,65 @@
+# monitoring 용 docker-compose.yml
+
+version: '3.8'
+
+services:
+  # promtail
+  promtail:
+    image: grafana/promtail:3.4.1
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      # Docker 로그 파일 경로 전체 접근
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # promtail 에 대한 환경 설정 파일
+      - /home/ubuntu/monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      # 로그 파일 어디까지 읽었는지 위치 저장하는 폴더
+      - /home/ubuntu/monitoring/promtail/positions:/tmp
+      # log
+      - /home/ubuntu/monitoring/logs:/logs
+    command:
+      - --config.file=/etc/promtail/promtail-config.yml
+
+  # Loki
+  loki:
+    image: grafana/loki:3.4.1
+    container_name: loki
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/monitoring/loki/data:/loki
+      - /home/ubuntu/monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    command:
+      - --config.file=/etc/loki/loki-config.yml
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/monitoring/prometheus/prometheus-config.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/monitoring/prometheus/data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    restart: unless-stopped
+    user: root
+    volumes:
+      - /home/ubuntu/monitoring/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+
+networks:
+  default:
+    external: true
+    name: my-network
