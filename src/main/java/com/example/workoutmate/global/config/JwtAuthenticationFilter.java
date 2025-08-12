@@ -87,10 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.", e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰 입니다.");
             return;
-        } catch (Exception e) {
-            log.error("Internal server error", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "예상치 못한 서버 에러입니다.");
-            return;
         }
     }
 }
