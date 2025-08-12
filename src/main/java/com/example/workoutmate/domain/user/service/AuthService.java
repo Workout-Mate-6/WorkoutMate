@@ -98,9 +98,11 @@ public class AuthService {
             throw new CustomException(CustomErrorCode.PASSWORD_NOT_MATCHED);
         }
 
-        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole());
+        // 토큰 발급
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getRole());
+        String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-        return new LoginResponseDto(bearerToken);
+        return new LoginResponseDto(accessToken, refreshToken);
     }
 
     @Transactional

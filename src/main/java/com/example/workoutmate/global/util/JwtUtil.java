@@ -23,7 +23,8 @@ import static com.example.workoutmate.global.enums.CustomErrorCode.SC_UNAUTHORIZ
 public class JwtUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_TIME = 60*60*1000L;
+    private static final long TOKEN_TIME = 10 * 60 * 1000L; // 10 분
+    private static final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L; // 7일
 
     @Value("${SECRET_KEY}")
     private String secretKey;
@@ -31,12 +32,12 @@ public class JwtUtil {
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(Long userId, String email, UserRole userRole){
+    public String createAccessToken(Long userId, String email, UserRole userRole) {
         Date date = new Date();
 
         return BEARER_PREFIX +
@@ -50,14 +51,14 @@ public class JwtUtil {
                         .compact();
     }
 
-    public String substringToken(String tokenValue){
-        if(StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)){
+    public String substringToken(String tokenValue) {
+        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7);
         }
         throw new CustomException(CustomErrorCode.SERVER_EXCEPTION_JWT);
     }
 
-    public Claims extractClaims(String token){
+    public Claims extractClaims(String token) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -69,5 +70,26 @@ public class JwtUtil {
         } catch (JwtException e) {
             throw new CustomException(SC_UNAUTHORIZED, SC_UNAUTHORIZED.getMessage());
         }
+    }
+
+    public boolean validateToken(String token){
+        try{
+            Claims claims = extractClaims(token);
+            return !claims.getExpiration().before(new Date());
+        } catch(Exception e){
+            return false;
+        }
+    }
+
+    // refresh token
+    public String createRefreshToken(Long userId){
+        Date date = new Date();
+
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .setExpiration(new Date(date.getTime()+REFRESH_TOKEN_TIME))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 }
