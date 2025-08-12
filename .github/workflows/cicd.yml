@@ -4,8 +4,8 @@ name: CI/CD Docker to EC2
 # 언제 이 워크플로우를 실행할지 정하는 부분임.
 on:
   push:
-    # "feature/CICD" 브랜치에 코드가 push 될 때마다 실행될 거임.
-    branches: [ "feature/CICD" ]
+    # "refactor/deployment" 브랜치에 코드가 push 될 때마다 실행될 거임.
+    branches: [ "refactor/deployment" ]
 
 # 워크플로우가 해야 할 작업(job)들을 정의함.
 jobs:
@@ -82,51 +82,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ".env,docker-compose.yml"
           target: "/home/ubuntu"
-
-      # 8.5 단계: promtail, loki, prometheus 폴더 생성
-      - name: Prepare directories on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            mkdir -p /home/ubuntu/promtail
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/promtail
-            mkdir -p /home/ubuntu/loki
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/loki
-            mkdir -p /home/ubuntu/prometheus
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/prometheus
-
-      # 8.5 단계: promtail-config.yml 파일 EC2로 복사
-      - name: Copy files to EC2 (1)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "promtail-config.yml"
-          target: "/home/ubuntu/promtail"
-
-      # 8.5 단계: loki-config.yml 파일 EC2로 복사
-      - name: Copy files to EC2 (2)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "loki-config.yml"
-          target: "/home/ubuntu/loki"
-
-      # 8.5 단계: prometheus-config.yml 파일 EC2로 복사
-      - name: Copy files to EC2 (3)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "prometheus-config.yml"
-          target: "/home/ubuntu/prometheus"
 
       # 9단계: EC2 서버에 배포
       - name: Deploy to EC2
