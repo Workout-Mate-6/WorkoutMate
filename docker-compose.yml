@@ -1,6 +1,8 @@
+# service 용 docker-compose.yml
 version: '3.8'
 
 services:
+  # app (spring-boot-app)
   app:
     image: doohaaa/my-spring-app:latest
     container_name: springboot-container
@@ -16,7 +18,12 @@ services:
       REDIS_PORT: ${REDIS_PORT}
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
+    volumes:
+      - /home/ubuntu/monitoring/logs:/logs
+
 networks:
-  spring-net:
+  default:
+    external: true
+    name: my-network
 
 # volume 설정이 필요없는 이유는 AWS RDS MYSQL 사용하기 때문

@@ -4,6 +4,15 @@ spring:
     username: ${DEV_DB_USERNAME}
     password: ${DEV_DB_PASSWORD}
     hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+
+  data:
+    redis:
+      host: ${DEV_REDIS_HOST}
+      port: ${DEV_REDIS_PORT}
+      timeout: 3000
+
       maximum-pool-size: 30        # 무턱대고 키우지 말고 적정선부터
       minimum-idle: 30             # 스파이크 대비 ‘웜업’(=바로 대여 가능)
       connection-timeout: 1000        # 1s 내 못 빌리면 빨리 실패/백오프
