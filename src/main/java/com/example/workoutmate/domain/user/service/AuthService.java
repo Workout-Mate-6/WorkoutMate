@@ -130,6 +130,9 @@ public class AuthService {
         User user = userRepository.findByIdAndIsDeletedFalseAndIsEmailVerifiedTrue(userId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.USER_NOT_FOUND));
 
+        // 기존 refresh 토큰 Redis 에서 삭제
+        refreshTokenService.deleteRefreshTokenJti(jti);
+
         // 토큰 발급 및 저장
         return generateAndSaveToken(user);
     }
