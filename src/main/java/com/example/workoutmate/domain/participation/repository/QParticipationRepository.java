@@ -12,6 +12,7 @@ import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.user.entity.QUser;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.workoutmate.domain.participation.entity.QParticipation.participation;
@@ -124,5 +124,41 @@ public class QParticipationRepository {
                         participation.state.eq(ParticipationState.ACCEPTED)
                 )
                 .fetch();
+    }
+
+    // 게시글 IDs별 참여자 집합
+    public Map<Long, Set<Long>> findParticipantIdsByBoardIds(List<Long> boardIds, ParticipationState state) {
+        QParticipation p = QParticipation.participation;
+        List<Tuple> rows = queryFactory
+                .select(p.board.id, p.applicant.id)
+                .from(p)
+                .where(p.board.id.in(boardIds),
+                        p.state.eq(state))
+                .fetch();
+
+        Map<Long, Set<Long>> map = new HashMap<>();
+        for (Tuple t : rows) {
+            Long bId = t.get(p.board.id);
+            Long uId = t.get(p.applicant.id);
+            map.computeIfAbsent(bId, k -> new HashSet<>()).add(uId);
+        }
+        return map;
+    }
+
+    // 최근 from(일자) 이후, 특정 사용자들(친구들)의 참여 종목 집합
+    public Set<String> findSportTypesByApplicantsAndDate(Set<Long> applicantIds, LocalDate from, ParticipationState state) {
+        if (applicantIds == null || applicantIds.isEmpty()) return Set.of();
+        QParticipation p = QParticipation.participation;
+        QBoard b = QBoard.board;
+        List<String> types = queryFactory
+                .select(b.sportType.stringValue())
+                .from(p)
+                .join(p.board, b)
+                .where(p.applicant.id.in(applicantIds),
+                        p.state.eq(state),
+                        p.createdAt.goe(from.atStartOfDay()))  // createdAt 필드명 프로젝트에 맞춰 변경
+                .distinct()
+                .fetch();
+        return new HashSet<>(types);
     }
 }
