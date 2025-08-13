@@ -1,11 +1,13 @@
 package com.example.workoutmate.domain.user.service;
 
 import com.example.workoutmate.domain.board.service.BoardSearchService;
+import com.example.workoutmate.domain.follow.service.FollowCountService;
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
 import com.example.workoutmate.domain.user.dto.UserInfoResponseDto;
 import com.example.workoutmate.domain.user.dto.WithdrawRequestDto;
 import com.example.workoutmate.domain.user.entity.User;
+import com.example.workoutmate.domain.user.entity.UserMapper;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -30,7 +32,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final BoardSearchService boardSearchService;
-
+    private final FollowCountService followCountService;
 
     /**
      * 유저 정보 조회 (마이페이지)
@@ -42,23 +44,12 @@ public class UserService {
     public UserInfoResponseDto getMyInfo(CustomUserPrincipal authUser) {
         User user = findById(authUser.getId());
 
-        int followerCount = user.getFollowers() != null ? user.getFollowers().size() : 0;
-        int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
+        int followerCount = followCountService.countByFollowingId(user.getId());
+        int followingCount = followCountService.countByFollowerId(user.getId());
         int myBoardCount = boardSearchService.countBoardsByWriter(user.getId());
 
-        return UserInfoResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .gender(user.getGender())
-                .followerCount(followerCount)
-                .followingCount(followingCount)
-                .myBoardCount(myBoardCount)
-                .createdAt(user.getCreatedAt())
-                .modifiedAt(user.getModifiedAt())
-                .build();
+        return UserMapper.toUserInfoResponseDto(user, followerCount, followingCount, myBoardCount);
     }
-
 
     /**
      * 유저 정보 수정
