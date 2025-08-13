@@ -57,28 +57,3 @@ management:
       exposure:
         include: "*"
 
-  # 가중치 계산
-recommendation:
-  vector:
-    dim: 32
-    decay_per_day: 0.95
-    user_global_mix: 0.1
-  friend:
-    explore_days: 14
-    presence_cap: 3
-    presence_bonus_per_friend: 3.3
-    presence_bonus_cap: 10
-    inject_slots: [2, 6]
-    inject_min_sim: 0.30
-  time:
-    rerank_enabled: true
-    max_multiplier: 1.15
-    center_hours: 24
-    slope: 6
-  rules:
-    exclude_full: true
-    near_full_threshold: 0.9
-    near_full_penalty_percent: 2
-  diversify:
-    per_type_max: 4
-    min_distinct_types: 2
