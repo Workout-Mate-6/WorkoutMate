@@ -17,7 +17,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Table(name = "board",
         indexes = {
-                @Index(name = "idx_board_list", columnList = "is_deleted, modified_at DESC, id DESC")
+                @Index(name = "idx_board_list", columnList = "is_deleted, modified_at DESC, id DESC"),
+                @Index(name = "idx_board_writer_feed", columnList = "writer_id, is_deleted, created_at DESC, id DESC"),
+                @Index(name = "idx_board_category_feed", columnList = "sport_type, is_deleted, modified_at DESC, id DESC")
         }
 )
 public class Board extends BaseEntity {
