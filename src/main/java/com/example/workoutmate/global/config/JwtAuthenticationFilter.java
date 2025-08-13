@@ -1,8 +1,8 @@
 package com.example.workoutmate.global.config;
 
 import com.example.workoutmate.domain.user.enums.UserRole;
+import com.example.workoutmate.domain.user.service.TokenBlacklistService;
 import com.example.workoutmate.global.util.JwtUtil;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -14,14 +14,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
-import java.security.SignatureException;
-import java.util.Collections;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +25,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService blacklist;
 
     @Override
     protected void doFilterInternal(
@@ -45,6 +42,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 리프레시 토큰 검사에서 제외
+        if ("/api/auth/refresh".equals(request.getRequestURI())){
+            filterChain.doFilter(request,response);
+            return;
+        }
+
         String token = jwtUtil.substringToken(bearerJwt);
 
         try {
@@ -55,22 +58,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 사용자 정보 추출
-            Long userId = Long.valueOf(claims.getSubject());
-            String email = claims.get("email").toString();
-            UserRole userRole = UserRole.valueOf(claims.get("userRole", String.class));
+            Long userId = Long.valueOf(jws.getBody().getSubject());
+            String email = jws.getBody().get("email", String.class);
+            UserRole role = UserRole.valueOf((String) jws.getBody().get("userRole"));
 
-            CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(userId, email, userRole);
+            CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(userId, email, role);
 
             // SecurityContext 에 인증 등록
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    customUserPrincipal,
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + userRole.name()))
-            );
+                    customUserPrincipal,null, customUserPrincipal.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            filterChain.doFilter(request, response);
         } catch (MalformedJwtException | SecurityException e) {
             log.error("Invalid JWT signature, 유효하지 않은 JWT 서명입니다.", e);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 JWT 서명입니다.");
@@ -88,5 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰 입니다.");
             return;
         }
+        filterChain.doFilter(request, response);
     }
 }

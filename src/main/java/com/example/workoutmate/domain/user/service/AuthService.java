@@ -30,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto){
@@ -98,11 +99,8 @@ public class AuthService {
             throw new CustomException(CustomErrorCode.PASSWORD_NOT_MATCHED);
         }
 
-        // 토큰 발급
-        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getRole());
-        String refreshToken = jwtUtil.createRefreshToken(user.getId());
-
-        return new LoginResponseDto(accessToken, refreshToken);
+        // 토큰 발급 및 저장
+        return generateAndSaveToken(user);
     }
 
     @Transactional
@@ -116,5 +114,35 @@ public class AuthService {
             userRepository.deleteAllInBatch(users);
         }
         return users.size();
+    }
+
+    // 토큰 재발급
+    public LoginResponseDto refreshAccessToken(String refreshToken){
+        // Refresh Token 유효성 검증
+        if(!jwtUtil.validateRefreshToken(refreshToken)){
+            throw new CustomException(CustomErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        // refresh token 의 jti 로 userId 찾아
+        String jti = jwtUtil.getJti(refreshToken);
+        Long userId = refreshTokenService.getUserIdByJti(jti);
+
+        User user = userRepository.findByIdAndIsDeletedFalseAndIsEmailVerifiedTrue(userId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.USER_NOT_FOUND));
+
+        // 토큰 발급 및 저장
+        return generateAndSaveToken(user);
+    }
+
+    // 토큰 발급 및 저장 메서드
+    private LoginResponseDto generateAndSaveToken(User user){
+        // Access token 발급
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(),user.getRole());
+        // Refresh token 발급
+        String refreshToken = jwtUtil.createRefreshToken(user.getId());
+        // redis 에 refresh token 의 jti 저장
+        refreshTokenService.saveRefreshTokenJti(jwtUtil.getJti(refreshToken), user.getId());
+
+        return new LoginResponseDto(accessToken, refreshToken);
     }
 }
