@@ -15,6 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
+/**
+ * 추천 시나리오의 오케스트레이션.
+ * 1) 후보 게시글 페이징 조회(작성자 즉시 로딩으로 N+1 방지)
+ * 2) 게시글 벡터 벌크 로딩(캐시-우선, 미스만 인코딩)
+ * 3) 사용자 벡터/친구 정보/참여 이력 등 신호를 사용해 스코어 산출
+ * 4) 사유(reasons)와 함께 RecommendationDto로 매핑
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,7 +40,7 @@ public class RecommendationServiceRebulid {
 
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId, int limit) {
-        // 1) 후보 수집 (+ FULL 제외)
+        // 후보 수집 (+ FULL 제외)
         int maxCandidate = 1000;
         var pageable = PageRequest.of(0, maxCandidate);
         List<Board> candidates = boardService.findRecommendationCandidates(userId, pageable);
@@ -42,12 +51,12 @@ public class RecommendationServiceRebulid {
                 .toList();
         if (candidates.isEmpty()) return List.of();
 
-        // 2) 유저/보드 벡터, 친구 신호
+        // 유저/보드 벡터, 친구 신호
         float[] U = userVectorService.getOrBuild(userId);
         Map<Long, Integer> friendCounts = friendSignalsService.friendCounts(userId, candidates);
         Set<String> friendExploreTypes = friendSignalsService.friendExploreTypes(userId);
 
-        // 3) 각 보드 매칭 % 계산(코사인 + 임박 곱 + 친구 가산 + near-full 패널티)
+        // 각 보드 매칭 % 계산(코사인 + 임박 곱 + 친구 가산 + near-full 패널티)
         List<Scored> scored = new ArrayList<>(candidates.size());
         Map<Long, float[]> vecByBoard = boardVectorService.getOrEncodeBulk(candidates);
         for (Board b : candidates) {
@@ -72,7 +81,7 @@ public class RecommendationServiceRebulid {
             scored.add(new Scored(b, percent));
         }
 
-        // 4) 정렬 → 다양화 → 친구 탐색 슬롯 주입
+        // 정렬 → 다양화 → 친구 탐색 슬롯 주입
         scored.sort(Comparator.comparingDouble(Scored::basePercent).reversed());
 
         List<Board> diversified = TimeAndRules.diversifyQuota(
@@ -84,7 +93,7 @@ public class RecommendationServiceRebulid {
 
         List<Board> injected = injectFriendExplore(diversified, scored, friendExploreTypes, limit);
 
-        // 5) 네 DTO( boardId / matchPercent / reasons )로 매핑
+        // DTO( boardId / matchPercent / reasons )로 매핑
         Map<Long, Double> percentById = scored.stream()
                 .collect(Collectors.toMap(s -> s.b().getId(), Scored::basePercent));
 

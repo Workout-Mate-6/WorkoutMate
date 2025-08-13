@@ -15,6 +15,8 @@ public class UserSimpleDto {
     private Long id;
     private String nickname;
 
+
+    /** User 엔티티에서 필요한 필드만 골라서 만든다. */
     public static UserSimpleDto from(User user) {
         if (user == null) return null;
         return UserSimpleDto.builder()

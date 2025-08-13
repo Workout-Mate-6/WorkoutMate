@@ -40,25 +40,28 @@ public class UserVectorService {
         float[] acc = VectorUtils.zeros(dim);
 
         double decayPerDay = props.getVector().getDecayPerDay();
-        Instant now = Instant.now();
+        Instant now = Instant.now(); // 현재시각
 
-        // 1) 참여 이력(주요 신호) — ParticipationService 사용
+        // 참여 이력(주요 신호) — ParticipationService 사용
         var ps = participationService.findByApplicant_Id(userId);
         for (Participation p : ps) {
             if (p.getBoard() == null) continue;
             var b = p.getBoard();
+
+            // 시작 시간 -> 현재 시각 까지의 일수 계산
             LocalDateTime t = b.getStartTime();
             Duration d = Duration.between(t != null ? t.atZone(ZoneId.systemDefault()).toInstant() : now, now);
             long days = Math.max(0, d.toDays());
             double w = Math.pow(decayPerDay, days) * 1.0; // 참여는 1.0 가중
 
+            // 보드 특성 피처를 가중치와 함께 벡터에 추가
             enc.addFeature(acc, FeatureBuckets.type(String.valueOf(b.getSportType())), w);
             enc.addFeature(acc, FeatureBuckets.timeBucket(b.getStartTime()), w * 0.6);
             enc.addFeature(acc, FeatureBuckets.dow(b.getStartTime()), w * 0.4);
             enc.addFeature(acc, FeatureBuckets.sizeBucket(b.getMaxParticipants()), w * 0.3);
         }
 
-        // 2) 찜 이력(보조 신호)
+        // 찜 이력(보조 신호)
         var zzims = zzimRepo.findAllByUserId(userId);
         if (zzims != null) {
             for (Zzim z : zzims) {
@@ -78,6 +81,10 @@ public class UserVectorService {
         return acc;
     }
 
+    /**
+     * 전사 평균 벡터 생성
+     * - 모든 차원 값이 동일한 단위 벡터
+     */
     private float[] globalPrior(int dim) {
         float[] v = new float[dim];
         for (int i = 0; i < dim; i++) v[i] = 1f;
@@ -85,6 +92,10 @@ public class UserVectorService {
         return v;
     }
 
+
+    /**
+     * 유저 벡터 저장 또는 갱신
+     */
     @Transactional
     public void upsert(Long userId, float[] vec) {
         repo.save(UserVectorEntity.builder()
@@ -94,6 +105,10 @@ public class UserVectorService {
                 .build());
     }
 
+
+    /**
+     * 저장된 유저 벡터를 가져오거나, 없으면 생성하여 저장 후 반환
+     */
     @Transactional(readOnly = true)
     public float[] getOrBuild(Long userId) {
         return repo.findById(userId)
