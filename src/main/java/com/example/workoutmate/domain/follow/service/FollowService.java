@@ -93,4 +93,8 @@ public class FollowService {
         // 언팔로우 하면 하드 딜리트
         followRepository.deleteByfollowerIdAndFollowingId(authUser.getId(), userId);
     }
+
+    public List<Follow> findByFollower_Id(Long userId) {
+        return followRepository.findByFollower_Id(userId);
+    }
 }
