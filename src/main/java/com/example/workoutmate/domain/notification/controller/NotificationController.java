@@ -19,7 +19,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"}) // 개발용 로컬 HTML
+    @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"}) // 개발용 로컬 HTML (실제 주소가 생기면 변경해야함)
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(
             @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
