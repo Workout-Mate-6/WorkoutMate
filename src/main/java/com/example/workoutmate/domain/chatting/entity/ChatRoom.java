@@ -12,8 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "chat_room",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"sender_id", "receiver_id"}))
+@Table(name = "chat_room")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
