@@ -14,6 +14,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sseAuthInterceptor)
-                .addPathPatterns("/notifications/subscribe");
+                .addPathPatterns("/notifications/subscribe"); // SSE 인증 필요한 경로
     }
 }

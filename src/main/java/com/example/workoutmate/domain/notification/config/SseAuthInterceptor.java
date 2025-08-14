@@ -23,13 +23,26 @@ public class SseAuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+
+        String token = null;
+
+        // 1) Authorization 헤더 확인
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = jwtUtil.substringToken(authHeader);
+        }
+
+        // 2) 헤더 없으면 ?token= 쿼리 파라미터 확인
+        if (token == null) {
+            token = request.getParameter("token");
+        }
+
+        if (token == null || token.isEmpty()) {
+            log.warn("SSE 요청 토큰 없음");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
 
-        String token = jwtUtil.substringToken(authHeader);
         try {
             Claims claims = jwtUtil.extractClaims(token);
             if (claims == null) throw new CustomException(TOKEN_NOT_FOUND, TOKEN_NOT_FOUND.getMessage());

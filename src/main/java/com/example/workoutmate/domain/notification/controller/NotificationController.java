@@ -15,14 +15,15 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"},
+        allowCredentials = "true") // 개발용 로컬 HTML (실제 주소가 생기면 변경해야함)
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"}) // 개발용 로컬 HTML (실제 주소가 생기면 변경해야함)
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(
-            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+            @RequestAttribute("customUserPrincipal") CustomUserPrincipal customUserPrincipal,
             @RequestHeader(value = "Last-Event_ID", defaultValue = "", required = false) String lastEventId
             ) {
 
