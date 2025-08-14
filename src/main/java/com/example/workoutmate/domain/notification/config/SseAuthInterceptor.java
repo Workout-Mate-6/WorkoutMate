@@ -44,8 +44,8 @@ public class SseAuthInterceptor implements HandlerInterceptor {
         }
 
         try {
-            Claims claims = jwtUtil.extractClaims(token);
-            if (claims == null) throw new CustomException(TOKEN_NOT_FOUND, TOKEN_NOT_FOUND.getMessage());
+            // 수정: extractClaims 대신 parseToken().getBody() 사용
+            Claims claims = jwtUtil.parseToken(token).getBody();
 
             Long userId = Long.valueOf(claims.getSubject());
             String email = claims.get("email", String.class);
