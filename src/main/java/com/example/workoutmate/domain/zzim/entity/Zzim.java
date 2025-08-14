@@ -14,7 +14,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "zzim", uniqueConstraints = {@UniqueConstraint(columnNames = {"board_id", "user_id"})})
+@Table(name = "zzim", uniqueConstraints = {@UniqueConstraint(columnNames = {"board_id", "user_id"})},
+    indexes = {
+        @Index(name = "idx_zzim_board", columnList = "board_id, created_at DESC"),
+       @Index(name = "idx_zzim_user", columnList = "user_id, created_at DESC, id DESC")
+
+    }
+)
 public class Zzim extends BaseEntity {
 
     @Id
