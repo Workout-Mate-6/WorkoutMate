@@ -105,7 +105,7 @@ public class UserService {
     /* 도메인 관련 메서드 */
 
     public User findById(Long id) {
-        return userRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
+        return userRepository.findByIdAndIsDeletedFalseAndIsEmailVerifiedTrue(id).orElseThrow(
                 () -> new CustomException(USER_NOT_FOUND, USER_NOT_FOUND.getMessage()));
     }
 

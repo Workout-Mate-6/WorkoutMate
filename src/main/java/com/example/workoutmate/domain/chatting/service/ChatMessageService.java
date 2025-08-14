@@ -57,7 +57,7 @@ public class ChatMessageService {
 
 
     public void sendPingError(String token, CustomUserPrincipal authUser) {
-        Claims claims = jwtUtil.extractClaims(jwtUtil.substringToken(token));
+        Claims claims = jwtUtil.parseToken(jwtUtil.substringToken(token)).getBody();
         String email = claims.get("email", String.class);
 
         if (!email.equals(authUser.getEmail())) {

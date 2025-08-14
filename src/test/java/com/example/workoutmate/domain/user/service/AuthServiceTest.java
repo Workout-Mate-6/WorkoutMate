@@ -46,7 +46,7 @@ class AuthServiceTest {
     @Test
     void 정상_회원가입() {
         // given
-        SignupRequestDto signupRequestDto = new SignupRequestDto("test@example.com", "Password!123", "테스트 유저", UserGender.Male);
+        SignupRequestDto signupRequestDto = new SignupRequestDto("test@example.com", "Password!123", "테스트 유저", UserGender.Male.toString());
 
         when(userRepository.existsByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(anyString())).thenReturn(false);
         when(userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedFalse(anyString())).thenReturn(Optional.empty());
@@ -128,15 +128,15 @@ class AuthServiceTest {
                 .role(UserRole.GUEST)
                 .build();
 
-        when(userRepository.findByEmailAndIsDeletedFalse(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("Password!123", "encodedPW")).thenReturn(true);
-        when(jwtUtil.createToken(user.getId(), user.getEmail(), user.getRole())).thenReturn("jwt.token");
+        when(jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getRole())).thenReturn("jwt.token");
 
         // when
         LoginResponseDto loginResponseDto = authService.login(loginRequestDto);
 
         // then
-        assertThat(loginResponseDto.getToken()).isEqualTo("jwt.token");
+        assertThat(loginResponseDto.getAccessToken()).isEqualTo("jwt.token");
 
     }
 
