@@ -79,10 +79,8 @@ public class ChattingService {
             try {
                 return handleNewChatRoom(sender, receiver, firstId, secondId);
             } catch (DataIntegrityViolationException | CannotAcquireLockException e) {
-                // 4. Unique Index 충돌 또는 데드락 발생 시, 다른 트랜잭션이 이미 채팅방을 생성했음을 의미합니다.
-                // 이 시점에서 현재 트랜잭션은 롤백될 상태이므로, 추가적인 DB 작업을 시도하지 않고 예외를 다시 던져
-                // 클라이언트에게 재시도를 유도하는 것이 더 안전한 방법입니다.
-                throw e;
+                // 클라이언트에서 재시도 등 처리하도록 요청
+                throw new CustomException(CHAT_ROOM_ALREADY_EXISTS, CHAT_ROOM_ALREADY_EXISTS.getMessage());
             }
         }
     }
