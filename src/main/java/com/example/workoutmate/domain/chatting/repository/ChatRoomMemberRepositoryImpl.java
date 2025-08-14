@@ -75,7 +75,7 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
                                 .and(lastMsg.createdAt.eq(latestMessageSubquery))
                 )
                 .where(condition)
-                .orderBy(c.lastChatTime.desc(), c.id.desc())
+                .orderBy(lastMsg.createdAt.desc(), c.id.desc())
                 .limit(size)
                 .fetch();
     }

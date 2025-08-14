@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ChatRoomCreateResponseDto {
 
     private Long id;
-    private Long senderId;
-    private Long receiverId;
+    private Long user1d;
+    private Long user2Id;
     private LocalDateTime createdAt;
 }

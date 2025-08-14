@@ -56,8 +56,8 @@ public class ChattingMapper {
     public static ChatRoomCreateResponseDto toCreateDto(ChatRoom chatroom) {
         return ChatRoomCreateResponseDto.builder()
                 .id(chatroom.getId())
-                .senderId(chatroom.getUser1Id())
-                .receiverId(chatroom.getUser2Id())
+                .user1d(chatroom.getUser1Id())
+                .user2Id(chatroom.getUser2Id())
                 .createdAt(chatroom.getCreatedAt())
                 .build();
     }

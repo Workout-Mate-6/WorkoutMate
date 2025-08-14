@@ -28,10 +28,6 @@ public class ChatRoom {
     @NotNull
     private Long user2Id;
 
-    private String lastMessage;
-
-    private LocalDateTime lastChatTime;
-
     @CreatedDate
     @Column(updatable = false)
     @Builder.Default
