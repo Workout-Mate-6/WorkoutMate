@@ -37,19 +37,16 @@ public class NotificationService {
         emitterRepository.deleteByUserIdPrefix(String.valueOf(userId));
 
         String emitterId = userId + "_" + System.currentTimeMillis();
-        System.out.println("[SSE-구독] userId=" + userId + ", emitterId=" + emitterId);
 
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
 
         emitter.onCompletion(() -> {
             emitterRepository.deleteById(emitterId);
-            System.out.println("[SSE-종료] emitterId= " + emitterId);
         });
 
 
         emitter.onTimeout(() -> {
             emitterRepository.deleteById(emitterId);
-            System.out.println("[SSE-타임아웃] emitterId= " + emitterId);
         });
 
         // 연결 성공 알림 전송
@@ -59,7 +56,6 @@ public class NotificationService {
         List<Notification> unread = notificationRepository.findByReceiverIdAndIsReadFalse(userId);
 
         if (!unread.isEmpty()) {
-            System.out.println("[SSE-구독] 전달할 DB 미수신 알림 수: " + unread.size());
 
             AtomicInteger counter = new AtomicInteger(0);
             unread.forEach(n -> {
@@ -108,7 +104,6 @@ public class NotificationService {
      */
     @Transactional
     public void sendNotification(User receiver, NotificationType type, String content) {
-        System.out.println("[알림-전송요청] receiverId=" + receiver.getId() + ", type=" + type + ", content=" + content);
 
 
         Notification notification = notificationRepository.save(
@@ -128,7 +123,6 @@ public class NotificationService {
         // 현재 연결된 emitter들을 찾음
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByUserId(userIdKey);
 
-        System.out.println("[알림-대상Emitter] userId=" + userIdKey + ", emitterCount=" + emitters.size());
 
         if (emitters.isEmpty()) {
             // 연결자가 없으면 DB에 unread로 남겨둠
@@ -168,10 +162,10 @@ public class NotificationService {
                     .data(jsonData)
                     .name("notification") // 이벤트 이름
             );
-            System.out.println("[알림-전송완료] emitterId=" + emitterId + ", data=" + jsonData);
+
 
         } catch (IOException e) {
-            System.out.println("[알림-전송실패] emitterId=" + emitterId + ", error=" + e.getMessage());
+
             emitterRepository.deleteById(emitterId);
         }
     }
