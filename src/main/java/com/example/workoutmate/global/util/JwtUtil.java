@@ -23,8 +23,7 @@ import java.util.UUID;
 public class JwtUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    // test 용 1분
-    private static final long TOKEN_TIME = 1 * 60 * 1000L; // 1 분
+    private static final long ACCESS_TOKEN_TIME = 15 * 60 * 1000L; // 15 분
     private static final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L; // 7일
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
@@ -55,12 +54,13 @@ public class JwtUtil {
                         .setId(jti)
                         .claim("email", email)
                         .claim("userRole", userRole)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
+                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME))
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
+    // Bearer 제거한 토큰 값만 추출
     public String substringToken(String tokenValue) {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7);
@@ -68,7 +68,7 @@ public class JwtUtil {
         throw new CustomException(CustomErrorCode.SERVER_EXCEPTION_JWT);
     }
 
-    // 토큰 추출
+    // jwt 토큰 추출
     public Jws<Claims> parseToken(String token) throws JwtException {
         return Jwts.parserBuilder()
                 .setSigningKey(key)

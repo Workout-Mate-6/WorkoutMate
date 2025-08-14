@@ -12,10 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -88,4 +85,11 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK, "토큰이 갱신되었습니다.", newTokens);
     }
 
+    @PostMapping("/auth/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestHeader("Authorization") String accessToken,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken){
+        authService.logout(accessToken, refreshToken);
+        return ApiResponse.success(HttpStatus.OK, "로그아웃 되었습니다.", null);
+    }
 }

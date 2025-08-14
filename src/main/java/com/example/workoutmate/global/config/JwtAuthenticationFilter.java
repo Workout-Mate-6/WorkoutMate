@@ -50,10 +50,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = jwtUtil.substringToken(bearerJwt);
 
+        // 토큰이 있는 경우
         try {
-            Claims claims = jwtUtil.extractClaims(token);
-            if (claims == null) {
-                httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "잘못된 JWT 토큰입니다.");
+            var jws = jwtUtil.parseToken(token);
+            String jti = jws.getBody().getId();
+            // jti 가 블랙리스트에 있는지 검증
+            if(jti != null && blacklist.isBlacklisted(jti)){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                log.error("만료된 토큰으로 접근을 시도했습니다.");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 사용자입니다.");
                 return;
             }
 
