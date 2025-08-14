@@ -2,6 +2,8 @@ package com.example.workoutmate.domain.zzim.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
+import com.example.workoutmate.domain.notification.enums.NotificationType;
+import com.example.workoutmate.domain.notification.service.NotificationService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimCountResponseDto;
@@ -28,6 +30,7 @@ public class ZzimService {
     private final ZzimRepository zzimRepository;
     private final UserService userService;
     private final BoardSearchService boardSearchService;
+    private final NotificationService notificationService;
 
     @Transactional
     public ZzimResponseDto createZzim(Long boardId, Long userId) {
@@ -49,6 +52,13 @@ public class ZzimService {
 
         Zzim zzim = Zzim.of(board, user);
         Zzim savedZzim = zzimRepository.save(zzim);
+
+        // 게시글 작성자에게 알림 전송
+        notificationService.sendNotification(
+                board.getWriter(), // 알림 받는 사람
+                NotificationType.ZZIM, // 알림 타입
+                String.format("%s님이 '%s' 게시글을 찜했습니다.", user.getName(), board.getTitle())
+        );
 
         return new ZzimResponseDto(savedZzim);
     }
