@@ -18,6 +18,7 @@ public enum CustomErrorCode {
     SERVER_EXCEPTION_JWT(HttpStatus.INTERNAL_SERVER_ERROR, "Not Found Token"),
     SC_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "유효하지 않은 JWT 서명입니다."),
     SC_BAD_REQUEST(HttpStatus.BAD_REQUEST,"지원되지 않는 JWT 토큰입니다."),
+    EXPIRED_JWT_TOKEN(HttpStatus.BAD_REQUEST, "만료된 JWT 토큰입니다."),
     SC_INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패 했습니다"),
     EMAIL_NOT_VERIFIED_FOR_SIGNUP(HttpStatus.CONFLICT,  "이미 가입 대기 중인 이메일입니다. 인증코드를 다시 받으려면 [재발송] 버튼을 눌러주세요."),
