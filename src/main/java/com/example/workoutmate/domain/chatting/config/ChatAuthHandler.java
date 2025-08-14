@@ -33,7 +33,7 @@ public class ChatAuthHandler implements ChannelInterceptor {
             String token = jwtUtil.substringToken(jwtToken);
 
             try {
-                Claims claims = jwtUtil.extractClaims(token);
+                Claims claims = jwtUtil.parseToken(token).getBody();
 
                 if (claims == null) {
                     throw new CustomException(TOKEN_NOT_FOUND, TOKEN_NOT_FOUND.getMessage());
