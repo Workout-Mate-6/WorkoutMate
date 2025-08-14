@@ -46,12 +46,10 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     }
 
     @Override
-    public void deleteAllEmitterStartWithId(String userId) {
-        emitters.keySet().removeIf(key -> key.startsWith(userId));
+    public void deleteByUserIdPrefix(String userIdPrefix) {
+        // emitters, eventCache 모두 해당 접두사로 시작하는 키 삭제
+        emitters.keySet().removeIf(key -> key.startsWith(userIdPrefix));
+        eventCache.keySet().removeIf(key -> key.startsWith(userIdPrefix));
     }
 
-    @Override
-    public void deleteAllEventCacheStartWithId(String userId) {
-        eventCache.keySet().removeIf(key -> key.startsWith(userId));
-    }
 }

@@ -28,7 +28,6 @@ public class FollowService {
 
 
     public void follow(Long userId, CustomUserPrincipal authUser) {
-        System.out.println("[팔로우-요청] followerId=" + authUser.getId() + ", followingId=" + userId);
 
         userService.findById(userId);
         // 본인 팔로워 못하게
@@ -48,7 +47,6 @@ public class FollowService {
         // 팔로우 등록
         Follow follow = new Follow(follower, following);
         followRepository.save(follow);
-        System.out.println("[팔로우-저장완료] follower=" + follower.getId() + ", following=" + following.getId());
 
         // 팔로우 알림 전송
         String content = follower.getName() + "님이 당신을 팔로우했습니다.";
