@@ -23,10 +23,10 @@ public class ChatRoom {
     private Long id;
 
     @NotNull
-    private Long senderId;
+    private Long user1Id;
 
     @NotNull
-    private Long receiverId;
+    private Long user2Id;
 
     private String lastMessage;
 

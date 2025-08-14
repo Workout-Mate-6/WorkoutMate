@@ -61,15 +61,15 @@ public class ChatRoomMemberRepositoryImpl implements ChatRoomMemberRepositoryCus
                         cm.chatRoomId,
 
                         new CaseBuilder()
-                                .when(c.senderId.eq(myId)).then(receiver.name)
+                                .when(c.user1Id.eq(myId)).then(receiver.name)
                                 .otherwise(sender.name),
                         lastMsg.message,
                         lastMsg.createdAt
                 ))
                 .from(cm)
                 .join(c).on(cm.chatRoomId.eq(c.id))
-                .join(sender).on(c.senderId.eq(sender.id))
-                .join(receiver).on(c.receiverId.eq(receiver.id))
+                .join(sender).on(c.user1Id.eq(sender.id))
+                .join(receiver).on(c.user2Id.eq(receiver.id))
                 .leftJoin(lastMsg).on(
                         lastMsg.chatRoomId.eq(c.id)
                                 .and(lastMsg.createdAt.eq(latestMessageSubquery))

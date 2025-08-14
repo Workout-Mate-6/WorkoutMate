@@ -15,7 +15,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM ChatRoom c " +
-            "WHERE c.senderId = :user1 AND c.receiverId = :user2 " +
+            "WHERE c.user1Id = :user1 AND c.user2Id = :user2 " +
             "AND c.isDeleted = false")
     Optional<ChatRoom> findByUsersAndNotDeletedWithLock(@Param("user1") Long user1,
                                                          @Param("user2") Long user2);

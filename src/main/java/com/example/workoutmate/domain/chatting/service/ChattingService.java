@@ -62,7 +62,7 @@ public class ChattingService {
             throw new CustomException(EQUALS_SENDER_RECEIVER, EQUALS_SENDER_RECEIVER.getMessage());
         }
 
-        // ID 정렬 (작은 값이 senderId, 큰 값이 receiverId)
+        // ID 정렬 (작은 값이 firstId, 큰 값이 secondId)
         Long firstId = Math.min(sender.getId(), receiver.getId());
         Long secondId = Math.max(sender.getId(), receiver.getId());
 
@@ -171,7 +171,7 @@ public class ChattingService {
 
     // 채팅방에 멤버가 있는지 확인
     private void validateUserInChatRoom(ChatRoom chatRoom, User user) {
-        if (!chatRoom.getSenderId().equals(user.getId()) && !chatRoom.getReceiverId().equals(user.getId())) {
+        if (!chatRoom.getUser1Id().equals(user.getId()) && !chatRoom.getUser2Id().equals(user.getId())) {
             throw new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage());
         }
     }
@@ -214,8 +214,8 @@ public class ChattingService {
     private ChatRoomCreateResponseDto handleNewChatRoom(User sender, User receiver, Long firstId, Long secondId) {
         // 채팅방 (Chatroom) 생성
         ChatRoom chatRoom = ChatRoom.builder()
-                .senderId(firstId)
-                .receiverId(secondId)
+                .user1Id(firstId)
+                .user2Id(secondId)
                 .build();
         chatRoomRepository.save(chatRoom);
 
