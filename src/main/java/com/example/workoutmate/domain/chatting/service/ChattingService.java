@@ -16,6 +16,8 @@ import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,67 +58,33 @@ public class ChattingService {
         User sender = userService.findById(authUser.getId());
         User receiver = userService.findById(receiverId);
 
-        if(Objects.equals(sender.getId(), receiver.getId())) {
+        if (Objects.equals(sender.getId(), receiver.getId())) {
             throw new CustomException(EQUALS_SENDER_RECEIVER, EQUALS_SENDER_RECEIVER.getMessage());
         }
 
-        // 삭제되지않은 채팅방이 있는 경우
+        // ID 정렬 (작은 값이 senderId, 큰 값이 receiverId)
+        Long firstId = Math.min(sender.getId(), receiver.getId());
+        Long secondId = Math.max(sender.getId(), receiver.getId());
+
+        // 1. 비관적 락을 획득하며 기존 채팅방을 조회
+        // 이 쿼리는 기존에 존재하는 행에만 락을 걸기 때문에 INSERT 시 발생하는 데드락을 막지는 못합니다.
         Optional<ChatRoom> existingRoom = chatRoomRepository
-                .findByUsersAndNotDeleted(sender.getId(), receiver.getId());
+                .findByUsersAndNotDeletedWithLock(firstId, secondId);
 
-        // 기존 채팅방 반환
+        // 2. 기존 채팅방이 이미 존재하는 경우
         if (existingRoom.isPresent()) {
-            ChatRoom chatRoom = existingRoom.get();
-
-            if (chatRoom.isDeleted()) {
-                throw new CustomException(CHATROOM_DELETED, CHATROOM_DELETED.getMessage());
+            return handleExistingChatRoom(existingRoom.get(), sender, receiver);
+        } else {
+            // 3. 기존 채팅방이 없는 경우, 새로운 채팅방 생성
+            try {
+                return handleNewChatRoom(sender, receiver, firstId, secondId);
+            } catch (DataIntegrityViolationException | CannotAcquireLockException e) {
+                // 4. Unique Index 충돌 또는 데드락 발생 시, 다른 트랜잭션이 이미 채팅방을 생성했음을 의미합니다.
+                // 이 시점에서 현재 트랜잭션은 롤백될 상태이므로, 추가적인 DB 작업을 시도하지 않고 예외를 다시 던져
+                // 클라이언트에게 재시도를 유도하는 것이 더 안전한 방법입니다.
+                throw e;
             }
-
-            ChatRoomMember chatRoomMember = getChatRoomMemberByChatRoomIdAndUserId(
-                    chatRoom.getId(), sender.getId());
-
-            chatRoomMember.join();
-
-            // 채팅 입장 메시지 저장
-            ChatMessage chatMessage = ChattingMapper.memberToJoinMessage(chatRoomMember, sender);
-            chatMessageRepository.save(chatMessage);
-            // 실시간 입장 메시지 전송
-            chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
-
-            return new ChatRoomCreateResponseDto(
-                    chatRoom.getId(), sender.getId(), receiver.getId(), chatRoom.getCreatedAt());
         }
-
-        // 채팅방 (Chatroom) 생성
-        ChatRoom chatRoom = ChatRoom.builder()
-                .senderId(sender.getId())
-                .receiverId(receiver.getId())
-                .build();
-        chatRoomRepository.save(chatRoom);
-
-        // chat_room_member에 sender 등록
-        ChatRoomMember senderMember = ChatRoomMember.builder()
-                .userId(sender.getId())
-                .chatRoomId(chatRoom.getId())
-                .joinedAt(chatRoom.getCreatedAt())
-                .build();
-        chatRoomMemberRepository.save(senderMember);
-
-        // chat_room_member에 receiver 등록
-        ChatRoomMember receiverMember = ChatRoomMember.builder()
-                .userId(receiver.getId())
-                .chatRoomId(chatRoom.getId())
-                .joinedAt(chatRoom.getCreatedAt())
-                .build();
-        chatRoomMemberRepository.save(receiverMember);
-
-        // 채팅 생성 메시지 저장
-        ChatMessage chatMessage = ChattingMapper.memberToStartMessage(senderMember, sender);
-        chatMessageRepository.save(chatMessage);
-        // 실시간 입장 메시지 전송
-        chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
-
-        return ChattingMapper.toCreateDto(chatRoom);
     }
 
 
@@ -220,5 +188,61 @@ public class ChattingService {
     private ChatRoomMember getChatRoomMemberByChatRoomIdAndUserId(Long chatRoomId, Long userId) {
         return chatRoomMemberRepository.findByChatRoomIdAndUserId(chatRoomId, userId).orElseThrow(
                 () -> new CustomException(CHATROOM_MEMBER_NOT_FOUND, CHATROOM_MEMBER_NOT_FOUND.getMessage()));
+    }
+
+    // 기존 채팅방이 있을 때의 로직을 처리하는 분리된 메서드
+    private ChatRoomCreateResponseDto handleExistingChatRoom(ChatRoom chatRoom, User sender, User receiver) {
+        if (chatRoom.isDeleted()) {
+            throw new CustomException(CHATROOM_DELETED, CHATROOM_DELETED.getMessage());
+        }
+
+        ChatRoomMember chatRoomMember = getChatRoomMemberByChatRoomIdAndUserId(
+                chatRoom.getId(), sender.getId());
+
+        // 유저가 재입장하는 경우에만 join 상태를 업데이트하고 메시지를 보냅니다.
+        if (!chatRoomMember.isJoined()) {
+            chatRoomMember.join();
+            ChatMessage chatMessage = ChattingMapper.memberToJoinMessage(chatRoomMember, sender);
+            chatMessageRepository.save(chatMessage);
+            // 실시간 입장 메시지 전송
+            chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
+        }
+
+        return new ChatRoomCreateResponseDto(
+                chatRoom.getId(), sender.getId(), receiver.getId(), chatRoom.getCreatedAt());
+    }
+
+    // 새로운 채팅방을 생성할 때의 로직을 처리하는 분리된 메서드
+    private ChatRoomCreateResponseDto handleNewChatRoom(User sender, User receiver, Long firstId, Long secondId) {
+        // 채팅방 (Chatroom) 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+                .senderId(firstId)
+                .receiverId(secondId)
+                .build();
+        chatRoomRepository.save(chatRoom);
+
+        ChatRoomMember senderMember = ChatRoomMember.builder()
+                .userId(sender.getId())
+                .chatRoomId(chatRoom.getId())
+                .joinedAt(chatRoom.getCreatedAt())
+                .isJoined(true)
+                .build();
+        chatRoomMemberRepository.save(senderMember);
+
+        ChatRoomMember receiverMember = ChatRoomMember.builder()
+                .userId(receiver.getId())
+                .chatRoomId(chatRoom.getId())
+                .joinedAt(chatRoom.getCreatedAt())
+                .isJoined(true)
+                .build();
+        chatRoomMemberRepository.save(receiverMember);
+
+        // 채팅 생성 메시지 저장
+        ChatMessage chatMessage = ChattingMapper.memberToStartMessage(senderMember, sender);
+        chatMessageRepository.save(chatMessage);
+        //실시간 입장 메시지 전송
+        chatPublisher.sendMessage(chatRoom.getId(), ChattingMapper.toChatDto(chatMessage));
+
+        return ChattingMapper.toCreateDto(chatRoom);
     }
 }
