@@ -65,9 +65,9 @@ public final class VectorUtils {
         return new float[dim];
     }
 
-    public static float[] clone(float[] v) {
-        return Arrays.copyOf(v, v.length);
-    }
+//    public static float[] clone(float[] v) {
+//        return Arrays.copyOf(v, v.length);
+//    }
 
     /**
      * 벡터 a에 벡터 b × weight 값을 더함 (제자리 수정)

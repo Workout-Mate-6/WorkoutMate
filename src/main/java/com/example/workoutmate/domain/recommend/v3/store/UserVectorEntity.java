@@ -17,7 +17,7 @@ public class UserVectorEntity {
     private Long userId;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BLOB")
     private byte[] vec; // float[] 직렬화
 
     @Column(nullable = false)

@@ -17,7 +17,7 @@ public class BoardVectorEntity {
     private Long boardId;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BLOB")
     private byte[] vec;
 
     @Column(nullable = false)

@@ -31,15 +31,22 @@ public class UserVectorService {
     private final ZzimRepository zzimRepo;
 
     /**
-     * 유저 행동 → 벡터. 최신성 가중, 조인/찜 반영. 필요 시 click/view도 추가 가능.
+     * 유저 행동 → 벡터 생성.
+     * - 참여(Participation) 기록을 시간 감쇠(decay)로 가중
+     * - 보드의 타입/시간/요일/모집규모 등을 feature bucket 으로 해시 인코딩
+     * - 찜(zzim) 이력은 보조 가중
+     * - 전사 평균 벡터를 혼합(userGlobalMix)해 콜드스타트 완화
+     * - 마지막에 L2 정규화(코사인 유사도 계산에 유리)
+     *
+     * @return L2-정규화된 유저 벡터(float[])
      */
     @Transactional(readOnly = true)
     public float[] buildFromBehavior(Long userId) {
-        int dim = props.getVector().getDim();
-        HashingEncoder enc = new HashingEncoder(dim);
-        float[] acc = VectorUtils.zeros(dim);
+        int dim = props.getVector().getDim(); // 벡터 차원 우리프로젝트에서는 dim:32 로 되어있음
+        HashingEncoder enc = new HashingEncoder(dim); // 해시 기반 인코더(동일 feature → 동일 index 누적)
+        float[] acc = VectorUtils.zeros(dim); // 누적 버퍼(0으로 초기화)
 
-        double decayPerDay = props.getVector().getDecayPerDay();
+        double decayPerDay = props.getVector().getDecayPerDay(); // 1일 경과당 감쇠율
         Instant now = Instant.now(); // 현재시각
 
         // 참여 이력(주요 신호) — ParticipationService 사용
@@ -49,15 +56,21 @@ public class UserVectorService {
             var b = p.getBoard();
 
             // 시작 시간 -> 현재 시각 까지의 일수 계산
+            // 현재 구현은 "보드에서 모임시간(startTime) 기준"으로 감쇠
             LocalDateTime t = b.getStartTime();
             Duration d = Duration.between(t != null ? t.atZone(ZoneId.systemDefault()).toInstant() : now, now);
             long days = Math.max(0, d.toDays());
             double w = Math.pow(decayPerDay, days) * 1.0; // 참여는 1.0 가중
 
             // 보드 특성 피처를 가중치와 함께 벡터에 추가
+
+            // 종목 타입: 가장 강한 콘텐츠 특징
             enc.addFeature(acc, FeatureBuckets.type(String.valueOf(b.getSportType())), w);
+            // 시간대 bucket: 시작시간을 coarse-grain 으로 버킷팅 → 시간 선호(아침/저녁 등) 반영
             enc.addFeature(acc, FeatureBuckets.timeBucket(b.getStartTime()), w * 0.6);
+            // 요일 bucket: 요일 선호(주말/평일) 반영
             enc.addFeature(acc, FeatureBuckets.dow(b.getStartTime()), w * 0.4);
+            // 모집 규모 bucket: 소수정예/대규모 선호 반영
             enc.addFeature(acc, FeatureBuckets.sizeBucket(b.getMaxParticipants()), w * 0.3);
         }
 
