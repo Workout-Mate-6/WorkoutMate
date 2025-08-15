@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -55,6 +56,7 @@ public class BoardViewCountService {
     }
 
     // 여러 게시글 페이지 변환
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Page<BoardResponseDto> toDtoPage(Page<Board> boards) {
         // 게시글 ID 리스트 추출
         List<String> ids = boards.stream().map(b -> b.getId().toString()).toList();
@@ -62,12 +64,11 @@ public class BoardViewCountService {
         // Redis 해시에서 여러 게시글의 조회수를 한 번에 조회 (multiGet)
         List<Object> viewCounts = stringRedisTemplate.opsForHash().multiGet(VIEW_COUNT_HASH_KEY, new ArrayList<>(ids));
 
-        List<BoardResponseDto> dtos = new ArrayList<>();
+        List<BoardResponseDto> dtos = new ArrayList<>(boards.getNumberOfElements());
         int i = 0;
         // 각 게시글별로 조회수를 꺼내와서 DTO로 변환
         for (Board board : boards) {
-            Object countObj = viewCounts.get(i);
-            int viewCount = (countObj == null) ? 0 : Integer.parseInt(countObj.toString());
+            int viewCount = viewCounts.get(i) == null ? 0 : Integer.parseInt(viewCounts.get(i).toString());
             dtos.add(BoardMapper.boardToBoardResponse(board, viewCount));
             i++;
         }

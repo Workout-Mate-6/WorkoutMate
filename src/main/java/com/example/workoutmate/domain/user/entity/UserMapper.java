@@ -3,6 +3,7 @@ package com.example.workoutmate.domain.user.entity;
 import com.example.workoutmate.domain.user.dto.AuthResponseDto;
 import com.example.workoutmate.domain.user.dto.EmailVerificationResponseDto;
 import com.example.workoutmate.domain.user.dto.SignupRequestDto;
+import com.example.workoutmate.domain.user.dto.UserInfoResponseDto;
 import com.example.workoutmate.domain.user.enums.UserGender;
 import com.example.workoutmate.domain.user.enums.UserRole;
 
@@ -40,6 +41,20 @@ public class UserMapper {
                 .gender(user.getGender())
                 .isEmailVerified(user.isEmailVerified())
                 .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    public static UserInfoResponseDto toUserInfoResponseDto(User user, int followerCount, int followingCount, int myBoardCount){
+        return UserInfoResponseDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .gender(user.getGender())
+                .followerCount(followerCount)
+                .followingCount(followingCount)
+                .myBoardCount(myBoardCount)
+                .createdAt(user.getCreatedAt())
+                .modifiedAt(user.getModifiedAt())
                 .build();
     }
 }

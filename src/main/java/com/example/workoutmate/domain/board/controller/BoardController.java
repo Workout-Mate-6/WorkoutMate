@@ -92,7 +92,7 @@ public class BoardController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> getMyBoards(
             @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
-            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ){
         Page<BoardResponseDto> boardResponseDtoPage = boardService.getMyBoards(customUserPrincipal, pageable);
 
