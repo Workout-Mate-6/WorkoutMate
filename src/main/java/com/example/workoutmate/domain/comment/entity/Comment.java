@@ -11,7 +11,14 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comment")
+@Table(name = "comment",
+    indexes = {
+            @Index(
+                    name = "idx_comment_board_isdel_created_id",
+                    columnList = "board_id, is_deleted, created_at DESC, id DESC"
+            )
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

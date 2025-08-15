@@ -22,18 +22,3 @@ spring:
       timeout: 3000
 
 
-
-
-
-seed:
-  enabled: true         # dev에서만 true
-  users: 60
-  follows_per_user: 8
-  boards: 400
-  max_participants_min: 4
-  max_participants_max: 12
-  near_full_ratio: 0.08
-  full_ratio: 0.03
-  zzim_ratio: 0.03
-  accept_participation_per_board: 3
-  batch_size: 500
