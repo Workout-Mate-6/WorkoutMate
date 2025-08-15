@@ -30,10 +30,9 @@ public class ParticipationController {
     @PatchMapping("/boards/{boardId}/participations-request")
     public ResponseEntity<ApiResponse<Void>> requestApproval(
             @PathVariable Long boardId,
-            @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.requestApporval(boardId, participationRequestDto, authUser);
+        participationService.requestApporval(boardId, authUser);
         return ApiResponse.success(HttpStatus.OK, "요청을 보냈습니다.", null);
     }
 
@@ -43,11 +42,11 @@ public class ParticipationController {
     public ResponseEntity<ApiResponse<Void>> decideApproval(
             @PathVariable Long boardId,
             @PathVariable Long participationId,
-            @Valid @RequestBody ParticipationRequestDto participationRequestDto,
+            @Valid @RequestParam ParticipationRequestDto state,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.decideApproval(boardId, participationId, participationRequestDto, authUser);
-        return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
+        participationService.decideApproval(boardId, participationId, state, authUser);
+        return ApiResponse.success(HttpStatus.OK, "" + state, null);
     }
 
 
@@ -81,10 +80,9 @@ public class ParticipationController {
     @PatchMapping("/boards/{boardId}/participations-decline")
     public ResponseEntity<ApiResponse<Void>> cancelParticipation(
             @PathVariable Long boardId,
-            @Valid @RequestBody ParticipationRequestDto participationRequestDto,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        participationService.cancelParticipation(boardId, participationRequestDto, authUser);
-        return ApiResponse.success(HttpStatus.OK, "" + participationRequestDto, null);
+        participationService.cancelParticipation(boardId,  authUser);
+        return ApiResponse.success(HttpStatus.OK, "불참 되었습니다.", null);
     }
 }
