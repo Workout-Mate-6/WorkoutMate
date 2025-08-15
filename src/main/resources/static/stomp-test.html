@@ -182,7 +182,7 @@
         // }
 
         function fetchOldMessages(chatRoomId) {
-            const apiUrl = `http://localhost:8080/api/chat-rooms/message/${chatRoomId}?cursor=&size=50`;
+            const apiUrl = `/api/chat-rooms/message/${chatRoomId}?cursor=&size=50`;
             const token = $('#jwtToken').val();
 
             if (!token) {
