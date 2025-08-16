@@ -143,10 +143,9 @@ public class ParticipationService {
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ParticipationByBoardResponseDto> result =
                 qParticipationRepository.viewApproval(pageable, participationRequestDto, authUser);
-        //Todo 내일 이거 테스트 해고 게시글 쪽에 날짜 기능 개선 지난 날짜로는 신청할 수 없도록
 //        if (result == null || result.isEmpty()) {
 //            throw new CustomException(CustomErrorCode.USER_RECEIVED_REQUEST_NOT_FOUND);
 //        }
