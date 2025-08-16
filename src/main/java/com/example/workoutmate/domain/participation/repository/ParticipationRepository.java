@@ -17,10 +17,6 @@ public interface ParticipationRepository extends JpaRepository<Participation,Lon
 
     Optional<Participation> findByBoardIdAndApplicantId(Long boardId, Long applicantId);
 
-    //Optional<Participation> findByCommentIdAndApplicantId(Long commentId, Long applicantId);
-
-    //Optional<Participation> findByBoardAndApplicant(Board board, User applicant);
-
     List<Participation> findByBoardIdAndApplicant_IdIn(Long boardId, List<Long> userId);
 
     @Query("SELECT p.board.id, p.applicant.id FROM Participation p WHERE p.board.id IN :boardIds AND p.state = :state")

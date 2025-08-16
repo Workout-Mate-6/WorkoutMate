@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS user_vector
+(
+    user_id    BIGINT PRIMARY KEY,
+    vec        LONGBLOB     NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS board_vector
+(
+    board_id   BIGINT PRIMARY KEY,
+    vec        LONGBLOB     NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE = InnoDB;

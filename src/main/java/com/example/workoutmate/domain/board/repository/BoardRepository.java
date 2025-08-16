@@ -53,6 +53,18 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Optional<Board> findByIdWithPessimisticLock(@Param("id") Long id);
 
 
+    @Query(
+            value = """
+    select b from Board b
+    join fetch b.writer w
+    where w.id <> :userId and b.isDeleted = false
+  """,
+            countQuery = """
+    select count(b) from Board b
+    join b.writer w
+    where w.id <> :userId and b.isDeleted = false
+  """
+    )
     List<Board> findAllByWriterIdNotAndIsDeletedFalse(Long userId, Pageable pageable);
     // 조회수 변경시 modifiedAt 시간 변경X
     @Modifying

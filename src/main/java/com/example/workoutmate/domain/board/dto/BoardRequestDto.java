@@ -1,6 +1,7 @@
 package com.example.workoutmate.domain.board.dto;
 
 import com.example.workoutmate.domain.board.entity.SportType;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -27,6 +28,7 @@ public class BoardRequestDto {
     private Long maxParticipants;
 
     @NotNull(message = "운동 모임의 시간을 작성해주세요!")
+    @FutureOrPresent(message = "모임시간이 현재보다 미래여야 합니다.")
     private LocalDateTime startTime;
 
     public BoardRequestDto(String title, String content, SportType sportType, Long maxParticipants, LocalDateTime startTime) {

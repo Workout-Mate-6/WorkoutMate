@@ -1,7 +1,7 @@
 package com.example.workoutmate.domain.recommend.controller;
 
-import com.example.workoutmate.domain.recommend.dto.RecommendationDto;
-import com.example.workoutmate.domain.recommend.service.RecommendationService;
+import com.example.workoutmate.domain.recommend.v3.dto.RecommendationDto;
+import com.example.workoutmate.domain.recommend.v3.service.RecommendationServiceRebulid;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping
 public class RecommendationController {
 
-    private final RecommendationService recommendationService;
+    private final RecommendationServiceRebulid recommendationService;
 
     @GetMapping("/recommendation")
     public ResponseEntity<ApiResponse<List<RecommendationDto>>> recommendation(

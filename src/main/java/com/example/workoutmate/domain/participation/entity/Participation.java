@@ -36,8 +36,12 @@ public class Participation extends BaseEntity {
     private User applicant;
 
 
-    // 수락/거절쪽에서 사용
-    public void updateState(ParticipationRequestDto participationRequestDto) {
-        this.state = ParticipationState.of(participationRequestDto.getState());
+
+    public void updateState(ParticipationState newState) {
+        this.state = newState;
+    }
+
+    public void updateState(ParticipationRequestDto dto) {
+        updateState(ParticipationState.of(dto.getState()));
     }
 }
