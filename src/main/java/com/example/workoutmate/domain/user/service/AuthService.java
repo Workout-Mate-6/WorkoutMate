@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,11 +33,14 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto) {
+
+        if (userRepository.existsByEmailAndIsDeletedTrue(signupRequestDto.getEmail())){
+            throw new CustomException(CustomErrorCode.ALREADY_WITHDRAWN_EMAIL);
+        }
 
         // 인증 완료된 사용자 email 중복 확인
         if (userRepository.existsByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(signupRequestDto.getEmail())) {
@@ -113,7 +115,6 @@ public class AuthService {
         Pageable pageable = PageRequest.of(0, batchSize);
         Page<User> page = userRepository.findUnverifiedUsers(time, pageable);
         List<User> users = page.getContent();
-        log.info("이번 배치 삭제 대상: {}명", users.size());
 
         if (!users.isEmpty()) {
             userRepository.deleteAllInBatch(users);
@@ -168,7 +169,5 @@ public class AuthService {
         // refreshToken 에서 refreshTokenJti 받아와서 저장된 refreshTokenJti 삭제
         String refreshTokenJti = jwtUtil.getJti(refreshToken);
         refreshTokenService.deleteRefreshTokenJti(refreshTokenJti);
-
-        return;
     }
 }
