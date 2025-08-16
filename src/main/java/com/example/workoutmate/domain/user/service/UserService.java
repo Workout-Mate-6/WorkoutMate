@@ -1,6 +1,10 @@
 package com.example.workoutmate.domain.user.service;
 
+import com.example.workoutmate.domain.board.entity.Board;
+import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.domain.board.service.BoardPopularityService;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
+import com.example.workoutmate.domain.board.service.BoardViewCountService;
 import com.example.workoutmate.domain.follow.service.FollowCountService;
 import com.example.workoutmate.domain.user.dto.UserEditRequestDto;
 import com.example.workoutmate.domain.user.dto.UserEditResponseDto;
@@ -13,9 +17,12 @@ import com.example.workoutmate.domain.user.repository.UserRepository;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.example.workoutmate.global.enums.CustomErrorCode.PASSWORD_NOT_MATCHED;
 import static com.example.workoutmate.global.enums.CustomErrorCode.USER_NOT_FOUND;
@@ -33,6 +40,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final BoardSearchService boardSearchService;
     private final FollowCountService followCountService;
+    private final BoardPopularityService popularityService;
+    private final BoardViewCountService boardViewCountService;
 
     /**
      * 유저 정보 조회 (마이페이지)
@@ -98,9 +107,17 @@ public class UserService {
         }
 
         user.delete();
+
+        List<Board> boards = boardSearchService
+                .findAllByWriterAndIsDeletedFalse(user, Pageable.unpaged())
+                .getContent();
+
+        for (Board b : boards) {
+            popularityService.removeFromRanking(b.getId());
+            boardViewCountService.removeFromHash(b.getId());
+            b.delete();
+        }
     }
-
-
 
     /* 도메인 관련 메서드 */
 
