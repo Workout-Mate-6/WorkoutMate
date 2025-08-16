@@ -1,6 +1,7 @@
 package com.example.workoutmate.domain.participation.controlloer;
 
 
+import com.example.workoutmate.domain.participation.dto.CombinedParticipationViewResponse;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
@@ -52,14 +53,28 @@ public class ParticipationController {
 
     // 본인 게시글의 신청자 (전체) 조회 <state 값은 필수 아님>
     @GetMapping("/participations")
-    public ResponseEntity<ApiResponse<Page<ParticipationByBoardResponseDto>>> viewApproval(
+    public ResponseEntity<ApiResponse<CombinedParticipationViewResponse>> viewApproval(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
+            // 페이지 안에 페이지 두개가 들어감 1) 내가 받은 요청 2) 내가 보낸 요청
+            @RequestParam(required = false) Integer wrPage,
+            @RequestParam(required = false) Integer wrSize,
+            @RequestParam(required = false) Integer apPage,
+            @RequestParam(required = false) Integer apSize,
             @Valid @RequestParam(required = false) ParticipationRequestDto state,
             @AuthenticationPrincipal CustomUserPrincipal authUser
     ) {
-        Page<ParticipationByBoardResponseDto> response =
-                participationService.viewApproval(page, size, state, authUser);
+        int writerPage = wrPage != null ? wrPage : page;
+        int writerSize = wrSize != null ? wrSize : size;
+        int applicantPage = apPage != null ? apPage : page;
+        int applicantSize = apSize != null ? apSize : size;
+
+        CombinedParticipationViewResponse response =
+                participationService.viewApprovalCombined(
+                        writerPage, writerSize,
+                        applicantPage, applicantSize,
+                        state, authUser
+                );
 
         return ApiResponse.success(HttpStatus.OK, "조회 되었습니다.", response);
     }

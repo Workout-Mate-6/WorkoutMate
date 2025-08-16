@@ -4,9 +4,7 @@ import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.enums.Status;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardService;
-import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
+import com.example.workoutmate.domain.participation.dto.*;
 import com.example.workoutmate.domain.participation.entity.Participation;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.repository.ParticipationRepository;
@@ -136,21 +134,41 @@ public class ParticipationService {
         participation.updateState(requested);
     }
 
-    // 신청자 조회
-    public Page<ParticipationByBoardResponseDto> viewApproval(
-            int page,
-            int size,
+    ////////////////////////// 반응 조회 //////////////////////////
+    public Page<ParticipationByBoardResponseDto> viewApprovalsForMyBoards(
+            int page, int size,
             ParticipationRequestDto participationRequestDto,
             CustomUserPrincipal authUser
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<ParticipationByBoardResponseDto> result =
-                qParticipationRepository.viewApproval(pageable, participationRequestDto, authUser);
-//        if (result == null || result.isEmpty()) {
-//            throw new CustomException(CustomErrorCode.USER_RECEIVED_REQUEST_NOT_FOUND);
-//        }
-        return result;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return qParticipationRepository.viewApprovalsForWriter(pageable, participationRequestDto, authUser);
     }
+    // 신청자 관점
+    public Page<MyApplicationResponseDto> viewMyApplications(
+            int page, int size,
+            ParticipationRequestDto participationRequestDto,
+            CustomUserPrincipal authUser
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return qParticipationRepository.viewApplicationsForApplicant(pageable, participationRequestDto, authUser);
+    }
+    // 두 섹션을 묶어서 반환
+    public CombinedParticipationViewResponse viewApprovalCombined(
+            int writerPage, int writerSize,
+            int applicantPage, int applicantSize,
+            ParticipationRequestDto participationRequestDto,
+            CustomUserPrincipal authUser
+    ) {
+        Page<ParticipationByBoardResponseDto> writerSide =
+                viewApprovalsForMyBoards(writerPage, writerSize, participationRequestDto, authUser);
+
+        Page<MyApplicationResponseDto> applicantSide =
+                viewMyApplications(applicantPage, applicantSize, participationRequestDto, authUser);
+
+        return new CombinedParticipationViewResponse(writerSide, applicantSide);
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
 
     // 파티 조회
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {

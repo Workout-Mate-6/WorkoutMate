@@ -2,10 +2,7 @@ package com.example.workoutmate.domain.participation.repository;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.entity.QBoard;
-import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationResponseDto;
+import com.example.workoutmate.domain.participation.dto.*;
 import com.example.workoutmate.domain.participation.entity.Participation;
 import com.example.workoutmate.domain.participation.entity.QParticipation;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
@@ -34,81 +31,119 @@ public class QParticipationRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    /**
-     * 로그인한 사용자가 작성한 게시글에 달린 참여 요청들을 조회합니다.
-     * - 참여 상태로 필터링 가능
-     * - 게시글 기준으로 참여 요청들을 그룹핑
-     * - 페이징 처리된 결과 반환
-     */
-    public Page<ParticipationByBoardResponseDto> viewApproval(
+
+    private BooleanBuilder buildCommonFilter(
+            ParticipationRequestDto dto,
+            QParticipation participation
+    ) {
+        BooleanBuilder builder = new BooleanBuilder();
+        if (dto != null && dto.getState() != null && !dto.getState().isEmpty()) {
+            builder.and(participation.state.eq(ParticipationState.valueOf(dto.getState())));
+        }
+        return builder;
+    }
+
+    // A) 내가 쓴 게시글에 달린 요청들 (게시글 단위 그룹핑 DTO)
+    public Page<ParticipationByBoardResponseDto> viewApprovalsForWriter(
             Pageable pageable,
-            ParticipationRequestDto participationRequestDto,
+            ParticipationRequestDto dto,
             CustomUserPrincipal authUser
     ) {
-        QParticipation participation = QParticipation.participation;
-        QBoard board = QBoard.board;
-        QUser user = QUser.user;
+        QParticipation p = QParticipation.participation;
+        QBoard b = QBoard.board;
+        QUser u = QUser.user;
 
-        // 로그인한 사용자가 작성한 게시글의 참여 요청만 조회
-        BooleanBuilder builder = new BooleanBuilder();
-        builder.and(board.writer.id.eq(authUser.getId()));
+        BooleanBuilder builder = buildCommonFilter(dto, p);
+        builder.and(b.writer.id.eq(authUser.getId()));
 
-        // 필터
-        if (participationRequestDto != null &&
-                participationRequestDto.getState() != null &&
-                !participationRequestDto.getState().isEmpty()
-        ) {
-            builder.and(participation.state.eq(
-                    ParticipationState.valueOf(participationRequestDto.getState())
-            ));
-        }
-
-        // 전체 갯수 세기 (페이징용)
-        long totalCount = Optional.ofNullable(
-                queryFactory
-                        .select(participation.count())
-                        .from(participation)
-                        .join(participation.board, board)
+        long total = Optional.ofNullable(
+                queryFactory.select(p.count())
+                        .from(p)
+                        .join(p.board, b)
                         .where(builder)
                         .fetchOne()
         ).orElse(0L);
 
-        // 참여요청한 데이터 조회
-        List<Participation> content = queryFactory
-                .selectFrom(participation)
-                .join(participation.board, board).fetchJoin()
-                .join(participation.applicant, user).fetchJoin() // 신청자 정보를 조회
+        List<Participation> rows = queryFactory
+                .selectFrom(p)
+                .join(p.board, b).fetchJoin()
+                .join(p.applicant, u).fetchJoin()
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(participation.createdAt.desc())
+                .orderBy(p.createdAt.desc())
                 .fetch();
 
-        // Participation → DTO 변환 (게시글 기준 그룹핑)
-        Map<Board, List<ParticipationResponseDto>> grouped = content.stream()
+        Map<Board, List<ParticipationResponseDto>> grouped = rows.stream()
                 .collect(Collectors.groupingBy(
                         Participation::getBoard,
-                        Collectors.mapping(
-                                p -> new ParticipationResponseDto(
-                                        p.getId(),
-                                        p.getApplicant().getName(), // 신청자 이름으로 변경
-                                        p.getState().toString(),
-                                        p.getCreatedAt()
-                                ),
-                                Collectors.toList()
-                        )
+                        Collectors.mapping(pp -> new ParticipationResponseDto(
+                                pp.getId(),
+                                pp.getApplicant().getName(),
+                                pp.getState().toString(),
+                                pp.getCreatedAt()
+                        ), Collectors.toList())
                 ));
 
-        // 게시글 별로 들어온 요청모아서 최종 DTO로 바꾸기
-        List<ParticipationByBoardResponseDto> dtoList = grouped.entrySet().stream()
+        List<ParticipationByBoardResponseDto> content = grouped.entrySet().stream()
                 .map(e -> new ParticipationByBoardResponseDto(
                         e.getKey().getId(),
                         e.getKey().getTitle(),
-                        e.getValue() // 게시글에 달린 참여 요청 DTO 리스트
+                        e.getValue()
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
-        return new PageImpl<>(dtoList, pageable, totalCount);
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    // B) 내가 신청한 목록(그룹핑 없음 단건 리스트)
+    public Page<MyApplicationResponseDto> viewApplicationsForApplicant(
+            Pageable pageable,
+            ParticipationRequestDto dto,
+            CustomUserPrincipal authUser
+    ) {
+        QParticipation p = QParticipation.participation;
+        QBoard b = QBoard.board;
+        QUser writer = new QUser("writer"); // 게시글 작성자 alias
+        QUser applicant = QUser.user;
+
+        BooleanBuilder builder = buildCommonFilter(dto, p);
+        builder.and(p.applicant.id.eq(authUser.getId()));
+
+        long total = Optional.ofNullable(
+                queryFactory.select(p.count())
+                        .from(p)
+                        .join(p.board, b)
+                        .where(builder)
+                        .fetchOne()
+        ).orElse(0L);
+
+        // 작성자 정보도 같이
+        List<Tuple> rows = queryFactory
+                .select(p.id, b.id, b.title, writer.id, writer.name, p.state, p.createdAt)
+                .from(p)
+                .join(p.board, b)
+                .join(b.writer, writer)
+                .join(p.applicant, applicant)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(p.createdAt.desc())
+                .fetch();
+
+        List<MyApplicationResponseDto> content = rows.stream()
+                .map(t -> new MyApplicationResponseDto(
+                        t.get(p.id),
+                        t.get(b.id),
+                        t.get(b.title),
+                        t.get(writer.id),
+                        t.get(writer.name),
+                        t.get(p.state).toString(),
+                        t.get(p.createdAt)
+                ))
+                .toList();
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
