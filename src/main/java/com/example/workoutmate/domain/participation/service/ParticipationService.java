@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -147,6 +146,7 @@ public class ParticipationService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createAt").descending());
         Page<ParticipationByBoardResponseDto> result =
                 qParticipationRepository.viewApproval(pageable, participationRequestDto, authUser);
+        //Todo 내일 이거 테스트 해고 게시글 쪽에 날짜 기능 개선 지난 날짜로는 신청할 수 없도록
 //        if (result == null || result.isEmpty()) {
 //            throw new CustomException(CustomErrorCode.USER_RECEIVED_REQUEST_NOT_FOUND);
 //        }
@@ -174,21 +174,6 @@ public class ParticipationService {
         validateStateChange(ParticipationState.of(dto.getState()), p);
     }
 
-
-    public Map<Long, Set<Long>> getBoardParticipants(List<Board> boards) {
-        List<Long> boardIds = boards.stream().map(Board::getId).collect(Collectors.toList());
-
-        List<Object[]> results = participationRepository.findBoardIdAndUserIdByBoardIdsAndState(
-                boardIds, ParticipationState.ACCEPTED // 예시로 참여 확정 상태만
-        );
-        Map<Long, Set<Long>> boardParticipation = new HashMap<>();
-        for (Object[] row : results) {
-            Long boardId = (Long) row[0];
-            Long userId = (Long) row[1];
-            boardParticipation.computeIfAbsent(boardId,k->new HashSet<>()).add(userId);
-        }
-        return boardParticipation;
-    }
 
     public List<Participation> findByApplicant_Id(Long userId) {
         return participationRepository.findAllByApplicant_Id(userId);
