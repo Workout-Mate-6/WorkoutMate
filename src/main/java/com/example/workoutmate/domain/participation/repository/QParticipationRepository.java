@@ -55,6 +55,7 @@ public class QParticipationRepository {
 
         BooleanBuilder builder = buildCommonFilter(dto, p);
         builder.and(b.writer.id.eq(authUser.getId()));
+        builder.and(b.isDeleted.isFalse());
 
         long total = Optional.ofNullable(
                 queryFactory.select(p.count())
@@ -109,6 +110,8 @@ public class QParticipationRepository {
 
         BooleanBuilder builder = buildCommonFilter(dto, p);
         builder.and(p.applicant.id.eq(authUser.getId()));
+        builder.and(p.isDeleted.isFalse());
+        builder.and(b.isDeleted.isFalse());
 
         long total = Optional.ofNullable(
                 queryFactory.select(p.count())
@@ -156,7 +159,8 @@ public class QParticipationRepository {
                 .join(participation.applicant, user)
                 .where(
                         participation.board.id.eq(boardId),
-                        participation.state.eq(ParticipationState.ACCEPTED)
+                        participation.state.eq(ParticipationState.ACCEPTED),
+                        participation.isDeleted.isFalse()
                 )
                 .fetch();
     }

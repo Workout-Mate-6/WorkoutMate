@@ -10,13 +10,30 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "participation", uniqueConstraints = {@UniqueConstraint(name = "uq_participation_board_user",columnNames = {"board_id","applicant_id"})}) // 신청 중복 제거
+@Table(
+        name = "participation",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_participation_board_user_active",
+                        columnNames = {"board_id", "applicant_id", "is_deleted"})
+        }
+)
+// 신청 중복 제거
+@SQLDelete(sql = """
+            UPDATE participation
+               SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP
+             WHERE id = ?
+        """)
+@Where(clause = "is_deleted = false")
 public class Participation extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +52,12 @@ public class Participation extends BaseEntity {
     @JoinColumn(name = "applicant_id", nullable = false)
     private User applicant;
 
+
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    private LocalDateTime deletedAt;
 
 
     public void updateState(ParticipationState newState) {
