@@ -16,19 +16,27 @@ public class TimeAndRules {
      * - 요약 : 시간 임박도에 따라 점수 보장
      */
     public static double urgencyMultiplier(Board b, RecommendationProperties p) {
-        if (!p.getTime().isRerankEnabled()) return 1.0; // 시간 재 랭킹 기능 | 비활성시 1.0(변화 없음)
-        if (b.getStartTime() == null) return 1.0; // 시작시간이 없으면 변화 없음
+        if (!p.getTime().isRerankEnabled() || b.getStartTime() == null) return 1.0;
 
-        double center = p.getTime().getCenterHours(); // 시그모이드 중아점
-        double slope = p.getTime().getSlope(); // 곡선 기울기
-        double max = p.getTime().getMaxMultiplier(); // 가중치 최대값
+        double center = p.getTime().getCenterHours();   // 중간점 (예: 24h)
+        double slope  = p.getTime().getSlope();         // 곡선 기울기 (예: 6h)
+        double max    = p.getTime().getMaxMultiplier(); // 최대 보너스 (예: 1.15)
+        double min    = 1.0;                            // 최소값 (보너스 없음)
 
-        // 현재 시각과 시작 시간의 차이를 '시간' 단위로 계산
         double dtHours = Duration.between(LocalDateTime.now(), b.getStartTime()).toHours();
 
-        // 시그모이드 함수로 임박 가중치 계산
+        // 이미 시작했거나 과거 모임 → 보너스 금지
+        if (dtHours <= 0) return 1.0;
+
+        // 로지스틱 (0..1)
         double u = 1.0 / (1.0 + Math.exp((dtHours - center) / slope));
-        return Math.min(max, u);
+
+        // 최종 가중치: 1.0 ~ max
+        double mult = min + (max - min) * u;
+
+        // 혹시 모를 수치 오차 방어
+        if (Double.isNaN(mult) || Double.isInfinite(mult)) return 1.0;
+        return Math.max(min, Math.min(max, mult));
     }
 
 
