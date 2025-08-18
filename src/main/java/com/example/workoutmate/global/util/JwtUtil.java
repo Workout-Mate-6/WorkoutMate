@@ -61,9 +61,9 @@ public class JwtUtil {
     }
 
     // Bearer 제거한 토큰 값만 추출
-    public String substringToken(String tokenValue) {
-        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-            return tokenValue.substring(7);
+    public String substringToken(String bearerToken) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.substring(7);
         }
         throw new CustomException(CustomErrorCode.SERVER_EXCEPTION_JWT);
     }
@@ -98,27 +98,6 @@ public class JwtUtil {
                 .setIssuedAt(date)
                 .signWith(key, signatureAlgorithm)
                 .compact();
-    }
-
-    // 토큰 유효성 검증
-    public boolean validateAccessToken(String token) {
-        try {
-            Jws<Claims> claims = parseToken(token);
-            // 블랙리스트에 있는지 확인
-            String jti = claims.getBody().getId();
-            if (tokenBlacklistService.isBlacklisted(jti)) {
-                return false;
-            }
-            return true;
-        } // 토큰 만료
-        catch (ExpiredJwtException e) {
-            log.warn("JWT expired at {}", e.getClaims().getExpiration());
-            return false;
-        } // 서명 불일치, 구조 손상, 잘못된 인자 등
-        catch (JwtException | IllegalArgumentException e) {
-            log.warn("Invalid JWT: {}", e.getMessage());
-            return false;
-        }
     }
 
     // 리프레시 토큰 유효성 검증
