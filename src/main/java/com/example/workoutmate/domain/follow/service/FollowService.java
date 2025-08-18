@@ -71,9 +71,7 @@ public class FollowService {
 
     // 게시글 쪽에서 사용하는 메서드
     public List<Long> getFollowingUserIds(Long userId) {
-        return followRepository.findAllByFollowerId(userId).stream()
-                .map(follow -> follow.getFollowing().getId())
-                .toList();
+        return followRepository.findFollowingUserIds(userId);
     }
 
     @Transactional
