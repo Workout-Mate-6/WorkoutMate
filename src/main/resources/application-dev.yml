@@ -4,11 +4,18 @@ spring:
     username: ${DEV_DB_USERNAME}
     password: ${DEV_DB_PASSWORD}
     hikari:
-      maximum-pool-size: 50
-      minimum-idle: 10
+      maximum-pool-size: 50        # 무턱대고 키우지 말고 적정선부터
+      minimum-idle: 30             # 스파이크 대비 ‘웜업’(=바로 대여 가능)
+      connection-timeout: 1000        # 1s 내 못 빌리면 빨리 실패/백오프
+      validation-timeout: 1000
+      max-lifetime: 1500000           # 25m (DB wait_timeout 보다 1~2m 짧게)
+      keepalive-time: 120000          # 2m
+      leak-detection-threshold: 2000  # 2s 이상 점유시 경고 로그
 
   data:
     redis:
       host: ${DEV_REDIS_HOST}
       port: ${DEV_REDIS_PORT}
       timeout: 3000
+
+

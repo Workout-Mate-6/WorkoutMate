@@ -4,7 +4,6 @@ import com.example.workoutmate.domain.user.dto.*;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
 import com.example.workoutmate.domain.user.repository.UserRepository;
-import com.example.workoutmate.global.exception.JwtAccessDeniedHandler;
 import com.example.workoutmate.global.util.JwtUtil;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
@@ -156,13 +155,13 @@ public class AuthService {
     }
 
     // logout
-    public void logout(String accessToken, String refreshToken) {
+    public void logout(String bearerAccessToken, String refreshToken) {
         // accessToken 에서 Jti 추출
-        String accessTokenValue = jwtUtil.substringToken(accessToken);
-        String accessTokenJti = jwtUtil.getJti(accessTokenValue);
+        String accessToken = jwtUtil.substringToken(bearerAccessToken);
+        String accessTokenJti = jwtUtil.getJti(accessToken);
 
         // accessToken Jti를 블랙리스트에 추가 (만료시간까지 저장)
-        Date expiration = jwtUtil.getExpiration(accessTokenValue);
+        Date expiration = jwtUtil.getExpiration(accessToken);
         Duration remainingMillis = Duration.ofMillis(expiration.getTime() - System.currentTimeMillis());
         tokenBlacklistService.addToBlacklist(accessTokenJti, remainingMillis);
 
