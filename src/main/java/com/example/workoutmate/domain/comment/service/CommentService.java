@@ -8,6 +8,8 @@ import com.example.workoutmate.domain.comment.entity.Comment;
 import com.example.workoutmate.domain.comment.entity.CommentMapper;
 import com.example.workoutmate.domain.comment.repository.CommentRepository;
 import com.example.workoutmate.domain.comment.dto.CommentWithParticipationStatusResponseDto;
+import com.example.workoutmate.domain.notification.enums.NotificationType;
+import com.example.workoutmate.domain.notification.service.NotificationService;
 import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
 import com.example.workoutmate.domain.user.entity.User;
@@ -34,6 +36,7 @@ public class CommentService {
     private final UserService userService;
     private final BoardSearchService boardSearchService;
     private final ParticipationCreateService participationCreateService;
+    private final NotificationService notificationService;
 
     @Transactional
     public CommentResponseDto createComment(Long boardId, CommentRequestDto requestDto, CustomUserPrincipal authUser) {
@@ -46,6 +49,16 @@ public class CommentService {
 
         // participation 구현중에 로직 추가했습니다.!
 //        participationCreateService.participationInjector(board, user);
+
+        // 본인 게시글이 아닐 경우에 알림 전송
+        if (!board.getWriter().getId().equals(user.getId())) {
+            notificationService.sendNotification(
+                    board.getWriter(),
+                    NotificationType.COMMENT,
+                    String.format("%s님이 '%s' 게시글에 댓글을 작성했습니다: \"%s\"",
+                            user.getName(), board.getTitle(), requestDto.getContent())
+            );
+        }
 
         return CommentMapper.data(savedComment);
     }

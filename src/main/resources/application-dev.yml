@@ -11,10 +11,7 @@ spring:
       max-lifetime: 1500000           # 25m (DB wait_timeout 보다 1~2m 짧게)
       keepalive-time: 120000          # 2m
       leak-detection-threshold: 2000  # 2s 이상 점유시 경고 로그
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+
   data:
     redis:
       host: ${DEV_REDIS_HOST}
