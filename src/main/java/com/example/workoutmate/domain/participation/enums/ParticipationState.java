@@ -9,7 +9,6 @@ public enum ParticipationState {
     REQUESTED("신청"), // 요청 보내면 반응테이블에 삽입
     ACCEPTED("수락"), // 게시글 작성자가 선택하면 반응 테이블에 삽입
     REJECTED("거절"), // 게시글 작성자가 선택하면 반응 테이블에 삽입
-    PARTICIPATION("참여"), // 수락 들어오면 그때 댓글 작성자가 선택해서 테이블에 삽입
     DECLINED("불참")
     ;
 

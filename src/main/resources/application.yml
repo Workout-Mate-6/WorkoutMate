@@ -14,6 +14,11 @@ spring:
     servlet:
       path: /api
 
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
   jpa:
     show-sql: true
     open-in-view: false
@@ -57,13 +62,3 @@ management:
       exposure:
         include: "*"
 
-  # 가중치 계산
-recommendation:
-  weights:
-    participation: 0.4
-    zzim: 0.2
-    friend: 0.1
-    type: 0.15
-    time: 0.15
-  max-candidate-size : 1000
-  min-score: 0.1
