@@ -10,6 +10,7 @@ import com.example.workoutmate.domain.board.entity.SportType;
 import com.example.workoutmate.domain.board.repository.BoardQueryRepository;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
+import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -36,6 +37,7 @@ public class BoardService {
     private final BoardSearchService boardSearchService;
     private final UserService userService;
     private final FollowService followService;
+    private final ParticipationCreateService participationCreateService;
     private final BoardPopularityService popularityService;
     private final BoardViewCountService boardViewCountService;
 
@@ -151,6 +153,7 @@ public class BoardService {
 
         popularityService.removeFromRanking(boardId);
         boardViewCountService.removeFromHash(board.getId());
+        participationCreateService.softDeleteByBoardId(boardId);
 
         board.delete();
     }

@@ -48,7 +48,7 @@ public class CommentService {
         Comment savedComment = commentRepository.save(comment);
 
         // participation 구현중에 로직 추가했습니다.!
-        participationCreateService.participationInjector(board, user);
+//        participationCreateService.participationInjector(board, user);
 
         // 본인 게시글이 아닐 경우에 알림 전송
         if (!board.getWriter().getId().equals(user.getId())) {
