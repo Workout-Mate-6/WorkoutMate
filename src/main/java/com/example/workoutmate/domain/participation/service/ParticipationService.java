@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -49,14 +50,19 @@ public class ParticipationService {
         if (board.getWriter().getId().equals(user.getId())) {
             throw new CustomException(CustomErrorCode.SELF_PARTICIPATION_NOT_ALLOWED);
         }
+
+        // 이미 존재하는 참여여부 확인
+        Optional<Participation> opt =
+                participationRepository.findActiveByBoardIdAndApplicantId(boardId, user.getId());
         if (board.getStatus().equals(Status.CLOSED)) {
             throw new CustomException(CustomErrorCode.BOARD_FULL);
         }
 
-        // 이미 존재하는 참여여부 확인
-        Optional<Participation> opt = participationRepository.findByBoardIdAndApplicantId(boardId, user.getId());
-
         ParticipationState requested = ParticipationState.REQUESTED;
+
+
+
+
 
         if (opt.isPresent()) {
             Participation participation = opt.get();
@@ -194,5 +200,10 @@ public class ParticipationService {
 
     public List<Participation> findByApplicant_Id(Long userId) {
         return participationRepository.findAllByApplicant_Id(userId);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public int softDeleteByBoardId(Long boardId) {
+        return participationRepository.softDeleteByBoardId(boardId);
     }
 }

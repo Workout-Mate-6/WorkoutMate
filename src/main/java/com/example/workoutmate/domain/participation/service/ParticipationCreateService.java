@@ -7,6 +7,7 @@ import com.example.workoutmate.domain.participation.repository.ParticipationRepo
 import com.example.workoutmate.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -50,5 +51,10 @@ public class ParticipationCreateService {
                         participation -> participation.getApplicant().getId(),
                         Participation::getState
                 ));
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public int softDeleteByBoardId(Long boardId) {
+        return participationRepository.softDeleteByBoardId(boardId);
     }
 }
