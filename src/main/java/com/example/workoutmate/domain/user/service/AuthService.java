@@ -4,7 +4,6 @@ import com.example.workoutmate.domain.user.dto.*;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
 import com.example.workoutmate.domain.user.repository.UserRepository;
-import com.example.workoutmate.global.exception.JwtAccessDeniedHandler;
 import com.example.workoutmate.global.util.JwtUtil;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
@@ -23,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,11 +32,14 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto) {
+
+        if (userRepository.existsByEmailAndIsDeletedTrue(signupRequestDto.getEmail())){
+            throw new CustomException(CustomErrorCode.ALREADY_WITHDRAWN_EMAIL);
+        }
 
         // 인증 완료된 사용자 email 중복 확인
         if (userRepository.existsByEmailAndIsDeletedFalseAndIsEmailVerifiedTrue(signupRequestDto.getEmail())) {
@@ -113,7 +114,6 @@ public class AuthService {
         Pageable pageable = PageRequest.of(0, batchSize);
         Page<User> page = userRepository.findUnverifiedUsers(time, pageable);
         List<User> users = page.getContent();
-        log.info("이번 배치 삭제 대상: {}명", users.size());
 
         if (!users.isEmpty()) {
             userRepository.deleteAllInBatch(users);
@@ -155,20 +155,18 @@ public class AuthService {
     }
 
     // logout
-    public void logout(String accessToken, String refreshToken) {
+    public void logout(String bearerAccessToken, String refreshToken) {
         // accessToken 에서 Jti 추출
-        String accessTokenValue = jwtUtil.substringToken(accessToken);
-        String accessTokenJti = jwtUtil.getJti(accessTokenValue);
+        String accessToken = jwtUtil.substringToken(bearerAccessToken);
+        String accessTokenJti = jwtUtil.getJti(accessToken);
 
         // accessToken Jti를 블랙리스트에 추가 (만료시간까지 저장)
-        Date expiration = jwtUtil.getExpiration(accessTokenValue);
+        Date expiration = jwtUtil.getExpiration(accessToken);
         Duration remainingMillis = Duration.ofMillis(expiration.getTime() - System.currentTimeMillis());
         tokenBlacklistService.addToBlacklist(accessTokenJti, remainingMillis);
 
         // refreshToken 에서 refreshTokenJti 받아와서 저장된 refreshTokenJti 삭제
         String refreshTokenJti = jwtUtil.getJti(refreshToken);
         refreshTokenService.deleteRefreshTokenJti(refreshTokenJti);
-
-        return;
     }
 }

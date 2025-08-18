@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/notifications/subscribe").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/stomp-test.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(configure -> configure
@@ -75,9 +76,11 @@ public class SecurityConfig {
 
         // 허용할 출처(Origin)를 명시적으로 지정
         configuration.setAllowedOrigins(
+          feature/edit-chatting-test-html
                 List.of(
                         "http://127.0.0.1:5500",    // sse를 위한 로컬 서버
                         "http://localhost:5500",    // sse를 위한 로컬 서버
+                  "http://workoutmate.kro.kr:8080",
                         "http://localhost:63342",
                         "https://jiangxy.github.io")
         );
