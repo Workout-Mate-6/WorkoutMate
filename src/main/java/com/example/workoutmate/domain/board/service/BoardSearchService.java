@@ -2,11 +2,16 @@ package com.example.workoutmate.domain.board.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
+import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,4 +31,10 @@ public class BoardSearchService {
     public int countBoardsByWriter(Long writerId) {
         return boardRepository.countByWriter_IdAndIsDeletedFalse(writerId);
     }
+
+    @Transactional(readOnly = true)
+    public Page<Board> findAllByWriterAndIsDeletedFalse(User user, Pageable pageable){
+        return boardRepository.findAllByWriterAndIsDeletedFalse(user, pageable);
+    }
+
 }
