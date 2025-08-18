@@ -13,6 +13,8 @@ import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.exception.CustomException;
 import com.example.workoutmate.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,11 +59,23 @@ public class ChatMessageService {
 
 
     public void sendPingError(String token, CustomUserPrincipal authUser) {
-        Claims claims = jwtUtil.parseToken(jwtUtil.substringToken(token)).getBody();
-        String email = claims.get("email", String.class);
+        try {
+            Claims claims = jwtUtil.parseToken(jwtUtil.substringToken(token)).getBody();
+            String email = claims.get("email", String.class);
 
-        if (!email.equals(authUser.getEmail())) {
-            throw new CustomException(TOKEN_USER_MISMATCH, TOKEN_USER_MISMATCH.getMessage() + " 다시 로그인해주세요.");
+            if (!email.equals(authUser.getEmail())) {
+                throw new CustomException(TOKEN_USER_MISMATCH, TOKEN_USER_MISMATCH.getMessage() + " 다시 로그인해주세요.");
+            }
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(
+                    EXPIRED_JWT_TOKEN,
+                    EXPIRED_JWT_TOKEN.getMessage() + "다시 로그인해주세요."
+            );
+        } catch (JwtException e) {
+            throw new CustomException(
+                    SC_UNAUTHORIZED,
+                    SC_UNAUTHORIZED.getMessage() + "다시 로그인해주세요."
+            );
         }
     }
 }
