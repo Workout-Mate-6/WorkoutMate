@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"},
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500", "http://workoutmate.kro.kr"},
         allowCredentials = "true") // 개발용 로컬 HTML (실제 주소가 생기면 변경해야함)
 public class NotificationController {
 
