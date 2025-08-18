@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/notifications/subscribe").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/stomp-test.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(configure -> configure
