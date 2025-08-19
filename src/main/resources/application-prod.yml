@@ -14,4 +14,4 @@ spring:
       password: ${DEPLOY_REDIS_PASSWORD}
       timeout: 3000
       ssl:
-        enabled: true
+        enabled: false
