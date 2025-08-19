@@ -71,7 +71,16 @@ jobs:
       # 8 단계: .env 파일을 생성해서 환경변수 준비
       - name: Create .env file from secret
         run: |
-          echo "${{ secrets.APP_ENV }}" > .env
+          echo "DEPLOY_DB_URL=${{ secrets.DEPLOY_DB_URL }}" > .env
+          echo "DEPLOY_DB_USERNAME=${{ secrets.DEPLOY_DB_USERNAME }}" > .env
+          echo "DEPLOY_DB_PASSWORD=${{ secrets.DEPLOY_DB_PASSWORD }}" > .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
+          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" > .env
+          echo "SENDGRID_FROM_EMAIL=${{ secrets.SENDGRID_FROM_EMAIL }}" > .env
+          echo "SENDGRID_TEMPLATE_ID=${{ secrets.SENDGRID_TEMPLATE_ID }}" > .env
+          echo "DEPLOY_REDIS_HOST=${{ secrets.DEPLOY_REDIS_HOST }}" > .env
+          echo "DEPLOY_REDIS_PORT=${{ secrets.DEPLOY_REDIS_PORT }}" > .env
+          echo "DEPLOY_REDIS_PASSWORD=${{ secrets.DEPLOY_REDIS_PASSWORD }}" > .env
 
       # 8.5 단계: .env, docker-compose.yml 파일 EC2로 복사
       - name: Copy files to EC2

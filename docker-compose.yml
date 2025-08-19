@@ -14,8 +14,9 @@ services:
     # application-prod.yml 파일을 활성화 시킴
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_REDIS_HOST: redis-container
-      SPRING_REDIS_PORT: 15483
+      SPRING_REDIS_HOST: ${DEPLOY_REDIS_HOST}
+      SPRING_REDIS_PORT: ${DEPLOY_REDIS_PORT}
+      SPRING_REDIS_PASSWORD: ${DEPLOY_REDIS_PASSWORD}
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
     volumes:

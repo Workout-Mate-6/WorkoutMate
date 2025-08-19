@@ -21,7 +21,7 @@ services:
       - "mode=standalone"
     # 컨테이너 종료시 재시작 여부 설정
     restart: always
-    command: redis-server /usr/local/conf/redis.conf
+    command: ["redis-server", "/usr/local/conf/redis.conf"]
 
 networks:
   default:
