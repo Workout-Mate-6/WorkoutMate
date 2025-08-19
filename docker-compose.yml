@@ -15,7 +15,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_REDIS_HOST: redis-container
-      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PORT: 15483
     # docker 컨테이너가 중단되었을때 다시 자동으로 자동 재시작 하지 않음
     restart: "no"
     volumes:
