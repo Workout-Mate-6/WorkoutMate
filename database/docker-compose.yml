@@ -10,7 +10,10 @@ services:
     container_name: redis-container
     # 접근 포트 설정(컨테이너 외부:컨테이너 내부)
     ports:
-      - "15483:15483"
+      - "15483:6379"
+    # 내부 컨테이너 접속용
+    expose:
+      - "6379"
     # 스토리지 마운트(볼륨) 설정
     volumes:
       - /home/ubuntu/db/redis/data:/data
