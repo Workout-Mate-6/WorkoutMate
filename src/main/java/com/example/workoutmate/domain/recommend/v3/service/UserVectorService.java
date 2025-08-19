@@ -90,6 +90,12 @@ public class UserVectorService {
             VectorUtils.addInPlace(acc, global, mix);
         }
 
+        float norm = VectorUtils.l2Norm(acc);
+        if (norm == 0.0f || Float.isNaN(norm) || Float.isInfinite(norm)) {
+            float[] prior = globalPrior(dim);           // 균등 단위벡터(내 코드에 이미 존재)
+            VectorUtils.addInPlace(acc, prior, 1.0f);   // 최소량 주입
+        }
+
         VectorUtils.l2Normalize(acc);
         return acc;
     }

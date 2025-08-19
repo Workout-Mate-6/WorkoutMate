@@ -76,4 +76,12 @@ public final class VectorUtils {
     public static void addInPlace(float[] a, float[] b, double weight) {
         for (int i = 0; i < a.length; i++) a[i] += b[i] * weight;
     }
+
+    public static float l2Norm(float[] vector) {
+        double sum = 0.0;
+        for (float value : vector) {
+            sum += value * value;
+        }
+        return (float) Math.sqrt(sum);
+    }
 }
