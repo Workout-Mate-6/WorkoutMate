@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 /**
  * 추천 시나리오의 오케스트레이션.
  * 1) 후보 게시글 페이징 조회(작성자 즉시 로딩으로 N+1 방지)
@@ -30,7 +29,8 @@ import java.util.stream.Collectors;
 public class RecommendationServiceRebulid {
 
     // 클래스 레벨 record (다른 메서드에서도 동일 타입)
-    private record Scored(Board b, double basePercent) {}
+    private record Scored(Board b, double basePercent) {
+    }
 
     private final RecommendationProperties props;   // 네 설정 클래스 이름
     private final BoardService boardService;
@@ -40,7 +40,6 @@ public class RecommendationServiceRebulid {
 
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId, int limit) {
-        // 후보 수집 (+ FULL 제외)
         int maxCandidate = 1000;
         var pageable = PageRequest.of(0, maxCandidate);
         List<Board> candidates = boardService.findRecommendationCandidates(userId, pageable);
@@ -51,38 +50,18 @@ public class RecommendationServiceRebulid {
                 .toList();
         if (candidates.isEmpty()) return List.of();
 
-        // 유저/보드 벡터, 친구 신호
         float[] U = userVectorService.getOrBuild(userId);
+        // 벡터 단위 보장 (L2 정규화)
+        VectorUtils.l2Normalize(U);
+
         Map<Long, Integer> friendCounts = friendSignalsService.friendCounts(userId, candidates);
         Set<String> friendExploreTypes = friendSignalsService.friendExploreTypes(userId);
 
-        // 각 보드 매칭 % 계산(코사인 + 임박 곱 + 친구 가산 + near-full 패널티)
-        List<Scored> scored = new ArrayList<>(candidates.size());
-        Map<Long, float[]> vecByBoard = boardVectorService.getOrEncodeBulk(candidates);
-        for (Board b : candidates) {
-            float[] I = vecByBoard.get(b.getId());
-            double sim = Math.max(0, VectorUtils.dot(U, I)); // 0~1
-            double percent = Math.round(sim * 100);          // 0~100
+        List<Scored> scored = calculateBoardScores(candidates, U, friendCounts);
 
-            // 임박 보정(곱)
-            percent *= TimeAndRules.urgencyMultiplier(b, props);
-
-            // 친구 가산(%)
-            int fc = friendCounts.getOrDefault(b.getId(), 0);
-            percent += Math.min(
-                    props.getFriend().getPresenceBonusCap(),
-                    fc * props.getFriend().getPresenceBonusPerFriend()
-            );
-
-            // 만석 근접 패널티(%)
-            percent -= TimeAndRules.nearFullPenaltyPercent(b, props);
-
-            percent = Math.max(0, Math.min(100, percent));
-            scored.add(new Scored(b, percent));
-        }
-
-        // 정렬 → 다양화 → 친구 탐색 슬롯 주입
-        scored.sort(Comparator.comparingDouble(Scored::basePercent).reversed());
+        // 동점 시 게시글 ID로 2차 정렬 (안정적 순서)
+        scored.sort(Comparator.comparingDouble(Scored::basePercent).reversed()
+                .thenComparing(s -> s.b().getId(), Comparator.reverseOrder()));
 
         List<Board> diversified = TimeAndRules.diversifyQuota(
                 scored.stream().map(Scored::b).toList(),
@@ -93,13 +72,78 @@ public class RecommendationServiceRebulid {
 
         List<Board> injected = injectFriendExplore(diversified, scored, friendExploreTypes, limit);
 
-        // DTO( boardId / matchPercent / reasons )로 매핑
+        // 주입 후 다양화 규칙 재적용
+        List<Board> finalResult = TimeAndRules.diversifyQuota(
+                injected,
+                props.getDiversify().getPerTypeMax(),
+                props.getDiversify().getMinDistinctTypes(),
+                limit
+        );
+
+        return convertToRecommendationDtos(finalResult, scored, friendCounts, friendExploreTypes, limit);
+    }
+    /**
+     * 친구 탐색 타입 주입 (record Scored 사용)
+     */
+    private List<Board> injectFriendExplore(
+            List<Board> base,
+            List<Scored> scored,
+            Set<String> exploreTypes,
+            int limit
+    ) {
+        if (exploreTypes.isEmpty()) return base.stream().limit(limit).toList();
+
+        List<Integer> slots = props.getFriend().getInjectSlots();
+        List<Board> pool = new ArrayList<>(base);
+
+        List<Board> candidates = scored.stream()
+                .filter(s -> exploreTypes.contains(String.valueOf(s.b().getSportType())))
+                .filter(s -> s.basePercent() >= props.getFriend().getInjectMinSim() * 100.0)
+                .sorted(Comparator.comparingDouble(Scored::basePercent).reversed())
+                .map(Scored::b)
+                .toList();
+
+        Set<Long> poolIds = pool.stream().map(Board::getId).collect(Collectors.toSet());
+
+        int ci = 0;
+        for (Integer slot : slots) {
+            if (ci >= candidates.size()) break;
+            if (slot < 0 || slot >= Math.min(limit, pool.size())) continue;
+
+            Board cand = candidates.get(ci++);
+            if (!poolIds.contains(cand.getId())) {
+                if (slot < pool.size()) {
+                    pool.add(slot, cand);
+                    poolIds.add(cand.getId());
+                } else {
+                    pool.add(cand);
+                    poolIds.add(cand.getId());
+                }
+            }
+        }
+
+        LinkedHashSet<Long> seen = new LinkedHashSet<>();
+        List<Board> out = new ArrayList<>();
+        for (Board b : pool) {
+            if (seen.add(b.getId())) out.add(b);
+            if (out.size() >= limit) break;
+        }
+        return out;
+    }
+
+    private List<RecommendationDto> convertToRecommendationDtos(
+            List<Board> finalBoards,
+            List<Scored> scored,
+            Map<Long, Integer> friendCounts,
+            Set<String> friendExploreTypes,
+            int limit) {
+
         Map<Long, Double> percentById = scored.stream()
                 .collect(Collectors.toMap(s -> s.b().getId(), Scored::basePercent));
 
         List<RecommendationDto> out = new ArrayList<>();
-        for (int i = 0; i < Math.min(limit, injected.size()); i++) {
-            Board b = injected.get(i);
+        for (int i = 0; i < Math.min(limit, finalBoards.size()); i++) {
+            Board b = finalBoards.get(i);
             int mp = (int) Math.round(percentById.getOrDefault(b.getId(), 0.0));
 
             List<String> reasons = new ArrayList<>();
@@ -114,50 +158,55 @@ public class RecommendationServiceRebulid {
                     .boardId(b.getId())
                     .matchPercent(mp)
                     .reasons(reasons)
-                    .board(BoardResponseDto.from(b))   // ← 중첩으로 세팅
+                    .board(BoardResponseDto.from(b))
                     .build());
         }
         return out;
     }
 
-    /** 친구 탐색 타입 주입 (record Scored 사용) */
-    private List<Board> injectFriendExplore(
-            List<Board> base,
-            List<Scored> scored,
-            Set<String> exploreTypes,
-            int limit
-    ) {
-        if (exploreTypes.isEmpty()) return base.stream().limit(limit).toList();
+    private List<Scored> calculateBoardScores(List<Board> candidates, float[] userVector, Map<Long, Integer> friendCounts) {
+        List<Scored> scored = new ArrayList<>();
+        Map<Long, float[]> vecByBoard = boardVectorService.getOrEncodeBulk(candidates);
 
-        List<Integer> slots = props.getFriend().getInjectSlots();
-        List<Board> pool  = new ArrayList<>(base);
+        for (Board b : candidates) {
+            float[] I = vecByBoard.get(b.getId());
+            if (I == null) continue;
 
-        List<Board> candidates = scored.stream()
-                .filter(s -> exploreTypes.contains(String.valueOf(s.b().getSportType())))
-                .filter(s -> s.basePercent() >= props.getFriend().getInjectMinSim() * 100.0)
-                .sorted(Comparator.comparingDouble(Scored::basePercent).reversed())
-                .map(Scored::b)
-                .toList();
+            // 보드 벡터도 단위 보장
+            VectorUtils.l2Normalize(I);
 
-        int ci = 0;
-        for (Integer slot : slots) {
-            if (ci >= candidates.size()) break;
-            if (slot < 0 || slot >= Math.min(limit, pool.size())) continue;
+            // 기본 유사도 (정밀도 유지)
+            double score = Math.max(0.0, VectorUtils.dot(userVector, I));
+            if (!Double.isFinite(score)) score = 0.0;
 
-            Board cand = candidates.get(ci++);
-            boolean exists = pool.stream().anyMatch(b -> b.getId().equals(cand.getId()));
-            if (!exists) {
-                if (slot < pool.size()) pool.add(slot, cand); else pool.add(cand);
-            }
+            // 시간 임박도 보정 (상한 적용)
+            double urgency = TimeAndRules.urgencyMultiplier(b, props);
+            urgency = Math.min(urgency, props.getTime().getMaxMultiplier()); // 상한 보장
+            if (!Double.isFinite(urgency)) urgency = 1.0;
+            score *= urgency;
+
+            // 친구 참여 보너스 (덧셈, 0~1 범위로 정규화)
+            int fc = friendCounts.getOrDefault(b.getId(), 0);
+            double friendBonus = Math.min(
+                    props.getFriend().getPresenceBonusCap(),
+                    fc * props.getFriend().getPresenceBonusPerFriend()
+            ) / 100.0; // 퍼센트를 0~1로 변환
+            if (!Double.isFinite(friendBonus)) friendBonus = 0.0;
+            score += friendBonus;
+
+            // 정원 임박 패널티 (뺄셈, 0~1 범위로 정규화)
+            double penalty = TimeAndRules.nearFullPenaltyPercent(b, props) / 100.0;
+            if (!Double.isFinite(penalty)) penalty = 0.0;
+            score -= penalty;
+
+            // 최종 점수 범위 보정 및 퍼센트 변환
+            score = Math.max(0.0, Math.min(1.0, score));
+            double percent = Math.round(score * 100.0);
+
+            scored.add(new Scored(b, percent));
         }
 
-        LinkedHashSet<Long> seen = new LinkedHashSet<>();
-        List<Board> out = new ArrayList<>();
-        for (Board b : pool) {
-            if (seen.add(b.getId())) out.add(b);
-            if (out.size() >= limit) break;
-        }
-        return out;
+        return scored;
     }
 }
 
