@@ -44,6 +44,11 @@ public class BoardVectorService {
         enc.addFeature(v, FeatureBuckets.sizeBucket(b.getMaxParticipants()), 0.3); // 최대 인원수
         // region 등 추가 가능
 
+        float n = VectorUtils.l2Norm(v);
+        if (n == 0.0f || Float.isNaN(n) || Float.isInfinite(n)) {
+            java.util.Arrays.fill(v, 1f);               // 간단 균등 값
+        }
+
         VectorUtils.l2Normalize(v);
         return v;
     }
