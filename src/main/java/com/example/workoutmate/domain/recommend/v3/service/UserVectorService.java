@@ -11,6 +11,7 @@ import com.example.workoutmate.domain.recommend.v3.vector.VectorUtils;
 import com.example.workoutmate.domain.zzim.entity.Zzim;
 import com.example.workoutmate.domain.zzim.repository.ZzimRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,6 @@ public class UserVectorService {
      *
      * @return L2-정규화된 유저 벡터(float[])
      */
-    @Transactional(readOnly = true)
     public float[] buildFromBehavior(Long userId) {
         int dim = props.getVector().getDim(); // 벡터 차원 우리프로젝트에서는 dim:32 로 되어있음
         HashingEncoder enc = new HashingEncoder(dim); // 해시 기반 인코더(동일 feature → 동일 index 누적)
@@ -62,7 +62,6 @@ public class UserVectorService {
             long days = Math.max(0, d.toDays());
             double w = Math.pow(decayPerDay, days) * 1.0; // 참여는 1.0 가중
 
-            // 보드 특성 피처를 가중치와 함께 벡터에 추가
 
             // 종목 타입: 가장 강한 콘텐츠 특징
             enc.addFeature(acc, FeatureBuckets.type(String.valueOf(b.getSportType())), w);
@@ -117,25 +116,64 @@ public class UserVectorService {
      */
     @Transactional
     public void upsert(Long userId, float[] vec) {
-        repo.save(UserVectorEntity.builder()
-                .userId(userId)
-                .vec(VectorUtils.toBytes(vec))
-                .updatedAt(Instant.now())
-                .build());
+        try {
+            UserVectorEntity entity = UserVectorEntity.builder()
+                    .userId(userId)
+                    .vec(VectorUtils.toBytes(vec))
+                    .updatedAt(Instant.now())
+                    .build();
+            repo.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            // 이미 존재하면 업데이트
+            var existing = repo.findById(userId);
+            if (existing.isPresent()) {
+                UserVectorEntity entity = existing.get();
+                entity.setVec(VectorUtils.toBytes(vec));
+                entity.setUpdatedAt(Instant.now());
+                repo.save(entity);
+            }
+        }
     }
-
 
     /**
      * 저장된 유저 벡터를 가져오거나, 없으면 생성하여 저장 후 반환
      */
     @Transactional(readOnly = true)
     public float[] getOrBuild(Long userId) {
-        return repo.findById(userId)
-                .map(x -> VectorUtils.fromBytes(x.getVec()))
-                .orElseGet(() -> {
-                    float[] v = buildFromBehavior(userId);
-                    upsert(userId, v);
-                    return v;
-                });
+        var existing = repo.findById(userId);
+        if (existing.isPresent()) {
+            return VectorUtils.fromBytes(existing.get().getVec());
+        }
+
+        return createDefaultVector();
+    }
+
+    @Transactional
+    public void createUserVectorIfNotExists(Long userId) {
+        try {
+            float[] vector = buildFromBehavior(userId);
+            UserVectorEntity entity = UserVectorEntity.builder()
+                    .userId(userId)
+                    .vec(VectorUtils.toBytes(vector))
+                    .updatedAt(Instant.now())
+                    .build();
+            repo.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            // 중복키 예외 무시 (다른 스레드가 이미 생성함)
+        }
+    }
+
+    private float[] createDefaultVector() {
+        int dim = props.getVector().getDim();
+        float[] v = globalPrior(dim);
+
+        // 정규화 및 안전성 체크
+        float norm = VectorUtils.l2Norm(v);
+        if (norm == 0.0f || Float.isNaN(norm) || Float.isInfinite(norm)) {
+            // 모든 차원 동일값으로 초기화
+            for (int i = 0; i < dim; i++) v[i] = 1f;
+        }
+        VectorUtils.l2Normalize(v);
+        return v;
     }
 }
