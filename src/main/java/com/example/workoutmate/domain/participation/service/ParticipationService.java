@@ -60,10 +60,6 @@ public class ParticipationService {
 
         ParticipationState requested = ParticipationState.REQUESTED;
 
-
-
-
-
         if (opt.isPresent()) {
             Participation participation = opt.get();
             validateStateChange(requested, participation);
@@ -124,7 +120,6 @@ public class ParticipationService {
 
         ParticipationState requested = ParticipationState.DECLINED;
         validateStateChange(requested, participation); // 메서드
-
 
         // 락 적용
         Board board = boardService.findByIdWithPessimisticLock(boardId);
