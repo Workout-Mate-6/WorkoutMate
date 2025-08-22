@@ -8,6 +8,7 @@ import com.example.workoutmate.domain.recommend.v3.store.BoardVectorRepository;
 import com.example.workoutmate.domain.recommend.v3.vector.HashingEncoder;
 import com.example.workoutmate.domain.recommend.v3.vector.VectorUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,37 +34,54 @@ public class BoardVectorService {
      * 주어진 Board 객체를 벡터로 인코딩
      */
     public float[] encode(Board b) {
-        int dim = props.getVector().getDim(); // 백터 차원 설정값
-        HashingEncoder enc = new HashingEncoder(dim); // 해시 기반 인코더 생성
-        float[] v = VectorUtils.zeros(dim); // 벡터 초기화
+        int dim = props.getVector().getDim();
+        HashingEncoder enc = new HashingEncoder(dim);
+        float[] v = VectorUtils.zeros(dim);
 
-        // 기본 피처 (필요에 따라 확장)
-        enc.addFeature(v, FeatureBuckets.type(String.valueOf(b.getSportType())), 1.0); // 스포츠 종류
-        enc.addFeature(v, FeatureBuckets.timeBucket(b.getStartTime()), 0.6); // 시작 시간대
-        enc.addFeature(v, FeatureBuckets.dow(b.getStartTime()), 0.4); // 요일
-        enc.addFeature(v, FeatureBuckets.sizeBucket(b.getMaxParticipants()), 0.3); // 최대 인원수
-        // region 등 추가 가능
+        // null 안전성 체크
+        String sportType = b.getSportType() != null ? String.valueOf(b.getSportType()) : "UNKNOWN";
+        enc.addFeature(v, FeatureBuckets.type(sportType), 1.0);
+
+        if (b.getStartTime() != null) {
+            enc.addFeature(v, FeatureBuckets.timeBucket(b.getStartTime()), 0.6);
+            enc.addFeature(v, FeatureBuckets.dow(b.getStartTime()), 0.4);
+        }
+
+        if (b.getMaxParticipants() != null) {
+            enc.addFeature(v, FeatureBuckets.sizeBucket(b.getMaxParticipants()), 0.3);
+        }
 
         float n = VectorUtils.l2Norm(v);
         if (n == 0.0f || Float.isNaN(n) || Float.isInfinite(n)) {
-            java.util.Arrays.fill(v, 1f);               // 간단 균등 값
+            // 의미있는 기본값으로 대체 (모든 차원에 작은 값)
+            for (int i = 0; i < dim; i++) {
+                v[i] = 1.0f / (float)Math.sqrt(dim); // 단위벡터가 되도록
+            }
+        } else {
+            VectorUtils.l2Normalize(v);
         }
 
-        VectorUtils.l2Normalize(v);
         return v;
     }
 
     /**
      * 벡터를 계산하여 DB에 저장 또는 갱신
      */
+    @Transactional
     public void upsert(Board b) {
-        float[] v = encode(b); // board -> 백터 변환
-        BoardVectorEntity e = BoardVectorEntity.builder()
-                .boardId(b.getId())
-                .vec(VectorUtils.toBytes(v)) // float -> byte로 변환
-                .updatedAt(Instant.now())
-                .build();
-        repo.save(e);
+        float[] v = encode(b);
+
+        var existing = repo.findById(b.getId());
+        if (existing.isPresent()) {
+            // 업데이트
+            BoardVectorEntity entity = existing.get();
+            entity.setVec(VectorUtils.toBytes(v));
+            entity.setUpdatedAt(Instant.now());
+            repo.save(entity);
+        } else {
+            // 새로 생성
+            asyncSaveVector(b.getId(), v);
+        }
     }
 
     public float[] getOrEncode(Board b) {
@@ -71,11 +89,7 @@ public class BoardVectorService {
                 .map(x -> VectorUtils.fromBytes(x.getVec()))
                 .orElseGet(() -> {
                     float[] v = encode(b);
-                    repo.save(BoardVectorEntity.builder()
-                            .boardId(b.getId())
-                            .vec(VectorUtils.toBytes(v))
-                            .updatedAt(Instant.now())
-                            .build());
+                    asyncSaveVector(b.getId(), v);
                     return v;
                 });
     }
@@ -91,27 +105,47 @@ public class BoardVectorService {
         if (boards.isEmpty()) return Map.of();
 
         List<Long> ids = boards.stream().map(Board::getId).toList();
-
-        // 기존 벡터 조회
-        var existing = repo.findAllById(ids);               // IN 한 방
+        var existing = repo.findAllById(ids);
         Map<Long, float[]> out = new HashMap<>();
-        for (var e : existing) out.put(e.getBoardId(), VectorUtils.fromBytes(e.getVec()));
-
-        // 없으면 항목 새로 생성
-        List<BoardVectorEntity> toSave = new ArrayList<>();
-        for (Board b : boards) {
-            if (out.containsKey(b.getId())) continue; // 이미 있으며 스킵
-            float[] v = encode(b); // 인코딩
-            out.put(b.getId(), v); // 결과를 맵에 추가
-            toSave.add(BoardVectorEntity.builder() // 저장 대기 목록에 엔티티 빌드
-                    .boardId(b.getId())
-                    .vec(VectorUtils.toBytes(v))
-                    .updatedAt(Instant.now())
-                    .build());
+        for (var e : existing) {
+            out.put(e.getBoardId(), VectorUtils.fromBytes(e.getVec()));
         }
 
-        // 새로 생성된 벡터 배치 저장
-        if (!toSave.isEmpty()) repo.saveAll(toSave);        // 배치 저장
+        // 없는 항목들 개별 처리 (트랜잭션 안정성)
+        for (Board b : boards) {
+            if (out.containsKey(b.getId())) continue;
+
+            float[] v = encode(b);
+            out.put(b.getId(), v);
+
+            // 개별 저장 시도 (실패해도 계속 진행)
+            asyncSaveVector(b.getId(), v);
+        }
+
         return out;
+    }
+
+    private void asyncSaveVector(Long boardId, float[] vector) {
+        try {
+            BoardVectorEntity entity = BoardVectorEntity.builder()
+                    .boardId(boardId)
+                    .vec(VectorUtils.toBytes(vector))
+                    .updatedAt(Instant.now())
+                    .build();
+            repo.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            // 다른 스레드가 이미 생성했으면 무시
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasVector(Long boardId) {
+        return repo.existsById(boardId);
+    }
+
+    @Transactional
+    public void createVectorForNewBoard(Board board) {
+        float[] vector = encode(board);
+        asyncSaveVector(board.getId(), vector);
     }
 }
