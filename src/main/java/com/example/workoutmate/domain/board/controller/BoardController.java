@@ -1,6 +1,5 @@
 package com.example.workoutmate.domain.board.controller;
 
-import com.example.workoutmate.domain.board.dto.BoardFilterRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardRequestDto;
 import com.example.workoutmate.domain.board.dto.BoardResponseDto;
 import com.example.workoutmate.domain.board.dto.PopularBoardDto;
@@ -134,20 +133,6 @@ public class BoardController {
 
         return ApiResponse.success(HttpStatus.OK, "운동 종목 카테고리 전체 조회가 완료되었습니다.", responseDto);
     }
-
-    // 전체 조회 기능 통합
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<Page<BoardResponseDto>>> filterBoards(
-            @ModelAttribute BoardFilterRequestDto filterRequestDto,
-            @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
-            @PageableDefault(size = 10, sort = "modifiedAt", direction = Sort.Direction.DESC) Pageable pageable
-            ) {
-        Long userId = customUserPrincipal.getId();
-        Page<BoardResponseDto> result = boardService.searchBoards(userId, filterRequestDto, pageable);
-
-        return ApiResponse.success(HttpStatus.OK, "게시글 필터 조회 성공", result);
-    }
-
 
     @GetMapping("/popular")
     public ResponseEntity<ApiResponse<List<PopularBoardDto>>> getPopularBoards() {

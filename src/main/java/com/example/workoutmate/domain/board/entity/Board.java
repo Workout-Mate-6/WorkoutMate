@@ -122,9 +122,4 @@ public class Board extends BaseEntity {
             this.status = status;
         }
     }
-
-    public void increaseViewCount(int viewCount) {
-        this.viewCount = viewCount;
-    }
-
 }

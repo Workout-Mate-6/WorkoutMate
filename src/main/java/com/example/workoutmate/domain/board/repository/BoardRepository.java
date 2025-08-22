@@ -25,8 +25,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // 게시글 전체 조회
     Page<Board> findAllByIsDeletedFalse(Pageable pageable);
 
-    // 내가 팔로잉한 사람들의 게시글 찾기
-    Page<Board> findByWriter_IdIn(List<Long> writerIds, Pageable pageable);
     @Query(value = """
         select b from Board b
         join fetch b.writer w
