@@ -53,33 +53,6 @@ public class BoardVectorService {
         return v;
     }
 
-    /**
-     * 벡터를 계산하여 DB에 저장 또는 갱신
-     */
-    public void upsert(Board b) {
-        float[] v = encode(b); // board -> 백터 변환
-        BoardVectorEntity e = BoardVectorEntity.builder()
-                .boardId(b.getId())
-                .vec(VectorUtils.toBytes(v)) // float -> byte로 변환
-                .updatedAt(Instant.now())
-                .build();
-        repo.save(e);
-    }
-
-    public float[] getOrEncode(Board b) {
-        return repo.findById(b.getId())
-                .map(x -> VectorUtils.fromBytes(x.getVec()))
-                .orElseGet(() -> {
-                    float[] v = encode(b);
-                    repo.save(BoardVectorEntity.builder()
-                            .boardId(b.getId())
-                            .vec(VectorUtils.toBytes(v))
-                            .updatedAt(Instant.now())
-                            .build());
-                    return v;
-                });
-    }
-
 
     /**
      * 여러 Board 객체를 한 번에 처리 (배치)
