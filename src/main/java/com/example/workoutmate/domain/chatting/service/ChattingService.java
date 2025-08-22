@@ -67,7 +67,6 @@ public class ChattingService {
         Long secondId = Math.max(sender.getId(), receiver.getId());
 
         // 1. 비관적 락을 획득하며 기존 채팅방을 조회
-        // 이 쿼리는 기존에 존재하는 행에만 락을 걸기 때문에 INSERT 시 발생하는 데드락을 막지는 못합니다.
         Optional<ChatRoom> existingRoom = chatRoomRepository
                 .findByUsersAndNotDeletedWithLock(firstId, secondId);
 
@@ -197,7 +196,7 @@ public class ChattingService {
         ChatRoomMember chatRoomMember = getChatRoomMemberByChatRoomIdAndUserId(
                 chatRoom.getId(), sender.getId());
 
-        // 유저가 재입장하는 경우에만 join 상태를 업데이트하고 메시지를 보냅니다.
+        // 유저가 재입장하는 경우에만 join 상태를 업데이트하고 메시지를 전송
         if (!chatRoomMember.isJoined()) {
             chatRoomMember.join();
             ChatMessage chatMessage = ChattingMapper.memberToJoinMessage(chatRoomMember, sender);
