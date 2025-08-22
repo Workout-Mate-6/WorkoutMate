@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.user.dto;
 
 import com.example.workoutmate.domain.user.constraint.ValidPassword;
-import com.example.workoutmate.domain.user.enums.UserGender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

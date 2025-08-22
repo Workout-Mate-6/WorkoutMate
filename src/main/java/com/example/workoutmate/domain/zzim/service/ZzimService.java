@@ -19,10 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,14 +127,5 @@ public class ZzimService {
         }
 
         zzimRepository.delete(zzim);
-    }
-
-    public Set<Long> getZzimBoardIdByUser(User user) {
-        List<Zzim> zzims = zzimRepository.findAllByUser(user) ;
-        return zzims.stream().map(z->z.getBoard().getId()).collect(Collectors.toSet());
-    }
-
-    public List<Zzim> findByUserId(Long userId) {
-        return zzimRepository.findAllByUserId(userId);
     }
 }
