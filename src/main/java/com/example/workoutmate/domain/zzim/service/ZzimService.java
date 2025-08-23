@@ -4,7 +4,7 @@ import com.example.workoutmate.domain.board.entity.Board;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.notification.enums.NotificationType;
 import com.example.workoutmate.domain.notification.service.NotificationService;
-import com.example.workoutmate.domain.recommend.v3.service.UserVectorService;
+import com.example.workoutmate.domain.recommend.v3.service.UserVectorUpdateService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.domain.zzim.controller.dto.ZzimCountResponseDto;
@@ -33,7 +33,7 @@ public class ZzimService {
     private final UserService userService;
     private final BoardSearchService boardSearchService;
     private final NotificationService notificationService;
-    private final UserVectorService userVectorService;
+    private final UserVectorUpdateService userVectorUpdateService;
 
     @Transactional
     public ZzimResponseDto createZzim(Long boardId, Long userId) {
@@ -56,8 +56,8 @@ public class ZzimService {
         Zzim zzim = Zzim.of(board, user);
         Zzim savedZzim = zzimRepository.save(zzim);
 
-        // 찜하기 시 유저 벡터 업데이트
-        userVectorService.updateUserVector(userId);
+        // 찜하기 시 유저 벡터 업데이트 트리거
+        userVectorUpdateService.triggerVectorUpdate(userId);
 
         // 게시글 작성자에게 알림 전송
         notificationService.sendNotification(
@@ -136,8 +136,8 @@ public class ZzimService {
 
         zzimRepository.delete(zzim);
 
-        // 찜취소 시 유저 벡터 업데이트
-        userVectorService.updateUserVector(userId);
+        // 찜 취소 시에도 유저 벡터 업데이트 트리거
+        userVectorUpdateService.triggerVectorUpdate(userId);
     }
 
     public Set<Long> getZzimBoardIdByUser(User user) {

@@ -1,6 +1,6 @@
 package com.example.workoutmate.domain.user.service;
 
-import com.example.workoutmate.domain.recommend.v3.service.UserVectorService;
+import com.example.workoutmate.domain.recommend.v3.service.UserVectorUpdateService;
 import com.example.workoutmate.domain.user.dto.*;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
@@ -9,7 +9,6 @@ import com.example.workoutmate.global.util.JwtUtil;
 import com.example.workoutmate.global.enums.CustomErrorCode;
 import com.example.workoutmate.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +33,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final TokenBlacklistService tokenBlacklistService;
-    private final UserVectorService userVectorService;
+    private final UserVectorUpdateService userVectorUpdateService;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto) {
@@ -76,7 +75,7 @@ public class AuthService {
         emailVerificationService.completeVerification(user);
 
         // 유저 벡터 초기화
-        userVectorService.createInitialUserVector(user.getId());
+        userVectorUpdateService.createInitialUserVector(user.getId());
 
         return UserMapper.toVerificationResponse(user);
     }
