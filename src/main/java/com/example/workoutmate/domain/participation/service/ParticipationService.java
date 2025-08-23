@@ -10,6 +10,7 @@ import com.example.workoutmate.domain.participation.enums.ParticipationState;
 import com.example.workoutmate.domain.participation.repository.ParticipationRepository;
 import com.example.workoutmate.domain.participation.repository.QParticipationRepository;
 import com.example.workoutmate.domain.participation.validation.ParticipationValidator;
+import com.example.workoutmate.domain.recommend.v3.service.UserVectorService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -36,6 +37,7 @@ public class ParticipationService {
     private final BoardService boardService;
     private final UserService userService;
     private final ParticipationValidator participationValidator;
+    private final UserVectorService userVectorService;
 
     // 요청
     @Transactional
@@ -103,6 +105,9 @@ public class ParticipationService {
                 if (board.getCurrentParticipants().equals(board.getMaxParticipants())) {
                     board.changeStatus(Status.CLOSED);
                 }
+
+                // 참여 승인 시 유저 벡터 업데이트
+                userVectorService.updateUserVector(participation.getApplicant().getId());
             } else {
                 throw new CustomException(CustomErrorCode.BOARD_FULL);
             }
