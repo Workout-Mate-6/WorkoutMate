@@ -17,6 +17,7 @@ public class VectorMigrationService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final UserVectorService userVectorService;
+    private final UserVectorUpdateService userVectorUpdateService;
     private final BoardVectorService boardVectorService;
 
     /**
@@ -42,7 +43,7 @@ public class VectorMigrationService {
                 if (user.isEmailVerified() && !user.isDeleted()) {
                     // 벡터가 없으면 생성
                     if (!userVectorService.hasUserVector(user.getId())) {
-                        userVectorService.createInitialUserVector(user.getId());
+                        userVectorUpdateService.createInitialUserVector(user.getId());
                         processedCount++;
                     }
                 }

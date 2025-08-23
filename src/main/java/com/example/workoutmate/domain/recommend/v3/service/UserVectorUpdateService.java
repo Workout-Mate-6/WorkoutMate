@@ -14,6 +14,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class UserVectorUpdateService {
 
+    private final UserVectorService userVectorService;
     private final UserVectorRepository userVectorRepository;
     private final RecommendationProperties props;
 
@@ -53,11 +54,11 @@ public class UserVectorUpdateService {
             createInitialUserVector(userId);
         }
 
-        // 업데이트 시간만 갱신 (실제 벡터 재계산은 나중에 배치로)
-        userVectorRepository.findById(userId).ifPresent(entity -> {
-            entity.setUpdatedAt(Instant.now());
-            userVectorRepository.save(entity);
-        });
+        // 실제 벡터 재계산 (활동 이력 기반)
+        float[] updatedVector = userVectorService.buildFromBehavior(userId);
+
+        // 업데이트된 벡터 저장
+        userVectorService.upsert(userId, updatedVector);
     }
 
     /**

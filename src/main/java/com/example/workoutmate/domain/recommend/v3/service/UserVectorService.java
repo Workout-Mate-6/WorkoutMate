@@ -148,21 +148,6 @@ public class UserVectorService {
         return createDefaultVector();
     }
 
-    @Transactional
-    public void createUserVectorIfNotExists(Long userId) {
-        try {
-            float[] vector = buildFromBehavior(userId);
-            UserVectorEntity entity = UserVectorEntity.builder()
-                    .userId(userId)
-                    .vec(VectorUtils.toBytes(vector))
-                    .updatedAt(Instant.now())
-                    .build();
-            repo.save(entity);
-        } catch (DataIntegrityViolationException e) {
-            // 중복키 예외 무시 (다른 스레드가 이미 생성함)
-        }
-    }
-
     private float[] createDefaultVector() {
         int dim = props.getVector().getDim();
         float[] v = globalPrior(dim);
@@ -177,62 +162,11 @@ public class UserVectorService {
         return v;
     }
 
-    @Transactional
-    public void createInitialUserVector(Long userId) {
-        // 이미 벡터가 있는지 확인
-        if (repo.existsById(userId)) {
-            return;
-        }
 
-        // 기본 벡터 생성
-        int dim = props.getVector().getDim();
-        float[] initialVector = createDefaultVectorForNewUser(dim);
 
-        // DB에 저장
-        UserVectorEntity entity = UserVectorEntity.builder()
-                .userId(userId)
-                .vec(VectorUtils.toBytes(initialVector))
-                .updatedAt(Instant.now())
-                .build();
-
-        repo.save(entity);
-    }
-
-    /**
-     * 신규 유저용 기본 벡터 생성
-     */
-    private float[] createDefaultVectorForNewUser(int dim) {
-        float[] vector = new float[dim];
-
-        // 균등한 초기값 설정
-        float initialValue = 1.0f / (float) Math.sqrt(dim);
-        for (int i = 0; i < dim; i++) {
-            vector[i] = initialValue;
-        }
-
-        // L2 정규화
-        float norm = VectorUtils.l2Norm(vector);
-        if (norm > 0 && !Float.isNaN(norm) && !Float.isInfinite(norm)) {
-            VectorUtils.l2Normalize(vector);
-        }
-
-        return vector;
-    }
 
     @Transactional(readOnly = true)
     public boolean hasUserVector(Long userId) {
         return repo.existsById(userId);
-    }
-
-    /**
-     * 유저 활동 기반으로 벡터 업데이트
-     */
-    @Transactional
-    public void updateUserVector(Long userId) {
-        // 새로운 벡터 계산 (활동 이력 기반)
-        float[] updatedVector = buildFromBehavior(userId);
-
-        // 기존 벡터 업데이트 또는 신규 생성
-        upsert(userId, updatedVector);
     }
 }
