@@ -75,10 +75,38 @@ public class UserVectorService {
 
         // 찜 이력(보조 신호)
         var zzims = zzimRepo.findAllByUserId(userId);
-        if (zzims != null) {
+        if (zzims != null && !zzims.isEmpty()) {
+            ZoneId zone = ZoneId.systemDefault();
+
+            int limit = 200; // 찜 왜곡 방지 상한
+            int processed = 0;
+
             for (Zzim z : zzims) {
+                if (processed++ >= limit) {
+                    break;
+                }
                 double w = 0.5; // 고정 가중(최신성 반영하려면 createdAt 사용)
-                enc.addFeature(acc, "zzim", w);
+
+                if (z.getCreatedAt() != null) {
+                    long days = Math.max(0,
+                            Duration.between(z.getCreatedAt().atZone(zone).toInstant(),now).toDays());
+                    w *= Math.pow(decayPerDay, days);
+                }
+
+                if (z.getBoard() != null) {
+                    var b = z.getBoard();
+                    var st = b.getStartTime();
+
+                    // 타입
+                    enc.addFeature(acc, FeatureBuckets.type(String.valueOf(b.getSportType())), w);
+                    // 시간대
+                    enc.addFeature(acc, FeatureBuckets.timeBucket(st), w * 0.4);
+                    // 모짐 규모
+                    Long max = b.getMaxParticipants();
+                    if (max != null) enc.addFeature(acc, FeatureBuckets.sizeBucket(max), w * 0.1);
+                } else {
+                    enc.addFeature(acc, "zzim", 0.1);
+                }
             }
         }
 
@@ -116,23 +144,7 @@ public class UserVectorService {
      */
     @Transactional
     public void upsert(Long userId, float[] vec) {
-        try {
-            UserVectorEntity entity = UserVectorEntity.builder()
-                    .userId(userId)
-                    .vec(VectorUtils.toBytes(vec))
-                    .updatedAt(Instant.now())
-                    .build();
-            repo.save(entity);
-        } catch (DataIntegrityViolationException e) {
-            // 이미 존재하면 업데이트
-            var existing = repo.findById(userId);
-            if (existing.isPresent()) {
-                UserVectorEntity entity = existing.get();
-                entity.setVec(VectorUtils.toBytes(vec));
-                entity.setUpdatedAt(Instant.now());
-                repo.save(entity);
-            }
-        }
+        repo.upsert(userId,VectorUtils.toBytes(vec));
     }
 
     /**
