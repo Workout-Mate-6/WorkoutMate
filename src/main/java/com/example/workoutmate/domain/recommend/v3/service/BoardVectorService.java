@@ -148,4 +148,59 @@ public class BoardVectorService {
         float[] vector = encode(board);
         asyncSaveVector(board.getId(), vector);
     }
+
+    /**
+     * 새 게시글의 벡터 생성
+     * - 게시글 작성 완료 시점에 호출
+     * - 게시글 특성(종목, 시간, 규모)을 벡터로 변환
+     */
+    @Transactional
+    public void createBoardVector(Board board) {
+        // 이미 벡터가 있는지 확인
+        if (repo.existsById(board.getId())) {
+            return;
+        }
+
+        // 게시글 특성 기반 벡터 생성
+        float[] vector = encode(board);
+
+        // DB에 저장
+        BoardVectorEntity entity = BoardVectorEntity.builder()
+                .boardId(board.getId())
+                .vec(VectorUtils.toBytes(vector))
+                .updatedAt(Instant.now())
+                .build();
+
+        repo.save(entity);
+    }
+
+    /**
+     * 게시글 수정 시 벡터 업데이트
+     * - 운동 종목, 시간, 인원수 등이 변경될 때 호출
+     */
+    @Transactional
+    public void updateBoardVector(Board board) {
+        // 새로운 벡터 계산
+        float[] updatedVector = encode(board);
+
+        var existing = repo.findById(board.getId());
+        if (existing.isPresent()) {
+            // 기존 벡터 업데이트
+            BoardVectorEntity entity = existing.get();
+            entity.setVec(VectorUtils.toBytes(updatedVector));
+            entity.setUpdatedAt(Instant.now());
+            repo.save(entity);
+        } else {
+            // 없으면 새로 생성
+            createBoardVector(board);
+        }
+    }
+
+    /**
+     * 벡터 존재 여부 확인
+     */
+    @Transactional(readOnly = true)
+    public boolean hasBoardVector(Long boardId) {
+        return repo.existsById(boardId);
+    }
 }

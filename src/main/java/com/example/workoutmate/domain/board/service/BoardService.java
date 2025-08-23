@@ -11,6 +11,7 @@ import com.example.workoutmate.domain.board.repository.BoardQueryRepository;
 import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.follow.service.FollowService;
 import com.example.workoutmate.domain.participation.service.ParticipationCreateService;
+import com.example.workoutmate.domain.recommend.v3.service.BoardVectorService;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.service.UserService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
@@ -40,6 +41,7 @@ public class BoardService {
     private final ParticipationCreateService participationCreateService;
     private final BoardPopularityService popularityService;
     private final BoardViewCountService boardViewCountService;
+    private final BoardVectorService boardVectorService;
 
     // 게시글 생성/저장
     @Transactional
@@ -52,6 +54,9 @@ public class BoardService {
         Board board = BoardMapper.boardRequestToBoard(requestDto, user);
 
         boardRepository.save(board);
+
+        // 게시글 벡터 생성 추가
+        boardVectorService.createBoardVector(board);
 
         // entity -> dto
         return BoardMapper.boardToBoardResponse(board, 0);
@@ -130,6 +135,9 @@ public class BoardService {
             throw new CustomException(CustomErrorCode.INVALID_MAX_PARTICIPANTS);
 
         board.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getSportType(), requestDto.getMaxParticipants());
+
+        // 게시글 벡터 업데이트 (종목, 시간, 인원 변경 시)
+        boardVectorService.updateBoardVector(board);
 
         int viewCount = boardViewCountService.getViewCount(board.getId());
 
