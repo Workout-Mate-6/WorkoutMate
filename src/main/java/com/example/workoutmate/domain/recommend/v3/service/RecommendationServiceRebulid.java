@@ -42,6 +42,7 @@ public class RecommendationServiceRebulid {
     public List<RecommendationDto> getRecommendations(Long userId, int limit) {
         int maxCandidate = 1000;
         var pageable = PageRequest.of(0, maxCandidate);
+
         List<Board> candidates = boardService.findRecommendationCandidates(userId, pageable);
         if (candidates.isEmpty()) return List.of();
 
@@ -54,10 +55,13 @@ public class RecommendationServiceRebulid {
         // 벡터 단위 보장 (L2 정규화)
         VectorUtils.l2Normalize(U);
 
+        // 보드 벡터 벌크 조회 - 한 번만!
+        Map<Long, float[]> vecByBoard = boardVectorService.getOrEncodeBulk(candidates);
+
         Map<Long, Integer> friendCounts = friendSignalsService.friendCounts(userId, candidates);
         Set<String> friendExploreTypes = friendSignalsService.friendExploreTypes(userId);
 
-        List<Scored> scored = calculateBoardScores(candidates, U, friendCounts);
+        List<Scored> scored = calculateBoardScores(candidates, U, vecByBoard, friendCounts);
 
         // 동점 시 게시글 ID로 2차 정렬 (안정적 순서)
         scored.sort(Comparator.comparingDouble(Scored::basePercent).reversed()
@@ -164,12 +168,15 @@ public class RecommendationServiceRebulid {
         return out;
     }
 
-    private List<Scored> calculateBoardScores(List<Board> candidates, float[] userVector, Map<Long, Integer> friendCounts) {
+    private List<Scored> calculateBoardScores(
+            List<Board> candidates,
+            float[] userVector,
+            Map<Long, float[]> vecByBoard,
+            Map<Long, Integer> friendCounts) {
         List<Scored> scored = new ArrayList<>();
-        Map<Long, float[]> vecByBoard = boardVectorService.getOrEncodeBulk(candidates);
 
         for (Board b : candidates) {
-            float[] I = vecByBoard.get(b.getId());
+            float[] I = vecByBoard.get(b.getId()); // I = 게시글(Item) 벡터
             if (I == null) continue;
 
             // 보드 벡터도 단위 보장

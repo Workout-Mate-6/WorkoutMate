@@ -161,6 +161,23 @@ public class UserVectorService {
         return createDefaultVector();
     }
 
+    // 읽기 전용
+    @Transactional(readOnly = true)
+    public float[] getOrBuildReadOnly(Long userId) {
+        return repo.findById(userId)
+                .map(e -> {
+                    float[] v = VectorUtils.fromBytes(e.getVec());
+                    // 안전 가드 + 정규화
+                    float norm = VectorUtils.l2Norm(v);
+                    if (norm == 0.0f || Float.isNaN(norm) || Float.isInfinite(norm)) {
+                        return createDefaultVector();
+                    }
+                    VectorUtils.l2Normalize(v);
+                    return v;
+                })
+                .orElseGet(this::createDefaultVector);  // DB 저장 안함!
+    }
+
     private float[] createDefaultVector() {
         int dim = props.getVector().getDim();
         float[] v = globalPrior(dim);

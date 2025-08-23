@@ -81,7 +81,7 @@ public class BoardVectorService {
 
         // 기존 벡터 조회
         List<Long> ids = boards.stream().map(Board::getId).toList();
-        var existingEntities = repo.findAllById(ids);
+        List<BoardVectorEntity> existingEntities = repo.findAllById(ids);
 
         Map<Long, float[]> result = new HashMap<>();
 
@@ -92,13 +92,7 @@ public class BoardVectorService {
 
         // 없는 벡터 생성
         for (Board board : boards) {
-            if (!result.containsKey(board.getId())) {
-                float[] vector = encode(board);
-                result.put(board.getId(), vector);
-
-                // 비동기 저장 (실패해도 계속 진행)
-                saveVectorAsync(board.getId(), vector);
-            }
+            result.computeIfAbsent(board.getId(), id -> encode(board));
         }
 
         return result;
