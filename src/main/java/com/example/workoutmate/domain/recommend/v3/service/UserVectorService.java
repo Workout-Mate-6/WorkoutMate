@@ -1,6 +1,7 @@
 package com.example.workoutmate.domain.recommend.v3.service;
 
 import com.example.workoutmate.domain.participation.entity.Participation;
+import com.example.workoutmate.domain.participation.service.ParticipationQueryService;
 import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.domain.recommend.v3.config.RecommendationProperties;
 import com.example.workoutmate.domain.recommend.v3.feature.FeatureBuckets;
@@ -28,7 +29,7 @@ import java.time.ZoneId;
 public class UserVectorService {
     private final RecommendationProperties props;
     private final UserVectorRepository repo;
-    private final ParticipationService participationService; // 변경: Service 사용
+    private final ParticipationQueryService participationQueryService; // 변경: Service 사용
     private final ZzimRepository zzimRepo;
 
     /**
@@ -50,7 +51,7 @@ public class UserVectorService {
         Instant now = Instant.now(); // 현재시각
 
         // 참여 이력(주요 신호) — ParticipationService 사용
-        var ps = participationService.findByApplicant_Id(userId);
+        var ps = participationQueryService.findByApplicantId(userId);
         for (Participation p : ps) {
             if (p.getBoard() == null) continue;
             var b = p.getBoard();
