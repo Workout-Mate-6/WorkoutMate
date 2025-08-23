@@ -127,4 +127,13 @@ public class Board extends BaseEntity {
         this.viewCount = viewCount;
     }
 
+    public void updateCurrentParticipants(long count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("참여자 수는 음수일 수 없습니다.");
+        }
+        if (count > this.maxParticipants) {
+            throw new CustomException(CustomErrorCode.BOARD_FULL);
+        }
+        this.currentParticipants = count;
+    }
 }
