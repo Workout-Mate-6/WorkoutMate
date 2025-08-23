@@ -30,26 +30,30 @@ public class BoardVectorService {
 
 
     /**
-     * 주어진 Board 객체를 벡터로 인코딩
+     * 게시글을 벡터로 인코딩
+     * - 종목, 시간대, 요일, 규모를 특성으로 변환
      */
     public float[] encode(Board b) {
         int dim = props.getVector().getDim();
         HashingEncoder enc = new HashingEncoder(dim);
         float[] v = VectorUtils.zeros(dim);
 
-        // null 안전성 체크
+        // 종목 (가장 중요한 특성)
         String sportType = b.getSportType() != null ? String.valueOf(b.getSportType()) : "UNKNOWN";
         enc.addFeature(v, FeatureBuckets.type(sportType), 1.0);
 
+        // 시간 관련 특성
         if (b.getStartTime() != null) {
-            enc.addFeature(v, FeatureBuckets.timeBucket(b.getStartTime()), 0.6);
-            enc.addFeature(v, FeatureBuckets.dow(b.getStartTime()), 0.4);
+            enc.addFeature(v, FeatureBuckets.timeBucket(b.getStartTime()), 0.6); // 시간
+            enc.addFeature(v, FeatureBuckets.dow(b.getStartTime()), 0.4); // 요일
         }
 
+        // 규모
         if (b.getMaxParticipants() != null) {
             enc.addFeature(v, FeatureBuckets.sizeBucket(b.getMaxParticipants()), 0.3);
         }
 
+        // 정규화
         float n = VectorUtils.l2Norm(v);
         if (n == 0.0f || Float.isNaN(n) || Float.isInfinite(n)) {
             // 의미있는 기본값으로 대체 (모든 차원에 작은 값)
@@ -63,68 +67,48 @@ public class BoardVectorService {
         return v;
     }
 
-    /**
-     * 벡터를 계산하여 DB에 저장 또는 갱신
-     */
-    @Transactional
-    public void upsert(Board b) {
-        float[] v = encode(b);
-
-        var existing = repo.findById(b.getId());
-        if (existing.isPresent()) {
-            // 업데이트
-            BoardVectorEntity entity = existing.get();
-            entity.setVec(VectorUtils.toBytes(v));
-            entity.setUpdatedAt(Instant.now());
-            repo.save(entity);
-        } else {
-            // 새로 생성
-            asyncSaveVector(b.getId(), v);
-        }
-    }
-
-    public float[] getOrEncode(Board b) {
-        return repo.findById(b.getId())
-                .map(x -> VectorUtils.fromBytes(x.getVec()))
-                .orElseGet(() -> {
-                    float[] v = encode(b);
-                    asyncSaveVector(b.getId(), v);
-                    return v;
-                });
-    }
-
 
     /**
-     * 여러 Board 객체를 한 번에 처리 (배치)
-     * - 이미 저장된 벡터는 조회만
-     * - 없는 것은 새로 생성 후 저장
+     * 여러 게시글 벡터 일괄 처리 (추천 시스템용)
+     * - RecommendationServiceRebuild에서 사용
+     * - 이미 있는 벡터는 조회, 없는 것은 생성
      */
     @Transactional
     public Map<Long, float[]> getOrEncodeBulk(List<Board> boards) {
-        if (boards.isEmpty()) return Map.of();
+        if (boards.isEmpty()) {
+            return Map.of();
+        }
 
+        // 기존 벡터 조회
         List<Long> ids = boards.stream().map(Board::getId).toList();
-        var existing = repo.findAllById(ids);
-        Map<Long, float[]> out = new HashMap<>();
-        for (var e : existing) {
-            out.put(e.getBoardId(), VectorUtils.fromBytes(e.getVec()));
+        var existingEntities = repo.findAllById(ids);
+
+        Map<Long, float[]> result = new HashMap<>();
+
+        // 기존 벡터 매핑
+        for (var entity : existingEntities) {
+            result.put(entity.getBoardId(), VectorUtils.fromBytes(entity.getVec()));
         }
 
-        // 없는 항목들 개별 처리 (트랜잭션 안정성)
-        for (Board b : boards) {
-            if (out.containsKey(b.getId())) continue;
+        // 없는 벡터 생성
+        for (Board board : boards) {
+            if (!result.containsKey(board.getId())) {
+                float[] vector = encode(board);
+                result.put(board.getId(), vector);
 
-            float[] v = encode(b);
-            out.put(b.getId(), v);
-
-            // 개별 저장 시도 (실패해도 계속 진행)
-            asyncSaveVector(b.getId(), v);
+                // 비동기 저장 (실패해도 계속 진행)
+                saveVectorAsync(board.getId(), vector);
+            }
         }
 
-        return out;
+        return result;
     }
 
-    private void asyncSaveVector(Long boardId, float[] vector) {
+    /**
+     * 비동기 벡터 저장 (내부 메서드)
+     * - 동시성 문제로 실패해도 무시
+     */
+    private void saveVectorAsync(Long boardId, float[] vector) {
         try {
             BoardVectorEntity entity = BoardVectorEntity.builder()
                     .boardId(boardId)
@@ -133,25 +117,15 @@ public class BoardVectorService {
                     .build();
             repo.save(entity);
         } catch (DataIntegrityViolationException e) {
-            // 다른 스레드가 이미 생성했으면 무시
+            // 다른 스레드가 이미 생성한 경우 무시
         }
-    }
-
-    @Transactional(readOnly = true)
-    public boolean hasVector(Long boardId) {
-        return repo.existsById(boardId);
-    }
-
-    @Transactional
-    public void createVectorForNewBoard(Board board) {
-        float[] vector = encode(board);
-        asyncSaveVector(board.getId(), vector);
     }
 
     /**
      * 새 게시글의 벡터 생성
      * - 게시글 작성 완료 시점에 호출
      * - 게시글 특성(종목, 시간, 규모)을 벡터로 변환
+     * - BoardService.createBoard()에서 호출
      */
     @Transactional
     public void createBoardVector(Board board) {
