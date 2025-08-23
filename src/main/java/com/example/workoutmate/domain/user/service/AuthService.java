@@ -1,5 +1,6 @@
 package com.example.workoutmate.domain.user.service;
 
+import com.example.workoutmate.domain.recommend.v3.service.UserVectorService;
 import com.example.workoutmate.domain.user.dto.*;
 import com.example.workoutmate.domain.user.entity.User;
 import com.example.workoutmate.domain.user.entity.UserMapper;
@@ -33,6 +34,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserVectorService userVectorService;
 
     @Transactional
     public AuthResponseDto signup(SignupRequestDto signupRequestDto) {
@@ -72,6 +74,9 @@ public class AuthService {
         // 인증코드 일치 + 만료 된 코드 확인
         emailVerificationService.validateVerificationCode(user, requestDto.getCode());
         emailVerificationService.completeVerification(user);
+
+        // 유저 벡터 초기화
+        userVectorService.createInitialUserVector(user.getId());
 
         return UserMapper.toVerificationResponse(user);
     }
@@ -169,4 +174,6 @@ public class AuthService {
         String refreshTokenJti = jwtUtil.getJti(refreshToken);
         refreshTokenService.deleteRefreshTokenJti(refreshTokenJti);
     }
+
+
 }
