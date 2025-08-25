@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -135,7 +134,7 @@ public class ParticipationService {
         participation.updateState(requested);
     }
 
-    ////////////////////////// 반응 조회 //////////////////////////
+    // 반응 조회
     public Page<ParticipationByBoardResponseDto> viewApprovalsForMyBoards(
             int page, int size,
             ParticipationRequestDto participationRequestDto,
@@ -168,8 +167,6 @@ public class ParticipationService {
 
         return new CombinedParticipationViewResponse(writerSide, applicantSide);
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
 
     // 파티 조회
     public List<ParticipationAttendResponseDto> viewAttends(Long boardId) {
@@ -197,8 +194,4 @@ public class ParticipationService {
         return participationRepository.findAllByApplicant_Id(userId);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public int softDeleteByBoardId(Long boardId) {
-        return participationRepository.softDeleteByBoardId(boardId);
-    }
 }
