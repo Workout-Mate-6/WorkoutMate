@@ -1229,23 +1229,23 @@ Grafana : 두 가지를 시각화 + 알림 설정
 
 ### 문제 상황
 
-`BoardService`에서 유저 정보를 가져오기 위해 `UserService`에 관련 메서드를 추가했다.
+- `BoardService`에서 유저 정보를 가져오기 위해 `UserService`에 관련 메서드를 추가했다.
 
-이후 `UserService`에서도 특정 사용자가 작성한 게시글 수를 조회하기 위해 `BoardService`를 참조했다.
+- 이후 `UserService`에서도 특정 사용자가 작성한 게시글 수를 조회하기 위해 `BoardService`를 참조했다.
 
-이로 인해 순환 참조(Circular Dependency) 오류가 발생했다.
+- 이로 인해 순환 참조(Circular Dependency) 오류가 발생했다.
 
 ![문제및상황](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F2c137966-7087-4c93-8574-e2e75d217755%2F%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2025-08-19_%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE_12.25.59.png/size/w=2000?exp=1756185962&sig=UWweXgJKJwk1HVztR3eKtT7FdbfvaXRh15JHspryHZ4&id=2552dc3e-f514-80ac-a9e7-dc480baec3e3&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
 ### 원인 분석
 
-스프링 컨테이너는 빈(Bean)을 등록할 때 의존성을 주입한다.
+- 스프링 컨테이너는 빈(Bean)을 등록할 때 의존성을 주입한다.
 
-`BoardService`는 `UserService` 빈 생성 완료를 기다리고,
+- `BoardService`는 `UserService` 빈 생성 완료를 기다리고,
 
-`UserService`는 `BoardService` 빈 생성 완료를 기다린다.
+- `UserService`는 `BoardService` 빈 생성 완료를 기다린다.
 
-결과적으로 서로 대기하는 무한 루프 상태가 발생했다.
+- 결과적으로 서로 대기하는 무한 루프 상태가 발생했다.
 
 ## 3️⃣ 해결 과정
 
@@ -1294,8 +1294,6 @@ Grafana : 두 가지를 시각화 + 알림 설정
 </div>
 </details>
 
-
-
 <details>
 <summary>🚨 L2 정규화 시 NaN 발생</summary>
 <div markdown="1">
@@ -1304,13 +1302,11 @@ Grafana : 두 가지를 시각화 + 알림 설정
 
 ## 1️⃣ 배경
 
-추천 시스템 개발 중, 일부 사용자나 게시글에서 추천 점수가 비정상적으로 계산되는 문제가 발견되었다.
+- 추천 시스템 개발 중, 일부 사용자나 게시글에서 추천 점수가 비정상적으로 계산되는 문제가 발견되었다.
 
-벡터 연산에서 **NaN/Infinity 값**이 발생했고, 이로 인해 추천 점수 정렬이 깨지거나 결과가 뒤틀리는 현상이 나타났다.
+- 벡터 연산에서 **NaN/Infinity 값**이 발생했고, 이로 인해 추천 점수 정렬이 깨지거나 결과가 뒤틀리는 현상이 나타났다.
 
-문제를 추적한 결과, **벡터 정규화(L2 Normalization) 과정**에서 오류가 발생하고 있음을 확인하였다.
-
----
+- 문제를 추적한 결과, **벡터 정규화(L2 Normalization) 과정**에서 오류가 발생하고 있음을 확인하였다.
 
 ## 2️⃣ 문제(상황) 및 원인
 
@@ -1323,8 +1319,6 @@ Grafana : 두 가지를 시각화 + 알림 설정
     - 영벡터가 생기는 경우:
         1. **콜드/희박 유저** → 참여 이력이 거의 없고 시간 감쇠로 가중치 소멸
         2. **특수 게시글** → 속성이 누락되거나 모든 가중치가 0으로 누적
-
----
 
 ## 3️⃣ 방어 로직 없을 때
 
@@ -1340,8 +1334,6 @@ VectorUtils.l2Normalize(acc);   // norm == 0 → NaN 발생
     - norm = 0인 경우 `0으로 나눔` → `NaN` 발생
     - 추천 점수(dot product)에서 NaN 전파 → 정렬 단계 전체가 꼬임
 
----
-
 ### (2) BoardVectorService
 
 ```java
@@ -1353,8 +1345,6 @@ VectorUtils.l2Normalize(v);   // v가 영벡터 → NaN 발생
 - **결과 문제**
     - 피처 누락/0 누적으로 영벡터 발생 → NaN
     - 해당 게시글이 추천 후보군 전체의 점수를 뒤틀어 버림
-
----
 
 ## 4️⃣ 방어 로직 추가 후
 
@@ -1376,8 +1366,6 @@ VectorUtils.l2Normalize(acc);
     - 희박 유저도 항상 단위 벡터 보장
     - 코사인 유사도 계산에서 NaN 사라짐
 
----
-
 ### (2) BoardVectorService
 
 ```java
@@ -1393,8 +1381,6 @@ VectorUtils.l2Normalize(v);
     - 특수 게시글도 최소한의 방향성을 갖는 단위 벡터 확보
     - 추천 점수 안정적으로 계산 가능
 
----
-
 ## 5️⃣ 결과 (비교 정리)
 
 - **Before (가드 없음)**
@@ -1404,8 +1390,6 @@ VectorUtils.l2Normalize(v);
     - 모든 유저/게시글 벡터가 항상 유효한 단위 벡터
     - NaN/Inf 전혀 발생하지 않음
     - 추천 점수 및 랭킹 정렬 안정화
-
----
 
 ## 6️⃣ 회고
 
@@ -1437,14 +1421,14 @@ VectorUtils.l2Normalize(v);
 
 환경
 
-- 로컬 : 12 코어 (Window 10) / RAM - 16GB
-- 도구 : JMeter
+	- 로컬 : 12 코어 (Window 10) / RAM - 16GB
+	- 도구 : JMeter
 
 스레드 속성
 
-- 사용자 수: 100
-- Ramp-up: 20초
-- 루프 카운트: 1회
+	- 사용자 수: 100
+	- Ramp-up: 20초
+	- 루프 카운트: 1회
 
 채팅방 생성된 상태에서 채팅방 생성 로직 실행 시 에러 발생
 
@@ -1478,13 +1462,13 @@ Intellij에서 에러 로그 확인
 ![동일 유저 조합의 채팅방이 2개 생성됨](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F3e54672e-82c2-423c-8ab5-c223e4a6783a%2Fimage.png/size/w=2000?exp=1756186202&sig=V76OGXIjl91JeOE2_0h10Lc5udiEsKPnz8rXILRSuxc&id=2562dc3e-f514-8077-8a94-e73ee92745e5&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
 
-동일 유저 조합의 채팅방이 2개 생성됨
+- 동일 유저 조합의 채팅방이 2개 생성됨
 
-동시 실행 시 두 요청 모두 DB 조회 시점에서는 채팅방이 존재하지 않는 것으로 판단하여 각각 채팅방을 생성함
+- 동시 실행 시 두 요청 모두 DB 조회 시점에서는 채팅방이 존재하지 않는 것으로 판단하여 각각 채팅방을 생성함
 
-결과적으로 동일한 조합(senderId-1, receiverId-2)에 대해 삭제되지 않은 채팅방이 두 개 생성되며,
+- 결과적으로 동일한 조합(senderId-1, receiverId-2)에 대해 삭제되지 않은 채팅방이 두 개 생성되며,
 
-Optional로 조회할 때 데이터가 하나만 있어야 하는 규칙을 위반하여 에러 발생
+- Optional로 조회할 때 데이터가 하나만 있어야 하는 규칙을 위반하여 에러 발생
 
 ![Optional로 채팅방 조회하는 로직](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fbdd6ba9b-c4a9-4c14-a2d1-f4bf3d1f700b%2F58c0a260-f5ec-4c85-aea1-fe10695416ad.png/size/w=2000?exp=1756186217&sig=KxOzxWINS7hyeCWxbJLUbQgF07-df86EfwL39U1o_3k&id=2552dc3e-f514-80cf-99a3-e80683601ca6&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
@@ -1650,10 +1634,9 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 
 - 브라우저 콘솔에 아래와 같은 에러 발생:
 
-        ```bash
-        CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-        ```
-
+	```bash
+	CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+	```
 
 ## 2️⃣ **문제 및 원인**
     
@@ -1718,15 +1701,15 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 
 환경
 
-- 로컬 : 10코어 / 24GB
-- 도구 : JMeter (부하 생성), pinpoint (APM 분석)
-- 데이터 : 게시글 10만건
+	- 로컬 : 10코어 / 24GB
+	- 도구 : JMeter (부하 생성), pinpoint (APM 분석)
+	- 데이터 : 게시글 10만건
 
 스레드 속성
 
-- 사용자 수: 500
-- Ramp-up: 60초
-- 루프 카운트: 10회
+	- 사용자 수: 500
+	- Ramp-up: 60초
+	- 루프 카운트: 10회
 
 ## 2️⃣ 문제 및 원인
 
@@ -1738,7 +1721,7 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 
 - @ManyToOne의 기본 fetch 전략은 `EAGER`입니다.  기본값으로 인해 게시글 조회 시 작성자 정보가 즉시 로딩(EAGER)되면서, 게시글 수만큼 작성자 조회 쿼리가 반복 실행되는 N+1 문제가 발생하였습니다.
 
-```jsx
+```java
 // 기존코드
 @ManyToOne
 @JoinColumn(name = "writer_id", nullable = false)
@@ -1749,7 +1732,7 @@ private User writer;
 
 - Board → User 연관관계를 LAZY로 전환하여, 작성자 정보는 실제로 필요할 때만 조회되도록 변경하였습니다.
 
-```jsx
+```java
 // 작성자
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "writer_id", nullable = false)
@@ -1902,8 +1885,6 @@ CPU Usage: 0.0496
 <summary>⚡ 마이페이지 조회</summary>
 <div markdown="1">
 
-## 마이페이지 조회
-
 ## 1️⃣ 배경
 
 마이페이지 화면에서는 사용자의 **팔로워 수 / 팔로잉 수** 를 함께 보여줍니다.
@@ -1920,9 +1901,9 @@ CPU Usage: 0.0496
 
 [스레드 속성]
 
-    - **사용자 수**: 500
-    - **Ramp-up**: 60초
-    - **루프 카운트**: 10회
+    - 사용자 수: 500
+    - Ramp-up: 60초
+    - 루프 카운트: 10회
 
 ## 2️⃣ 문제 및 원인
 
@@ -1930,10 +1911,10 @@ CPU Usage: 0.0496
 
 ### 문제인식
 
-    - user.getFollowers().size() / user.getFollowings().size() 호출 시, JPA는 **단순히 개수(COUNT)만 필요함에도 불구하고, 연관된 모든 행(row)과 컬럼(column)을 전부 조회하게 되었습니**다.
-    - 즉, 팔로워 수라는 “숫자 하나”만 필요했지만, 실제로는 팔로워 전체 데이터를 SELECT하여 엔티티 객체로 변환하는 비효율이 발생 했습니다.
+- user.getFollowers().size() / user.getFollowings().size() 호출 시, JPA는 **단순히 개수(COUNT)만 필요함에도 불구하고, 연관된 모든 행(row)과 컬럼(column)을 전부 조회하게 되었습니**다.
+- 즉, 팔로워 수라는 “숫자 하나”만 필요했지만, 실제로는 팔로워 전체 데이터를 SELECT하여 엔티티 객체로 변환하는 비효율이 발생 했습니다.
 
-  ```jsx
+  ```java
   // 기존 코드 
   @JsonIgnore
   @OneToMany(mappedBy = "follower")
@@ -1947,7 +1928,7 @@ CPU Usage: 0.0496
   int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
   ```
 
-    - 이런식으로 follwers, following을 가져오게 되면 **팔로워/팔로잉 전체 행(및 컬럼)을 전부 가져옴**
+- 이런식으로 follwers, following을 가져오게 되면 **팔로워/팔로잉 전체 행(및 컬럼)을 전부 가져옴**
 
 실제 날라가는 쿼리문
 
@@ -1967,33 +1948,33 @@ CPU Usage: 0.0496
 전체 응답 시간: **7,339ms**
 
     - 세부 실행 시간:
-        - **팔로워 조회 쿼리**
-            - 실행 시간: **3,471ms + 449ms = 3,920ms**
-        - **팔로잉 조회 쿼리**
+        - 팔로워 조회 쿼리
+            - 실행 시간: 3,471ms + 449ms = 3,920ms
+        - 팔로잉 조회 쿼리
             - 실행 시간: **354ms**
-        - **게시글 count 조회 쿼리**
-            - 실행 시간: **3,030ms**
+        - 게시글 count 조회 쿼리
+            - 실행 시간: 3,030ms
 
 ## **해결 방법**
 
-    - .size() 대신 COUNT 쿼리 메서드를 별도로 작성하여, 팔로워/팔로잉 수를 직접 조회하도록 변경하였습니다.
-    - 즉, 컬렉션 전체를 불러오는 대신 `SELECT COUNT(*) FROM follows WHERE ...` 형태의 쿼리로 필요한 숫자만 가져오도록 했습니다.
+- .size() 대신 COUNT 쿼리 메서드를 별도로 작성하여, 팔로워/팔로잉 수를 직접 조회하도록 변경하였습니다.
+- 즉, 컬렉션 전체를 불러오는 대신 `SELECT COUNT(*) FROM follows WHERE ...` 형태의 쿼리로 필요한 숫자만 가져오도록 했습니다.
 
-  ```jsx
-  **int** followerCount = followCountService.countByFollowingId(user.getId());
-  **int** followingCount = followCountService.countByFollowerId(user.getId());
+  ```java
+  int followerCount = followCountService.countByFollowingId(user.getId());
+  int followingCount = followCountService.countByFollowerId(user.getId());
   ```
 
 ![해결 방법](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F5edab336-fb99-47e5-9447-e632a8444294%2FUntitled_Notebook_(1)-7.jpg/size/w=2000?exp=1756179543&sig=jO2hZ69xlMq2UocLOBQYwKQ2dgrLeKMk--5HhUjn7cE&id=2552dc3e-f514-80c2-9a97-e5380a87f672&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
 ### **효과**
 
-    - **팔로잉 수 조회**
-        - 실행 시간: **10ms**
-    - **팔로워 수 조회**
-        - 실행 시간: **9ms**
-    - **작성 게시글 수 조회**
-        - 실행 시간: **2ms**
+    - 팔로잉 수 조회
+        - 실행 시간: 10ms
+    - 팔로워 수 조회
+        - 실행 시간: 9ms
+    - 작성 게시글 수 조회
+        - 실행 시간: 2ms
 
 ## 3️⃣  성능 개선 결과
 
@@ -2007,11 +1988,11 @@ CPU Usage: 0.0496
 
 ![개선후](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F7ab431b3-5ac6-43de-b6f6-a2a4ce158cf9%2F%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2025-08-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_10.09.36.png/size/w=2000?exp=1756179623&sig=YcsKlIfYkKm6O4PUkd35Y3W7PSAg9oucQKPiSvxw0j8&id=2552dc3e-f514-80ca-a193-e54ac3d6f8bf&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
-| 항목 | 개선 전 | 개선 후 | 변화 |
-    | --- | --- | --- | --- |
-| **Average** | 39,336 ms | 34 ms | ↓**99.91%** |
-| p95 | 52,998 ms | 49 ms | ↓**99.91%** |
-| Throughput | 2.1 건 | 16.6 건 | ↑**690.48%** |
+| 항목          | 개선 전        | 개선 후  | 변화        |
+|---------------|----------------|----------|-------------|
+| **Average**   | 39,336 ms      | 34 ms    | ↓ **99.91%** |
+| **p95**       | 52,998 ms      | 49 ms    | ↓ **99.91%** |
+| **Throughput**| 2.1 건/초      | 16.6 건/초 | ↑ **690.48%** |
 
 
 </div>
