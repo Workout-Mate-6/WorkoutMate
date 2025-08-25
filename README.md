@@ -1580,11 +1580,11 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 ## 3️⃣ **해결 과정**
 
 1. **활동을 확인할 수 있는 AOF(Append Only File) 설정**
-  2. **Redis 속 data 를 주기적으로 조회하는 로직 추가**
+2. **Redis 속 data 를 주기적으로 조회하는 로직 추가**
 
-     5분마다 작동되는 스케쥴러 사용해 현재 저장되어있고 ttl 이 약 7일 정도 남은 키 값에 맞는 Value 값을 담는 변수를 만들어, 이 변수를 로그로 출력
+   5분마다 작동되는 스케쥴러 사용해 현재 저장되어있고 ttl 이 약 7일 정도 남은 키 값에 맞는 Value 값을 담는 변수를 만들어, 이 변수를 로그로 출력
 
-     만약 userId 가 없다면 null 값 찍힘
+   만약 userId 가 없다면 null 값 찍힘
 
       - 코드
 
@@ -1594,45 +1594,45 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
           log.warn("Redis test 용 - key(refresh:6ae359b6-29ce-4d3b-870a-9cd3eb692213, 만료예정일 8/25) 존재함 userId={}", userId);
           ```
 
-    3. **EC2 가 재기동 되었는지 확인 - X**
+3. **EC2 가 재기동 되었는지 확인 - X**
 
-       uptime (19일 전) 확인
+   uptime (19일 전) 확인
 
-    4. **EC2 에 자동으로 재시작 되는 옵션이 있는지 확인 - X**
+4. **EC2 에 자동으로 재시작 되는 옵션이 있는지 확인 - X**
 
-       Instance reboot migration - Default (On) 옵션 있지만 실제로 발생시 uptime 이 0부터 시작
+   Instance reboot migration - Default (On) 옵션 있지만 실제로 발생시 uptime 이 0부터 시작
 
-    5. **Redis 를 Docker 로 실행하기 때문에 Docker 가 재기동 되었는지 확인 - X**
+5. **Redis 를 Docker 로 실행하기 때문에 Docker 가 재기동 되었는지 확인 - X**
 
-       `docker ps` 로 uptime (3일 전) 확인
+   `docker ps` 로 uptime (3일 전) 확인
 
-    6. **메모리가 부족한지 확인 - X**
+6. **메모리가 부족한지 확인 - X**
 
-       `top` 로 사용량 체크
+   `top` 로 사용량 체크
 
-    7. **누가 수동으로 지우는지 확인 - 코드 내부에 지우는 코드 하나하나 찾았지만 관련 없음**
+7. **누가 수동으로 지우는지 확인 - 코드 내부에 지우는 코드 하나하나 찾았지만 관련 없음**
 
-       그럴 가능성 극히 낮음, 접근 하는 사람 나, 은욱님 뿐, 둘 다 지우지 않았음
+   그럴 가능성 극히 낮음, 접근 하는 사람 나, 은욱님 뿐, 둘 다 지우지 않았음
 
-    8. **redis.conf 확인 - 이상 없음**
-        - 내용
+8. **redis.conf 확인 - 이상 없음**
+   - 내용
 
-            ```bash
-            # redis.conf 
+      ```bash
+      # redis.conf 
             
-            appendonly yes
-            ```
+      appendonly yes
+      ```
 
-    9. **aof 로 내용 확인 - 원인 발견 ❗️**
-        - 내용
+9. **aof 로 내용 확인 - 원인 발견 ❗️**
+  - 내용
 
-          flushall 명령어가 존재
+     flushall 명령어가 존재
 
-          ![aof1](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Ff3655b09-04e3-438c-a309-ca5c7f8a4af2%2FIMG_B5BE323FEEC5-1.jpeg/size/w=2000?exp=1756189317&sig=va3Km8_CvFwsJ1kvDCNmAduaCCi4IPzkLNc1fnag-ZE&id=2552dc3e-f514-8071-9b38-d525bbed7905&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+     ![aof1](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Ff3655b09-04e3-438c-a309-ca5c7f8a4af2%2FIMG_B5BE323FEEC5-1.jpeg/size/w=2000?exp=1756189317&sig=va3Km8_CvFwsJ1kvDCNmAduaCCi4IPzkLNc1fnag-ZE&id=2552dc3e-f514-8071-9b38-d525bbed7905&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 
-          ip 주소 확인해보니 NL (네덜란드) 로 나타남
+     ip 주소 확인해보니 NL (네덜란드) 로 나타남
 
-          ![aof2](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fcb4e9763-6a70-4966-8bc6-73ccf4d326a7%2FIMG_8A659209BA8E-1.jpeg/size/w=2000?exp=1756189339&sig=k2SmGkaYyUg2rRsm_0Rj77q2V8uyhujhdidYvAjspWg&id=2552dc3e-f514-804f-b745-defc152fc12e&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+     ![aof2](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fcb4e9763-6a70-4966-8bc6-73ccf4d326a7%2FIMG_8A659209BA8E-1.jpeg/size/w=2000?exp=1756189339&sig=k2SmGkaYyUg2rRsm_0Rj77q2V8uyhujhdidYvAjspWg&id=2552dc3e-f514-804f-b745-defc152fc12e&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 
 
 
