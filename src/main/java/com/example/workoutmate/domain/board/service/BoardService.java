@@ -150,9 +150,10 @@ public class BoardService {
 
         popularityService.removeFromRanking(boardId);
         boardViewCountService.removeFromHash(board.getId());
-        participationCreateService.softDeleteByBoardId(boardId);
 
         board.delete();
+
+        participationCreateService.softDeleteByBoardId(boardId);
     }
 
     // 작성자 권한 체크 메서드
