@@ -1589,16 +1589,21 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
    그럴 가능성 극히 낮음, 접근 하는 사람 나, 은욱님 뿐, 둘 다 지우지 않았음
 
 8. **redis.conf 확인 - 이상 없음**
-   - 내용
+    <details>
+    <summary>내용</summary>
+    <div markdown="1">
 
       ```bash
       # redis.conf 
             
       appendonly yes
       ```
-
+    </div>
+    </details>
 9. **aof 로 내용 확인 - 원인 발견 ❗️**
-  - 내용
+    <details>
+    <summary>내용</summary>
+    <div markdown="1">
 
      flushall 명령어가 존재
 
@@ -1608,7 +1613,8 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 
      ![aof2](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fcb4e9763-6a70-4966-8bc6-73ccf4d326a7%2FIMG_8A659209BA8E-1.jpeg/size/w=2000?exp=1756189339&sig=k2SmGkaYyUg2rRsm_0Rj77q2V8uyhujhdidYvAjspWg&id=2552dc3e-f514-804f-b745-defc152fc12e&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 
-
+    </div>
+    </details>
 
   ## 4️⃣ **결과 및 회고**
     
