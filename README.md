@@ -239,7 +239,8 @@
 
 <details><summary> Jira를 사용한 일정 관리</summary>
 <div markdown="1">
-![Jira](./jira.webp)
+![Jira](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F8bd61d29-735b-4d6a-a25f-f8673008cae1%2Fimage.png/size/w=2000?exp=1756188985&sig=QX0vBIbfaZc_L3hCPAtQWLS_6d-W8JnVQdv9vY9kOPQ&id=25a2dc3e-f514-804c-840e-fb4ecab904f9&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+</div>
 </details>
 
 ## 💡 기술적 의사결정
