@@ -254,15 +254,11 @@
 - **이유**: 구현 단순성·안정성, 콜드스타트 대응, 개인화 품질 확보, 리랭크 규칙 적용 용이성
 - **향후**: 협업 필터링을 단계적으로 접목하여 하이브리드 추천으로 확장
 
----
-
 ## 1️⃣ 도입 배경
 
 게시글과 사용자가 급격히 늘어나면서 **최신순/인기순** 노출만으로는 개별 사용자의 관심사와 성향을 반영하기 어려워졌다.
 
 → **개인 맞춤형 추천 시스템**이 필요하다.
-
----
 
 ## 2️⃣ 요구사항 및 도입 목표
 
@@ -271,8 +267,6 @@
 - **확장성 확보**: 대규모 사용자/게시글 환경에서도 안정적 동작
 - **실험 가능성**: 가중치·보너스·페널티를 설정 기반으로 쉽게 조정
 - **설명** : “친구 2명 참여 중”, “저녁 시간 선호” 같은 이유 노출
-
----
 
 ## 3️⃣ 기술적 검토 (방식 비교)
 
@@ -363,8 +357,6 @@
 - **장점**: 신규 게시글도 추천 가능, 개인화 수준 높음
 - **한계**: 다양성 부족, 집단 지혜 미활용
 
----
-
 ## 4️⃣ 기술적 판단 근거
 
 ### 판단 근거
@@ -379,8 +371,6 @@
 
 - **현재**: 콘텐츠 기반 필터링을 메인 알고리즘으로 도입
 - **향후**: 협업 필터링을 단계적으로 접목하여 하이브리드 추천으로 확장
-
----
 
 ## 5️⃣ 기대효과 및 추후 개선 사항
 
@@ -397,8 +387,6 @@
 - 설명(reason) 품질 개선
 - 다양성 슬롯 위치/빈도 최적화
 - 캐시 전략 검토
-
----
 
 ## 6️⃣ 구현 내용 (핵심 흐름 & 코드 요약)
 
@@ -506,7 +494,7 @@ for (Board b : candidates) {
 
 1. 날짜 단위로 Key를 분리해 관리합니다.
 
-    ```jsx
+    ```java
     // 날짜별 ZSet Key, 에시 : board:view:ranking:2025-08-07}
     **private** String getDailyRankingKey(LocalDate dateTime) {
         **return** *DAILY_VIEW_RANKING_KEY* + ":" +
@@ -517,55 +505,55 @@ for (Board b : candidates) {
 
 1. 게시글이 조회될 때마다 **오늘 날짜 ZSet의 score를 +1** 합니다.
 
-```jsx
-// 해당 게시글 조회수 증가 (ZSet)
-// value 예시 : [{ "value": "1145", "score": 2 }, { "value": "1324", "score": 2 }]
-@Transactional
-public void incrementViewCount(Long boardId) {
-	String todayKey = getDailyRankingKey(LocalDate.now());
-	stringRedisTemplate.opsForZSet().incrementScore(todayKey, boardId.toString(), 1.0);
-	stringRedisTemplate.expire(todayKey, Duration.ofDays(8));
-}
-```
+	```java
+	// 해당 게시글 조회수 증가 (ZSet)
+	// value 예시 : [{ "value": "1145", "score": 2 }, { "value": "1324", "score": 2 }]
+	@Transactional
+	public void incrementViewCount(Long boardId) {
+		String todayKey = getDailyRankingKey(LocalDate.now());
+		stringRedisTemplate.opsForZSet().incrementScore(todayKey, boardId.toString(), 1.0);
+		stringRedisTemplate.expire(todayKey, Duration.ofDays(8));
+	}
+	```
 
 1. 일주일 집계 (unionAndStore 활용)
 - `unionAndStore`는 **여러 ZSet(예: 여러 날짜별 ZSet)의 데이터를 합산 해서, 새로운 ZSet으로 저장**하는 연산임
 - 합산 과정에서 **동일한 value(여기선 게시글ID)는 score를 더해서 합침**
 
-```jsx
-ZSet1: {A: 5, B: 3}
-ZSet2: {A: 2, C: 7}
-union → {A: 7, B: 3, C: 7}
-```
+	```java
+	ZSet1: {A: 5, B: 3}
+	ZSet2: {A: 2, C: 7}
+	union → {A: 7, B: 3, C: 7}
+	```
 
 - 최근 7일치 ZSet 합산 및 Top10 캐싱
 
-```jsx
-// 최근 7일치 ZSet을 unionAndStore로 합산해서 Top10 캐시
-@Scheduled(fixedRate = 60 * 60 * 1000)
-@Transactional(readOnly = true)
-public void cacheTop10BoardDetails() {
-    // 최근 7일 key 리스트 생성
-    List<String> zsetKeys = new ArrayList<>();
-    for (int i = 0; i < 7; i++) {
-        LocalDate date = LocalDate.now().minusDays(i);
-        zsetKeys.add(getDailyRankingKey(date));
-    }
-    Collections.reverse(zsetKeys);
-
-    String unionKey = WEEKLY_VEIW_RANKING_KEY + LocalDate.now();
-
-    // 7일치 ZSet을 unionAndStore로 합산
-    if (zsetKeys.size() >= 2) {
-        stringRedisTemplate.opsForZSet().unionAndStore(zsetKeys.get(0), zsetKeys.subList(1, zsetKeys.size()), unionKey);
-        stringRedisTemplate.expire(unionKey, Duration.ofHours(25));
-    } else if (zsetKeys.size() == 1) {
-        stringRedisTemplate.opsForZSet().unionAndStore(zsetKeys.get(0), Collections.emptyList(), unionKey);
-        stringRedisTemplate.expire(unionKey, Duration.ofMinutes(15));
-    }
-
-unionAndStore(합산 기준, 같이 합산할 나머지 키들, 결과가 저장될 새 키) 
-```
+	```java
+	// 최근 7일치 ZSet을 unionAndStore로 합산해서 Top10 캐시
+	@Scheduled(fixedRate = 60 * 60 * 1000)
+	@Transactional(readOnly = true)
+	public void cacheTop10BoardDetails() {
+	    // 최근 7일 key 리스트 생성
+	    List<String> zsetKeys = new ArrayList<>();
+	    for (int i = 0; i < 7; i++) {
+	        LocalDate date = LocalDate.now().minusDays(i);
+	        zsetKeys.add(getDailyRankingKey(date));
+	    }
+	    Collections.reverse(zsetKeys);
+	
+	    String unionKey = WEEKLY_VEIW_RANKING_KEY + LocalDate.now();
+	
+	    // 7일치 ZSet을 unionAndStore로 합산
+	    if (zsetKeys.size() >= 2) {
+	        stringRedisTemplate.opsForZSet().unionAndStore(zsetKeys.get(0), zsetKeys.subList(1, zsetKeys.size()), unionKey);
+	        stringRedisTemplate.expire(unionKey, Duration.ofHours(25));
+	    } else if (zsetKeys.size() == 1) {
+	        stringRedisTemplate.opsForZSet().unionAndStore(zsetKeys.get(0), Collections.emptyList(), unionKey);
+	        stringRedisTemplate.expire(unionKey, Duration.ofMinutes(15));
+	    }
+	
+	unionAndStore(합산 기준, 같이 합산할 나머지 키들, 결과가 저장될 새 키) 
+	```
 
 - `@Scheduled`를 통해 **1시간마다 최근 7일 ZSet을 합산**합니다.
 - `unionAndStore`를 사용하면 동일한 게시글 ID의 조회수(score)가 자동 합산됩니다.
@@ -861,9 +849,11 @@ WorkoutMate 서비스에서는 회원가입 시 **이메일 인증 절차**를 �
 
 ![코드2](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F93db2ce2-f07c-4f72-ad03-20913708281f%2Fimage.png/size/w=2000?exp=1756187661&sig=mKRUG_sr_F7o8_bxOEWcv26tvB500HF4oGXkKYnCDd8&id=2552dc3e-f514-8002-aaa7-c7f12928bbcf&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 ![코드3](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F22bd8a32-4ac4-49e9-aeb4-8735ab1ed364%2Fimage.png/size/w=2000?exp=1756187699&sig=aPfwp9K-__K3pwjQNwS98mBTohlrw9LesRVbljPhZXY&id=2552dc3e-f514-80ee-8070-fc36f87049f5&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+
 서버에서는 전달받은 토큰을 검증하여 유저 정보와 비교
 
 **테스트 페이지로 확인하는 예외 발생 시 처리**
+
 ![예외처리1](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F0c7b593d-2d67-4056-8836-880d80a56be1%2Fimage.png/size/w=2000?exp=1756187753&sig=QUkTDXE-PUcvUkuVKJQWV9BQ1vm4FmGr2CsIXb-zyhs&id=2552dc3e-f514-80aa-b127-c421ae4df09c&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 ![예외처리2](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fdd85b6ac-0d08-4f00-993f-818fec4afe1b%2Fimage.png/size/w=2000?exp=1756187790&sig=6qxqoPCxTV9JTIZsZygGdGf_VKbCe_qMCNMZ4V8cBKM&id=2552dc3e-f514-803b-af0b-f8f990a0330f&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 ![예외처리3](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F9af537be-f654-452f-8412-63dccb08e64d%2Fimage.png/size/w=2000?exp=1756187827&sig=3vOsIj13ECjSFqutF0KGshRJ5ZM1g1uWiRO0SIuhJho&id=2552dc3e-f514-80d1-9602-e57db38ea9f2&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
@@ -872,6 +862,7 @@ WorkoutMate 서비스에서는 회원가입 시 **이메일 인증 절차**를 �
 
 ![예외처리4](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fca1ecf8f-adc3-4701-8bd9-2cbda5fce740%2Fimage.png/size/w=2000?exp=1756187861&sig=w8vsS5XcVqP-lCKsCjqoPv8Upddun304WlC64Y_kZVU&id=2552dc3e-f514-8025-b504-dbe95285a840&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 ![예외처리5](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F3cf5629a-753a-4831-bbb6-bac991b444e0%2Fimage.png/size/w=2000?exp=1756187895&sig=am2FmEr6bu9boTApHa9kaYig2kYnp3vEn1ZPJ9B7lxc&id=2552dc3e-f514-803b-9750-d4c6db8da0a2&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+
 만료된 토큰일 시 예외 처리
 
 - 모두 커스텀 예외를 던져서 클라이언트에서 웹소켓 연결 강제 종료할 수 있도록 처리
