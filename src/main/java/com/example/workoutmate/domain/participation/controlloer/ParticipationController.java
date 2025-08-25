@@ -3,14 +3,12 @@ package com.example.workoutmate.domain.participation.controlloer;
 
 import com.example.workoutmate.domain.participation.dto.CombinedParticipationViewResponse;
 import com.example.workoutmate.domain.participation.dto.ParticipationAttendResponseDto;
-import com.example.workoutmate.domain.participation.dto.ParticipationByBoardResponseDto;
 import com.example.workoutmate.domain.participation.dto.ParticipationRequestDto;
 import com.example.workoutmate.domain.participation.service.ParticipationService;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
 import com.example.workoutmate.global.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

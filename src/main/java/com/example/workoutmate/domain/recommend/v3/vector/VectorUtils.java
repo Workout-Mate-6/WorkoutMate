@@ -2,7 +2,6 @@ package com.example.workoutmate.domain.recommend.v3.vector;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 public final class VectorUtils {
     private VectorUtils() {

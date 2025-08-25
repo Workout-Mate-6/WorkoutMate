@@ -80,8 +80,7 @@ public class SecurityConfig {
                         "http://127.0.0.1:5500",    // sse를 위한 로컬 서버
                         "http://localhost:5500",    // sse를 위한 로컬 서버
                   "http://workoutmate.kro.kr:8080",
-                        "http://localhost:63342",
-                        "https://jiangxy.github.io")
+                        "http://localhost:63342")
         );
 
         // 허용할 HTTP 메서드 설정

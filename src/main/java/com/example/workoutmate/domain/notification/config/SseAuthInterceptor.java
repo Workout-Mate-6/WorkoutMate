@@ -2,7 +2,6 @@ package com.example.workoutmate.domain.notification.config;
 
 import com.example.workoutmate.domain.user.enums.UserRole;
 import com.example.workoutmate.global.config.CustomUserPrincipal;
-import com.example.workoutmate.global.exception.CustomException;
 import com.example.workoutmate.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import static com.example.workoutmate.global.enums.CustomErrorCode.TOKEN_NOT_FOUND;
 
 @Slf4j
 @Component

@@ -1,7 +1,6 @@
 package com.example.workoutmate.domain.user.service;
 
 import com.example.workoutmate.domain.board.entity.Board;
-import com.example.workoutmate.domain.board.repository.BoardRepository;
 import com.example.workoutmate.domain.board.service.BoardPopularityService;
 import com.example.workoutmate.domain.board.service.BoardSearchService;
 import com.example.workoutmate.domain.board.service.BoardViewCountService;

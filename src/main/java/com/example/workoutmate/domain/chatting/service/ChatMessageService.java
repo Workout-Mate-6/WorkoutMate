@@ -42,7 +42,6 @@ public class ChatMessageService {
 
         // 2. 해당 채팅방에서 나갔는지 확인
         if (!member.isJoined()) {
-            // STOMP 예외 처리 핸들러에서 처리할 수 있는 특정 예외를 발생시키는 것이 좋음
             throw new CustomException(ALREADY_LEFT_CHATROOM, "이미 퇴장한 채팅방에서는 메시지를 보낼 수 없습니다.");
         }
 
