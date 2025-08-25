@@ -1916,15 +1916,15 @@ CPU Usage: 0.0496
 
 [환경]
 
-    - 로컬 : 10코어 / 24GB
-    - 도구 : JMeter (부하 생성), pinpoint (APM 분석)
-    - 데이터 : 팔로우 5만, 팔로워 5만
+- 로컬 : 10코어 / 24GB
+- 도구 : JMeter (부하 생성), pinpoint (APM 분석)
+- 데이터 : 팔로우 5만, 팔로워 5만
 
 [스레드 속성]
 
-    - **사용자 수**: 500
-    - **Ramp-up**: 60초
-    - **루프 카운트**: 10회
+- **사용자 수**: 500
+- **Ramp-up**: 60초
+- **루프 카운트**: 10회
 
 ## 2️⃣ 문제 및 원인
 
@@ -1932,8 +1932,8 @@ CPU Usage: 0.0496
 
 ### 문제인식
 
-    - user.getFollowers().size() / user.getFollowings().size() 호출 시, JPA는 **단순히 개수(COUNT)만 필요함에도 불구하고, 연관된 모든 행(row)과 컬럼(column)을 전부 조회하게 되었습니**다.
-    - 즉, 팔로워 수라는 “숫자 하나”만 필요했지만, 실제로는 팔로워 전체 데이터를 SELECT하여 엔티티 객체로 변환하는 비효율이 발생 했습니다.
+- user.getFollowers().size() / user.getFollowings().size() 호출 시, JPA는 **단순히 개수(COUNT)만 필요함에도 불구하고, 연관된 모든 행(row)과 컬럼(column)을 전부 조회하게 되었습니**다.
+- 즉, 팔로워 수라는 “숫자 하나”만 필요했지만, 실제로는 팔로워 전체 데이터를 SELECT하여 엔티티 객체로 변환하는 비효율이 발생 했습니다.
 
   ```jsx
   // 기존 코드 
@@ -1949,7 +1949,7 @@ CPU Usage: 0.0496
   int followingCount = user.getFollowings() != null ? user.getFollowings().size() : 0;
   ```
 
-    - 이런식으로 follwers, following을 가져오게 되면 **팔로워/팔로잉 전체 행(및 컬럼)을 전부 가져옴**
+ - 이런식으로 follwers, following을 가져오게 되면 **팔로워/팔로잉 전체 행(및 컬럼)을 전부 가져옴**
 
 실제 날라가는 쿼리문
 
@@ -1968,7 +1968,7 @@ CPU Usage: 0.0496
 
 전체 응답 시간: **7,339ms**
 
-    - 세부 실행 시간:
+- 세부 실행 시간:
         - **팔로워 조회 쿼리**
             - 실행 시간: **3,471ms + 449ms = 3,920ms**
         - **팔로잉 조회 쿼리**
@@ -1978,8 +1978,8 @@ CPU Usage: 0.0496
 
 ## **해결 방법**
 
-    - .size() 대신 COUNT 쿼리 메서드를 별도로 작성하여, 팔로워/팔로잉 수를 직접 조회하도록 변경하였습니다.
-    - 즉, 컬렉션 전체를 불러오는 대신 `SELECT COUNT(*) FROM follows WHERE ...` 형태의 쿼리로 필요한 숫자만 가져오도록 했습니다.
+- .size() 대신 COUNT 쿼리 메서드를 별도로 작성하여, 팔로워/팔로잉 수를 직접 조회하도록 변경하였습니다.
+- 즉, 컬렉션 전체를 불러오는 대신 `SELECT COUNT(*) FROM follows WHERE ...` 형태의 쿼리로 필요한 숫자만 가져오도록 했습니다.
 
   ```jsx
   **int** followerCount = followCountService.countByFollowingId(user.getId());
@@ -1990,12 +1990,12 @@ CPU Usage: 0.0496
 
 ### **효과**
 
-    - **팔로잉 수 조회**
-        - 실행 시간: **10ms**
-    - **팔로워 수 조회**
-        - 실행 시간: **9ms**
-    - **작성 게시글 수 조회**
-        - 실행 시간: **2ms**
+- **팔로잉 수 조회**
+    - 실행 시간: **10ms**
+- **팔로워 수 조회**
+    - 실행 시간: **9ms**
+- **작성 게시글 수 조회**
+    - 실행 시간: **2ms**
 
 ## 3️⃣  성능 개선 결과
 
@@ -2010,7 +2010,7 @@ CPU Usage: 0.0496
 ![개선후](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F7ab431b3-5ac6-43de-b6f6-a2a4ce158cf9%2F%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2025-08-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_10.09.36.png/size/w=2000?exp=1756179623&sig=YcsKlIfYkKm6O4PUkd35Y3W7PSAg9oucQKPiSvxw0j8&id=2552dc3e-f514-80ca-a193-e54ac3d6f8bf&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
 
 | 항목 | 개선 전 | 개선 후 | 변화 |
-    | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | **Average** | 39,336 ms | 34 ms | ↓**99.91%** |
 | p95 | 52,998 ms | 49 ms | ↓**99.91%** |
 | Throughput | 2.1 건 | 16.6 건 | ↑**690.48%** |
