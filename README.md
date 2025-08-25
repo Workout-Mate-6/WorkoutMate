@@ -717,24 +717,24 @@ WorkoutMate 서비스에서는 회원가입 시 **이메일 인증 절차**를 �
   - 연결 유지/세션 관리/스케일링 고려 필요
   - 부하 테스트 및 모니터링 툴이 별도로 필요할 수 있음
     <details><summary>참고) STOMP의 메시지 구조</summary>
-<div markdown="1">
+    <div markdown="1">
   
-- 클라이언트와 서버가 수행할 동작을 정의하는 **명령어** (Command)
-  - 예) `CONNECT`, `DISCONNECT`, `SUBSCRIBE`, `UNSUBSCRIBE`, `SEND` 등
-- 키-값 형태로 부가 정보를 전달하는 **헤더** (Header)
-    - 예) `destination: 도착지 정보`, `Authorization: jwt 토큰`, `id: 구독 식별자` 등
-- JSON, 텍스트 등으로 실제 전송할 데이터를 담는 **본문** (Body)
-    - 예)
+    - 클라이언트와 서버가 수행할 동작을 정의하는 **명령어** (Command)
+      - 예) `CONNECT`, `DISCONNECT`, `SUBSCRIBE`, `UNSUBSCRIBE`, `SEND` 등
+    - 키-값 형태로 부가 정보를 전달하는 **헤더** (Header)
+        - 예) `destination: 도착지 정보`, `Authorization: jwt 토큰`, `id: 구독 식별자` 등
+    - JSON, 텍스트 등으로 실제 전송할 데이터를 담는 **본문** (Body)
+        - 예)
 
-            ```coffeescript
-            {
-              "sender": "userA",
-              "message": "안녕하세요"
-            }
+                ```coffeescript
+                {
+                  "sender": "userA",
+                  "message": "안녕하세요"
+                }
             
-            ```
-</div>
-</details>
+                ```
+    </div>
+    </details>
 
 ![표1](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fd11366d4-cdda-4e2c-a43e-bc76c0e818e8%2Fimage.png/size/w=2000?exp=1756187365&sig=6O4YvvG4sbPi1MnPBkP3AuARx5ctYw9kP4Y4666LX7k&id=2552dc3e-f514-809d-b2ab-d24d843fcc82&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 
