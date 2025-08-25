@@ -22,7 +22,7 @@
 운동 메이트 찾기, 참여 요청 및 수락, 실시간 채팅으로 약속을 잡을 수 있는<br>
 운동을 즐기는 사람들을 이어주는 플랫폼입니다.
 
-
+<br>
 
 ## ✅ 주요 기능
 
@@ -54,6 +54,7 @@
 - ### 🔔 알림 기능
     - 실시간 푸시 알림
 
+<br>
 
 ## 🛠️ 기술 스택
 
@@ -73,16 +74,22 @@
 | Design Collaboration | ERD Cloud, Figma, Canva, draw.io              |
 | External API         | SendGrid                                      |
 
+<br>
+
 ## 🏗️ 시스템 아키텍처
 ![시스템아키텍처](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/3de23c58-71f9-437b-a8bb-ea666f46ed32/image.png?table=block&id=2542dc3e-f514-80e0-8b00-f528725cca96&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=joElj8dUFpQ8EgDi655JdeZ2uMJ09K68U3mThuBnCDQ&downloadName=image.png)
 
+<br>
 
 ## 📱 와이어 프레임
 ![와이어 프레임](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/0acd335e-e142-4d11-af97-c0b36f855e60/image.png?table=block&id=25a2dc3e-f514-8021-89d9-d1f6a1d7b7e8&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=XoabvzTSpaiBdKIM6XjI6GYbzV4C_k9xzG4EnuR8PQw&downloadName=image.png)
 
+<br>
+
 ## ✏ ERD
 ![ERD](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/7267f74e-d99c-46ac-8c9c-d09599b40718/6%EC%A1%B0.png?table=block&id=2532dc3e-f514-8033-b4a3-fc79b587380b&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=n3Mua_pWZSJ7kvLadhLHt6dHkGHCprU11ONQxGFmWME&downloadName=6%EC%A1%B0.png)
 
+<br>
 
 ## 📃 API 명세서
 
@@ -221,10 +228,12 @@
 
 참고 (https://www.notion.so/teamsparta/api-25a2dc3ef51480b081e7cfdfd82ff79a?source=copy_link)
 
+<br>
+
 ## 🗺 서비스 플로우
 ![서비스 플로우](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fb79037a4-fa02-42d6-94b8-4cd57ee15966%2F%EC%82%AC%EC%9A%A9%EC%9E%90_%ED%94%8C%EB%A1%9C%EC%9A%B0.png/size/w=2000?exp=1756188934&sig=OrItTdpCD7M2sGIxwJhH1dHdZkVBYJnYT-MaLAcMlEk&id=2552dc3e-f514-8038-883b-dff61d6d1e6d&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
 
-
+<br>
 
 ## 📅 일정
 
@@ -241,6 +250,8 @@
 <div markdown="1">
 <img src="jira.png" alt="Jira" width="1600"/>
 </details>
+
+<br>
 
 ## 💡 기술적 의사결정
 
@@ -1196,6 +1207,7 @@ Grafana : 두 가지를 시각화 + 알림 설정
 </div>
 </details>
 
+<br>
 
 ## 🚨 트러블 슈팅
 
@@ -1690,6 +1702,7 @@ EC2 에 올린 Spring boot 서비스를 테스트 하던 도중 다음날 확인
 </div>
 </details>
 
+<br>
 
 ## ⚡ 성능 개선
 <details>
@@ -2003,7 +2016,7 @@ CPU Usage: 0.0496
 </div>
 </details>
 
-
+<br>
 
 ## 👥 팀원
 
