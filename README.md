@@ -77,17 +77,17 @@
 <br>
 
 ## 🏗️ 시스템 아키텍처
-![시스템아키텍처](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/3de23c58-71f9-437b-a8bb-ea666f46ed32/image.png?table=block&id=2542dc3e-f514-80e0-8b00-f528725cca96&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=joElj8dUFpQ8EgDi655JdeZ2uMJ09K68U3mThuBnCDQ&downloadName=image.png)
+<img width="999" height="612" alt="Image" src="https://github.com/user-attachments/assets/906f3c6d-6bd8-4517-8051-b55dc1700637" />
 
 <br>
 
 ## 📱 와이어 프레임
-![와이어 프레임](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/0acd335e-e142-4d11-af97-c0b36f855e60/image.png?table=block&id=25a2dc3e-f514-8021-89d9-d1f6a1d7b7e8&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=XoabvzTSpaiBdKIM6XjI6GYbzV4C_k9xzG4EnuR8PQw&downloadName=image.png)
+<img width="1468" height="992" alt="Image" src="https://github.com/user-attachments/assets/f566ced1-b89c-405c-99f9-c4396df8ff12" />
 
 <br>
 
 ## ✏ ERD
-![ERD](https://file.notion.so/f/f/83c75a39-3aba-4ba4-a792-7aefe4b07895/7267f74e-d99c-46ac-8c9c-d09599b40718/6%EC%A1%B0.png?table=block&id=2532dc3e-f514-8033-b4a3-fc79b587380b&spaceId=83c75a39-3aba-4ba4-a792-7aefe4b07895&expirationTimestamp=1756123200000&signature=n3Mua_pWZSJ7kvLadhLHt6dHkGHCprU11ONQxGFmWME&downloadName=6%EC%A1%B0.png)
+<img width="1705" height="957" alt="Image" src="https://github.com/user-attachments/assets/9862d6aa-636a-4949-ac8e-cc4a09aa0b1f" />
 
 <br>
 
@@ -231,7 +231,7 @@
 <br>
 
 ## 🗺 서비스 플로우
-![서비스 플로우](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2Fb79037a4-fa02-42d6-94b8-4cd57ee15966%2F%EC%82%AC%EC%9A%A9%EC%9E%90_%ED%94%8C%EB%A1%9C%EC%9A%B0.png/size/w=2000?exp=1756188934&sig=OrItTdpCD7M2sGIxwJhH1dHdZkVBYJnYT-MaLAcMlEk&id=2552dc3e-f514-8038-883b-dff61d6d1e6d&table=block&userId=1ced872b-594c-814b-8cea-000216eaaf3c)
+<img width="8528" height="5941" alt="Image" src="https://github.com/user-attachments/assets/ed1256f2-e6d3-495d-96bc-9ae2ffc0e315" />
 
 <br>
 
@@ -1983,7 +1983,7 @@ CPU Usage: 0.0496
   int followingCount = followCountService.countByFollowerId(user.getId());
   ```
 
-![해결 방법](https://img.notionusercontent.com/s3/prod-files-secure%2F83c75a39-3aba-4ba4-a792-7aefe4b07895%2F5edab336-fb99-47e5-9447-e632a8444294%2FUntitled_Notebook_(1)-7.jpg/size/w=2000?exp=1756179543&sig=jO2hZ69xlMq2UocLOBQYwKQ2dgrLeKMk--5HhUjn7cE&id=2552dc3e-f514-80c2-9a97-e5380a87f672&table=block&userId=6ef99c76-bcd6-475b-a4a0-9cec68ab6ad6)
+![해결 방법](https://github.com/user-attachments/assets/642e0726-1e46-47ca-9240-0f6c3d947fec)
 
 ### **효과**
 
